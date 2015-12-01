@@ -1,0 +1,162 @@
+extends layout
+block script
+	script.
+		var tags=[];
+	script(src='/javascripts/tags.js')
+	// AÑADIR TAGS
+	link(rel="stylesheet" href='//cdnjs.cloudflare.com/ajax/libs/dropzone/3.8.4/css/dropzone.css')
+	// CSS DROPZONE
+	script(src='http://cdnjs.cloudflare.com/ajax/libs/dropzone/3.8.4/dropzone.min.js')
+	// JS DROPZONE
+	link(href="/stylesheets/form.css" rel="stylesheet")
+	//CSS Formulario nueva denuncia / editar denuncia
+	script(src="https://cdn.socket.io/socket.io-1.3.7.js")
+	// SOCKET.IO
+	link(rel="stylesheet" href="/ol3/ol.css" type="text/css")
+	// OPENLAYERS 3.11.1 CSS
+	script(src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.12/proj4.js")
+	// PROJ4JS
+	script(src="/ol3/ol.js")
+	// OPENLAYERS 3.11.1 JS
+	link(rel="stylesheet" href="/ol3-layerswitcher/src/ol3-layerswitcher.css")
+	// OPENLAYERS LAYERSWITCHER CSS
+	script(src="/ol3-layerswitcher/src/ol3-layerswitcher.js")
+	// OPENLAYERS LAYERSWITCHER CSS
+	script(src="/javascripts/olnueva.js")
+	// JS CONFIG MAPA
+	script(src="/javascripts/upload.js")
+	// JS CONFIG SUBIR IMÁGENES
+	script(type="text/javascript").
+		$(function(){
+		
+		    $('.btn-submit').on('click', function(e) {
+		        var formname = $(this).attr('name'); 
+		        var tabname = $(this).attr('href');
+		        e.preventDefault();
+		        if ($('#' + formname)[0].checkValidity()) { /* Only works in Firefox/Chrome need polyfill for IE9, Safari. http://afarkas.github.io/webshim/demos/ */
+		            $('ul.nav li a[href="' + tabname + '"]').parent().removeClass('disabled');
+		            $('ul.nav li a[href="' + tabname + '"]').trigger('click');
+		           	if(tabname=='#mapa')
+		            	setTimeout(showMap, 500);
+		        }
+		    });
+		    
+		   	$('ul.nav li').on('click', function(e) {
+		        if ($(this).hasClass('disabled')) {
+		            e.preventDefault();
+		            return false;
+		        }
+		    });
+		
+		});
+		
+block content
+	div.page-header
+		h1 Nueva denuncia 
+			small(style={float:'right'}) formulario para añadir nueva denuncia
+	br
+	p En este apartado podrás añadir una nueva denuncia. Es importante que tengas en
+		| cuenta los siguientes puntos: 
+	ol
+		li Explica con claridad el motivo de tu denuncia. 
+		li Trata de proporcionar la mayor información posible.
+		li Porporciona la localización correcta.
+		li Añade TAGS que identifiquen el tipo de denuncia.
+		li Añade información visual.
+	.board
+		.board-inner
+			ul#myTab.nav.nav-tabs
+				.liner
+				li.active
+					a(href='#general', data-toggle='tab', data-content='Título y Descripción', title='Información Básica')
+						span.round-tabs.one
+							i.glyphicon.glyphicon-pencil
+				li.disabled
+					a(href='#mapa', data-toggle='tab', data-content='Geometría de la denuncia', title='Información Geográfica')
+						span.round-tabs.two
+							i.glyphicon.glyphicon-globe
+				li.disabled
+					a(href='#etiquetas', data-toggle='tab', data-content='Tags informativos', title='Etiquetas')
+						span.round-tabs.three
+							i.glyphicon.glyphicon-tags
+				li.disabled
+					a(href='#fotos', data-toggle='tab', data-content='Imágenes', title='Inormación Visual')
+						span.round-tabs.four
+							i.glyphicon.glyphicon-picture
+				li.disabled
+					a(href='#confirmar', data-toggle='tab', data-content='Confirma tu denuncia', title='Confirmar')
+						span.round-tabs.five
+							i.glyphicon.glyphicon-ok
+		.tab-content(style={'min-height':'500px', 'background':'#f7f7f7', 'padding':'15px'})
+			#general.tab-pane.fade.in.active
+				h3.narrow.text-center Información Básica
+				p.narrow.text-center Debes explicar con claridad la información de tu denuncia.
+				form#home_form.form-horizontal.text-center
+					fieldset
+						button.btn-submit.btn.btn-success.btn-outline-rounded.green(type='submit', href='#mapa' name='home_form') Continuar
+							span.glyphicon.glyphicon-check(style='margin-left:10px;')
+				form#basico
+					div.input-group
+						span.input-group-addon Título
+						input#inTitulo(type="text", name="titulo" placeholder="Añade un título").form-control
+					br
+					div(style={'border-radius':'0px'}).well
+						h4 Añade una descripción
+						form
+							.form-group
+								textarea#taDescripcion(name="descripcion" rows='3' style={'height':'300px'}).form-control
+			#mapa.tab-pane.fade
+				h3.narrow.text-center Información Geográfica
+				p.narrow.text-center Debes seleccionar con exactitud la posición de la denuncia.
+				form#home_form.form-horizontal.text-center(name='home_form', role='form')
+					fieldset
+						button.btn-submit.btn.btn-success.btn-outline-rounded.green(type='submit', href='#etiquetas', name='home_form') Continuar
+							span.glyphicon.glyphicon-check(style='margin-left:10px;')
+				div#map(style={'height':'450px'})
+					div#menuControl(style={width:'40%','position':'absolute', bottom:'10px', left:'0',right:'0',margin:'0 auto', 'z-index':'2'})
+						div.btn-group(display:'inline-block','data-toggle'='buttons' style={width:'100%',left:'0',right:'0',margin:'0 auto'}).box-shadow--6dp
+							label#pan.btn.btn-warning(style={width:'16.66%',margin:'0 auto'})
+								input(type="radio")
+								span.fa.fa-map(style={'font-size':'16px', color:'#000'})
+							label#editar.btn.btn-warning(style={width:'16.6666666%',margin:'0 auto'})
+								input(type="radio")
+								span.fa.fa-edit(style={'font-size':'16px', color:'#000'})
+							label#eliminar.btn.btn-warning(style={width:'16.6666666%',margin:'0 auto'})
+								input(type="radio")
+								span.fa.fa-trash(style={'font-size':'16px', color:'#000'})
+							label#punto.btn.btn-warning(style={width:'16.6666666%',margin:'0 auto'})
+								input(type="radio") 
+								div(style={background:'url("https://cdn1.iconfinder.com/data/icons/mirrored-twins-icon-set-hollow/512/PixelKit_point_marker_icon.png")','background-size':'contain', 'background-repeat':'no-repeat',height:'20px', 'background-position':'center'})
+							label#linea.btn.btn-warning(style={width:'16.6666666%',margin:'0 auto'})
+								input(type="radio")
+								div(style={background:'url("http://icons.iconarchive.com/icons/icons8/android/512/Maps-Polyline-icon.png")','background-size':'contain', 'background-repeat':'no-repeat',height:'20px', 'background-position':'center'})
+							label#poligono.btn.btn-warning(style={width:'16.6666666%',margin:'0 auto'})
+								input(type="radio") 
+								div(style={background:'url("http://icons.iconarchive.com/icons/icons8/android/512/Maps-Polygon-icon.png")','background-size':'contain', 'background-repeat':'no-repeat',height:'20px', 'background-position':'center'})
+			#etiquetas.tab-pane.fade
+				h3.narrow.text-center Etiquetas
+				p.narrow.text-center Añade etiquetas que identifiquen la denuncia.
+				form#home_form.form-horizontal.text-center(name='home_form', role='form')
+					fieldset
+						button.btn-submit.btn.btn-success.btn-outline-rounded.green(type='submit', href='#fotos', name='home_form') Continuar
+							span.glyphicon.glyphicon-check(style='margin-left:10px;')
+				form#et.form-horizontal.text-center
+					div#ig1.input-group
+						span#b1.btn.btn-success.input-group-addon.add-more +
+						input(autocomplete="off" class="form-control" id="field1" name="prof1" type="text" placeholder="Añade una etiquesta (5 - 15 caracteres)" data-items="8").form-control
+			#fotos.tab-pane.fade
+				h3.narrow.text-center Información Visual
+				p.narrow.text-center Este apartado es opcional, aunque recomendable.
+				form#home_form.form-horizontal.text-center(name='home_form', role='form').text-center
+					fieldset
+						button.btn-submit.btn.btn-success.btn-outline-rounded.green(type='submit', href='#confirmar', name='home_form') Continuar
+							span.glyphicon.glyphicon-check(style='margin-left:10px;')
+				h4 Selecciona imágenes y súbelas
+				form(id="file-dropzone" style={background:'#ffbb00', border:'1px dashed'})
+					.dz-message.text-center(style={color:'#00bbff'}) Arrastra imágenes o haz click aquí.
+			#confirmar.tab-pane.fade
+				form#submitDenuncia.form-horizontal.text-center(name='submit', role='form' action="/" method= "POST")
+					fieldset
+						button#idbuttonSubmit.btn.btn-success.btn-outline-rounded.green(type='submit', name='submit') Finalizar
+							span.glyphicon.glyphicon-send(style='margin-left:10px;')
+		hr

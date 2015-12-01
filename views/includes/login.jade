@@ -1,0 +1,43 @@
+div(style={'position':'relative',top:'0px'})
+	div.page-header(style={ 'margin-top':'0px !important','padding-bottom':'0px'})
+		h1(style={'font-size':'25px'}) Iniciar sesión
+	.col-lg-12
+		p Inicia Sesión con tu cuenta de usuario en informaTorrent!
+			| Si tienes linqueada en tu cuenta local una cuenta de Twitter o Facebook,
+			| puedes acceder a tu cuenta utilzando tus cuentas en las redes sociales asociadas.
+	br
+div(style={'position':'relative',top:'0px',height:'65%'}).well.centrado
+	form(action="/app/login" method="post").form-horizontal
+		fieldset
+			.form-group.col-lg-6(style={'margin':'0 auto'})
+				.controls.input-group
+					span.input-group-addon(style={color:'#00bbff !important'})
+						i.glyphicon.glyphicon-user
+					input#userid.form-control(required='', name='email', type='text', placeholder='michaelScofield@ejemplo.com')
+			// Password input
+			.form-group.col-lg-6(style={'margin':'0 auto'})
+				.controls.input-group
+					span.input-group-addon(style={color:'#ffbb00 !important'})
+						i.glyphicon.glyphicon-lock
+					input#passwordinput.form-control(required='', name='password', type='password', placeholder='********')
+			// Button
+			.form-group.col-lg-12(style={'margin':'0 auto'})
+				label.control-label(for='signin')
+				.controls.input-group
+					span.input-group-addon(style={color:'#38B44A !important'})
+						i.glyphicon.glyphicon-off
+					button#signin.btn.btn-success(name='signin' style={width:'100%','border-top-left-radius':'0px','border-bottom-left-radius':'0px'})
+						|  Iniciar Sesión
+				br
+				br
+				p.hrstyle O también puedes
+				br
+				form-group.col-lg-6(style={'margin':'0 auto','padding-left':'5px'})
+					a(href="/app/auth/twitter").btn.btn-block.btn-social.btn-twitter
+						i.fa.fa-twitter
+						| Acceder con Twitter
+				form-group.col-lg-6(style={'margin':'0 auto','padding-right':'5px'})
+					a(href="/app/auth/facebook").btn.btn-block.btn-social.btn-facebook
+						i.fa.fa-facebook
+						| Acceder con Facebook
+				br

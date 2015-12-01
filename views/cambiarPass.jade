@@ -1,0 +1,35 @@
+extends layout
+block content
+	div(style={'position':'relative',top:'0px'})
+		div.page-header(style={ 'margin-top':'0px !important','padding-bottom':'0px'})
+			h1(style={'font-size':'25px'}) Cambia tu contraseña
+		.col-lg-12
+		p.text-center Rellene los datos para cambiar la contraseña
+		br
+	div(style={margin:'auto', height:'75%'}).well.centrado
+		div(style={'position':'relative', height:'100%', top:'35%'})
+			form(action="/app/changePass" method="POST")
+				fieldset
+					.form-group.col-lg-4(style={'margin':'0 auto'})
+						.input-group
+							span.input-group-addon
+								i.glyphicon.glyphicon-lock
+							input#rc.form-control(required='', name='password_original', type='password', placeholder='Contraseña Actual', value=' ')
+					.form-group.col-lg-4(style={'margin':'0 auto'})
+						.input-group
+							span.input-group-addon
+								i.glyphicon.glyphicon-lock
+							input#rc.form-control(required='', name='password_nueva', type='password', placeholder='Nueva Contaseña')
+					.form-group.col-lg-4(style={'margin':'0 auto'})
+						.input-group
+							span.input-group-addon
+								i.glyphicon.glyphicon-lock
+							input#rc.form-control(required='', name='password_nueva_repeat', type='password', placeholder='Repita Nueva Contraseña')
+					br
+					.form-group.col-lg-12(style={'margin':'0 auto'})
+						label.control-label(for='passChange')
+						.controls.input-group
+							span.input-group-addon(style={color:'#38B44A !important'})
+								i.glyphicon.glyphicon-send
+							button#signin.btn.btn-success(name='forgotPassChange' style={width:'100%','border-top-left-radius':'0px','border-bottom-left-radius':'0px'})
+								|  Cambiar contraseña

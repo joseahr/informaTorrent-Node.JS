@@ -1,0 +1,110 @@
+extends layout
+block meta
+	meta(property='og:url' content='/app/denuncia/#{denuncia.gid}')
+	meta(property='og:type' content='website')
+	meta(property='og:title' content='Your Website Title')
+	meta(property='og:description' content='Your description')
+	//meta(name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no")
+block script
+	link(rel="stylesheet" href="/stylesheets/galeria.css")
+	script(type="text/javascript" src="/javascripts/galeria.js")
+	script(src="//rawgithub.com/ashleydw/lightbox/master/dist/ekko-lightbox.js")
+	
+	link(rel="stylesheet" href="/ol3/ol.css" type="text/css")
+	script(src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.12/proj4.js")
+	script(src="/ol3/ol.js")
+	link(rel="stylesheet" href="/ol3-layerswitcher/src/ol3-layerswitcher.css")
+	script.
+		var geojsonDenuncia = !{denuncia.geometria}; // geometría del servidor
+		// solo podemos acceder a ella desde este tipo de scripts que tienen un punto al final
+	script(src="/ol3-layerswitcher/src/ol3-layerswitcher.js")
+	script(src="/javascripts/olvisor.js").
+	script(type='text/javascript').
+		$(document).ready(function(){
+			//alert(!{denuncia.geometria});
+			var html = '!{denuncia.descripcion}';
+			//alert(html);
+			$('#contenidoDenuncia').html($(html));
+			
+			$('#rightContainer').hover(function(){
+				if($('#content').html() == ''){
+					//alert('rc no files');
+					return;
+				}
+				if($('#content').scrollLeft() + $('#content').innerWidth() >= $('#content')[0].scrollWidth){
+					//alert('max-right');
+					return;
+				}
+				if($(this).is(':animated')){$(this).stop(true, false)}
+				else {$(this).fadeTo(300, 1);}
+			}, function(){$(this).fadeTo(300, 0)});
+			
+			$('#leftContainer').hover(function(){
+			
+				if($('#content').scrollLeft() == 0){
+					//alert('max-left');
+					return;
+				}
+				if($('#content').html() == '') {
+					//alert('lc no files');
+					return;
+				}
+				if($(this).is(':animated')){$(this).stop(true, false)}
+				else {$(this).fadeTo(300, 1);}
+			}, function(){$(this).fadeTo(300, 0)});
+					
+			$('#right-button').click(function(event) {
+				event.preventDefault();
+				$('#content').animate({
+					scrollLeft: "+=282px"
+				}, "fast");
+			});
+			$('#left-button').click(function(event) {
+				event.preventDefault();
+				$('#content').animate({
+					scrollLeft: "-=282px"
+				}, "fast");
+			});
+		})
+block content
+	div(data-href="/app/denuncia/#{denuncia.gid}" data-layout="button_count").fb-share-button
+	h1 #{denuncia.titulo}
+	
+	small.pull-right.text-muted
+	span.fa.fa-tags
+		if denuncia.tags != null
+			each tag in denuncia.tags
+				| ##{tag} 
+	small.pull-right.text-muted
+		span.glyphicon.glyphicon-time  #{denuncia.fecha}
+	p.lead denunciado por
+		a(href="/app/usuarios/#{denuncia.usuario[0]._id}")  #{denuncia.usuario[0].profile.username}
+	hr
+	#map(style={width:'100%', height:'500px'})
+	hr
+	div#contenidoDenuncia(style={'max-width':'100%','word-break':'break-all'})
+	if denuncia.imagenes
+		div(style={'z-index':'0', 'position':'relative', 'border-radius':'0px', background:'#f7f7f7', 'margin':'0 auto', display:'flex', 'align-items':'center'})#main-content.well
+			div(style={'opacity':'0','position':'absolute', 'top':'0','left':'0', 'z-index':'2', 'width':'8%','height':'100%'})#leftContainer
+				a(href="#" id="left-button" style={display:'flex', 'align-items':'center', height:'100%'})
+					i(style={'align-self':'center','background':'rgba(150,150,150,0.5)', 'border-radius':'500px','float':'left', 'font-size':'75px', 'margin-left':'5px'}).glyphicon.glyphicon-chevron-left
+			div(style={'padding':'0px','opacity':'0','position':'absolute', 'top':'0','left':'92%', 'z-index':'2', 'width':'8%','height':'100%'})#rightContainer
+				a(href="#" id="right-button" style={display:'flex', 'align-items':'center', height:'100%'})
+					i(style={'align-self':'center','background':'rgba(150,150,150,0.5)','border-radius':'500px','float':'right','font-size':'75px','margin-right':'5px'}).glyphicon.glyphicon-chevron-right
+			div(style={'z-index':'0', 'position':'relative', 'overflow':'hidden', 'width':'100%', 'text-align':'center', 'margin':'auto'})#content.row
+				each img in denuncia.imagenes
+					article(style={'align-self':'center','padding':'0px !important', 'position':'relative'}).col-xs-12.col-sm-6.col-md-3
+						div.panel.panel-default(style={'margin':'0 auto'})
+							div(style={'height':'250px'}).panel-body
+								a(href="#{img.path}" title="Título" class="zoom" data-title="Título" data-footer="Descripción" data-type="image" data-toggle="lightbox")
+									img(src="#{img.path}" alt="Título" style={'height':'250px'})
+									span.overlay
+										i.glyphicon.glyphicon-fullscreen
+							div.panel-footer
+								span.pull-right
+									p #{img.fecha}
+								span.pull-left
+									a(href="#" title="Título") #{img.descripcion}
+	else
+		p(style={'margin':'0 auto'}) No hay imágenes asociadas a esta denuncia
+	include ./includes/comentarios.jade

@@ -1,0 +1,119 @@
+#myModal.modal.fade( tabindex='-1', role='dialog', aria-labelledby='mySmallModalLabel', aria-hidden='true' style={'z-index':'10001'})
+  .modal-dialog.modal-lg
+    .modal-content
+      br
+      .portlet
+        .portlet-title
+          .caption.caption-red
+            i.glyphicon.glyphicon-pushpin
+            span.caption-subject.bold.font-yellow-crusta.uppercase informaTorrent! 
+            span.caption-helper  Menú de acceso
+          ul(style={'width':'30%'})#myTab.nav.nav-tabs
+            li(style={'width':'33%'}).active
+              a(href='#signin', data-toggle='tab' style={'text-align':'center'})
+                i(data-toggle='tooltip' data-placement='top' title='Iniciar Sesión').glyphicon.glyphicon-off
+            li(style={'width':'33%'})
+              a(href='#signup', data-toggle='tab' style={'text-align':'center'})
+                i(data-toggle='tooltip' data-placement='top' title='Registrar Nuevo Usuario').glyphicon.glyphicon-user
+            li(style={'width':'33%'})
+              a(href='#forgot', data-toggle='tab' style={'text-align':'center'})
+                i(data-toggle='tooltip' data-placement='top' title='¿Olvidaste tu contraseña?').glyphicon.glyphicon-lock
+        div(style={'height':'400px'}).portlet-body
+          div(style={'position':'relative','float':'right', 'height':'100%', 'width':'30%','margin-left':'50px', 'background':'url(/images/logo-ayunt.png)','background-position':'center center','background-repeat': 'no-repeat'}).centrado
+            p.final Ajuntament de Torrent
+          div(style={ 'width':'70%','height':'100%'}).tab-content.centrado
+            div(style={'max-width':'100%'})#forgot.tab-pane.fade.in
+              p(style={'color':'#ffbb00'}) Introduzca el e-mail que usaste para crear tu cuenta. Te llegará un e-mail para recuperar tu contraseña.
+              form(action="/app/forgot" method="POST")
+                fieldset
+                  .control-group
+                    label.control-label(for='email') Email:
+                    .controls
+                      input(type="text" name="email" placeholder="Introduzca aquí su e-mail")
+                  .control-group
+                    label.control-label(for='submit')
+                    .controls
+                      input(type="submit" value="Enviar")
+            div(style={'max-width':'100%'})#signin.tab-pane.fade.active.in
+              form(action="/app/login" method="post").form-horizontal
+                fieldset
+                  .form-group.col-lg-12(style={'margin' : '0 auto'})
+                    p(style={'color':'#fff', 'background':'#ffbb00'}).text-center Inicia Sesión con tu cuenta de usuario en informaTorrent!
+                  .form-group.col-lg-6(style={'margin':'0 auto'})
+                    label.control-label(for='email') Email:
+                    .controls
+                      input#userid.form-control(required='', name='email', type='text', placeholder='michaelScofield@ejemplo.com')
+                  // Password input
+                  .form-group.col-lg-6(style={'margin':'0 auto'})
+                    label.control-label(for='passwordinput') Contraseña:
+                    .controls
+                      input#passwordinput.form-control(required='', name='password', type='password', placeholder='********')
+                  // Button
+                  .form-group.col-lg-12(style={'margin':'0 auto'})
+                    label.control-label(for='signin')
+                    .controls
+                      button#signin.btn.btn-success(name='signin' style={width:'100%'})
+                        span.glyphicon.glyphicon-off
+                        |  Iniciar Sesión
+                    hr(value="O también puedes")
+                    form-group.col-lg-6(style={'margin':'0 auto'})
+                      a(href="/app/auth/twitter").btn.btn-block.btn-social.btn-twitter
+                        i.fa.fa-twitter
+                        | Acceder con Twitter
+                    form-group.col-lg-6(style={'margin':'0 auto'})
+                      a(href="/app/auth/facebook").btn.btn-block.btn-social.btn-facebook
+                        i.fa.fa-facebook
+                        | Acceder con Facebook
+                    br
+            div(style={'max-width':'100%'})#signup.tab-pane.fade
+              form(action="/app/signup" method="post").form-horizontal
+                fieldset     
+                  .form-group.col-lg-12(style={'margin' : '0 auto'})
+                    p(style={'color':'#fff', 'background':'#ffbb00'}).text-center Crea una cuenta de usuario en informaTorrent!
+                  //email
+                  .form-group.col-lg-6(style={'margin':'0 auto'})
+                    label.control-label(for='email') Email:
+                    input.form-control(name='email', type='text', placeholder='michaelScofield@ejemplo.com', required='')
+                  //username
+                  .form-group.col-lg-6(style={'margin':'0 auto'})
+                    label.control-label(for='username') Nombre de usuario:
+                    input.form-control(name='username', type='text', placeholder='Michael Scofield', required='')                  
+                  //nombre
+                  .form-group.col-lg-6(style={'margin':'0 auto'})
+                    label.control-label(for='name') Nombre:
+                    input.form-control(name='name', type='text', placeholder='Michael', required='')
+                  //apellidos
+                  .form-group.col-lg-6(style={'margin':'0 auto'})
+                    label.control-label(for='surname') Apellidos:
+                    input.form-control(name='surname', type='text', placeholder='Scofield', required='')                  
+                  // contraseña
+                  .form-group.col-lg-6(style={'margin':'0 auto'})
+                    label.control-label(for='password') Contraseña:
+                    .controls
+                      input.form-control(name='password', type='password', placeholder='********', required='')
+                      em 5-20 Caracteres
+                   // repetir contraseña
+                  .form-group.col-lg-6(style={'margin':'0 auto'})
+                    label.control-label(for='repassword') Vuelva a escribir la contraseña:
+                    .controls
+                      input.form-control(name='repassword', type='password', placeholder='********', required='')
+                  // sexo
+                  .form-group.col-lg-12(style={'margin':'0 auto'})
+                    label.control-label.input-group(for='sexo') Sexo
+                    .btn-group(data-toggle='buttons' style={'width':'100%'})
+                      label.btn.btn-default(style={'width':'50%'})
+                        input(name='sexo', value='0', type='radio')
+                        | Hombre
+                      label.btn.btn-default(style={'width':'50%'})
+                        input.active(name='sexo', value='1', type='radio')
+                        | Mujer 
+                  //boton confirmar
+                  .form-group.col-lg-12(style={'clear':'both', 'margin':'0 auto'})
+                    label.control-label(for='confirmsignup')
+                    .controls(style={'text-align':'center'})
+                      button#confirmsignup.btn.btn-success(name='confirmsignup' style={'width':'100%'})
+                        span.glyphicon.glyphicon-user
+                        |  Registrar
+        .modal-footer
+          center
+            button.btn.btn-default(type='button', data-dismiss='modal' style={'width':'100%'}) Cerrar

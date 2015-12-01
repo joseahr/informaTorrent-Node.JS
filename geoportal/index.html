@@ -1,0 +1,341 @@
+<!DOCTYPE>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+
+
+.carousel-caption h2 {
+
+	color: #ffbb00;
+	font-size: 1.5em;
+}
+
+.carousel,
+.item,
+.active {
+    height: 100%;
+}
+
+.carousel-inner {
+    height: 100%;
+}
+
+/* Background images are set within the HTML using inline CSS, not here */
+
+.fill {
+    width: 100%;
+    height: 100%;
+    background-position: center;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    background-size: cover;
+    -o-background-size: cover;
+}
+
+
+	.centerRow {
+		display: flex;
+    	flex-flow: row;
+    	justify-content: center;
+    	align-content: center;
+    	align-items: center;
+	}
+	.centerCol {
+		display: flex;
+    	flex-flow: column;
+    	justify-content: space-around;
+    	align-content: center;
+    	align-items: center;
+	}
+	
+	.center-item {
+		align-self: auto;
+	}
+	
+    .grid-block-container {
+    	height: auto;
+        background: url('https://farm1.staticflickr.com/268/20077516722_f938332a4c_o.jpg');
+    	background-size: cover;
+    	padding: 0 0 100 0px !important;
+
+    }
+    .grid-block {
+    	height: 300px;
+    	margin: 0 auto;
+    	text-align:center;
+    	display: flex;
+    	flex-flow: row;
+    	justify-content: center;
+    	align-content: center;
+    	align-items: center;
+    	padding: 5px;
+    }
+     
+    .caption {
+    	display: none;
+    	position: absolute;
+    	z-index: 1000;
+    	top: 0;
+    	left: 0;
+    	background: rgba(200, 50, 0, 0.5);
+    	width: 100%;
+    	height: 100%;
+    	border-radius: 500px;
+    	
+    }
+    .caption h3, .caption p {
+    	margin: 20px;
+    }
+    .caption h3 {
+    	font-weight: bold;
+    	color: #00bbff;
+    	margin: 20px 20px 10px;
+    }
+    .caption p {
+    	color: #fff;
+    	font-size: 1.5em;
+    	line-height: 1.0em;
+    	margin: 0 20px 15px;
+    }
+    .caption a.learn-more {
+    	padding: 5px 10px;
+    	background: #08c;
+    	color: #fff;
+    	border-radius: 2px;
+    	-moz-border-radius: 2px;
+    	font-weight: bold;
+    	text-decoration: none;
+    }
+    .caption a.learn-more:hover {
+    	background: #fff;
+    	color: #08c;
+    }
+</style>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+<link rel='stylesheet' href='https://bootswatch.com/united/bootstrap.min.css'></link>
+<link rel='stylesheet' href='/stylesheets/style.css'></link>
+<script type="text/javascript" src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js'></script>
+<script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+<script type="text/javascript">
+function addClass(){
+	
+	$('#menu').addClass('goToTop');
+	$('.navbar-brand, .navbar-nav > li >  a').addClass('goToTop2');
+	$('.top-shadow').css({'display':'block'});
+}
+function removeClass(){
+	$('#menu').removeClass('goToTop');
+	$('.navbar-brand, .navbar-nav > li > a').removeClass('goToTop2');
+	$('.top-shadow').css({'display':'none'});
+}
+// NAVBAR
+var navHeight = $("#myCarousel").height();
+($(window).scrollTop() > navHeight) ? addClass() : removeClass();
+// Cuando accedemos desde url#scroll
+$(window).bind('scroll', function() {
+	var navHeight = $("#myCarousel").height();
+	($(window).scrollTop() > navHeight) ? addClass() : removeClass();
+});
+
+$(function(){
+	$('.slide').hover(
+			function(){
+				$(this).find('.caption').stop(true,true).slideDown(500);
+				$(this).find('.fa-5x').stop(true,true).slideUp(0);
+			},
+			function(){
+				$(this).find('.caption').stop(true,true).slideUp(500);
+				$(this).find('.fa-5x').stop(true,true).slideDown(500);
+
+			}
+			
+	);
+	
+	$('#myCarousel').carousel({
+		  interval: 10000
+	});
+	
+	
+});
+
+
+</script>
+</head>
+<body style="margin:0px;">
+
+<div class="centerRow" style="position:absolute; top:0px; width: 100%;">
+	<img src="http://ceeivalencia.emprenemjunts.es/fotos/12506_foto.jpg" class="img img-responsive img-thumbnail" style="z-index: 99999; opacity: 0.6;"/>
+	
+</div>
+<!-- Full Page Image Background Carousel Header -->
+    <header id="myCarousel" class="carousel slide">
+        <!-- Indicators -->
+        <ol class="carousel-indicators">
+            <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+            <li data-target="#myCarousel" data-slide-to="1"></li>
+            <li data-target="#myCarousel" data-slide-to="2"></li>
+        </ol>
+
+        <!-- Wrapper for Slides -->
+        <div class="carousel-inner">
+            <div class="item active">
+                <!-- Set the first background image using inline CSS below. -->
+                <div class="fill" style="background-image:url('http://torrentaldia.com/wp-content/uploads/2014/03/MG_7829b.jpg');"></div>
+                <div class="carousel-caption">
+                    <h2>BIENVENIDO AL GEOPORTAL DE TORRENT</h2>
+                </div>
+            </div>
+            <div class="item">
+                <!-- Set the second background image using inline CSS below. -->
+                <div class="fill" style="background-image:url('http://wp.ferrater.com/wp-content/uploads/2013/08/P_VP_TORRENT_F02-1600x1075.jpg'); background-size: 100% 100%;"></div>
+                <div class="carousel-caption">
+                    <h2>CONOCE LA APLICACIÓN DE DENUNCIAS DE TORRENT</h2>
+                </div>
+            </div>
+            <div class="item">
+                <!-- Set the third background image using inline CSS below. -->
+                <div class="fill" style="background-image:url('https://farm1.staticflickr.com/293/20085451625_befc93d1bf_o.jpg');"></div>
+                <div class="carousel-caption">
+                    <h2>CONOCE NUESTROS SERVICIOS, VISUALIZA O DESCARGA CARTOGRAFÍA</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <a class="left carousel-control" href="#myCarousel" data-slide="prev">
+            <span class="icon-prev"></span>
+        </a>
+        <a class="right carousel-control" href="#myCarousel" data-slide="next">
+            <span class="icon-next"></span>
+        </a>
+
+    </header>
+
+<nav id="menu" style="width:100%;margin:0 auto;border-radius:0 0 0 0;z-index:10000;border:0px" role="navigation" class="navbar navbar-default">
+  <div style="padding-right:0px" class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false" class="navbar-toggle collapsed"><span class="sr-only"></span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a href="/" style="display:flex" class="navbar-brand">Geoportal de Torrent</a>
+    </div>
+    <div id="bs-example-navbar-collapse-1" style="padding-right:0px" class="collapse navbar-collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown"><a href="/servicios" class="centrado">Servicios</a>
+        <ul class="dropdown-menu">
+        	<li>
+        		<a target="_blank" href="http://localhost:8080/geoserver/jahr/wms?REQUEST=GetCapabilities&version=1.3.0">WMS</a>
+        	</li>
+        	<li>
+        		<a target="_blank" href="http://localhost:8080/geoserver/jahr/wms?REQUEST=GetCapabilities&version=1.3.0&service=wfs">WFS</a>
+        	</li>
+        	<li>
+        		<a target="_blank" href="http://localhost:8080/geoserver/jahr/wms?REQUEST=GetCapabilities&version=1.3.0&service=WCS">WCS</a>
+        	</li>
+        	<li>
+        		<a target="_blank" href="http://localhost:8080/geoserver/gwc/service/wmts?request=GetCapabilities&service=WMTS&version=1.3.0">WMS Teselado</a>
+        	</li>
+       	</ul>
+        </li>
+        <li><a href="/visor" class="centrado">Visor de Cartografía</a></li>
+        <li><a href="/descargas" class="centrado">Descarga de Cartografía</a></li>
+      </ul>
+      <ul style="margin-right:0px" class="nav navbar-nav navbar-right">
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="top-shadow"></div>
+
+<div style="background: #00bbff; height: 20px;"></div>
+
+<div class="container-fluid grid-block-container">
+
+<div class="container-fluid centerRow" style="height: 90px; background: rgba(100,100,100,0.5); position: relative; margin-top: 0px; margin-bottom: 100px;">
+	<h1 style="color: #fff; font-size: 1.5em;">¿Qué puede ofrecerte el Geoportal de Torrent?</h1>
+</div>
+
+  <div class="row-fluid">
+    <div class="col-lg-3 grid-block slide servicios">
+    	<div id="servicios" class="caption">
+    		<div class="centerCol">
+	    		<div class="center-item">
+	    			<h3>SERVICIOS</h3>
+	            	<p style="margin-top: 10%;">Información acerca de nuestros servicios de Cartografía.</p>
+	            	<p>(Servicios WMS, WFS, WCS y WMTS)</p>
+	    			<p style="margin-top: 10%;"><a href="/servicios" class="learn-more">Saber más</a></p>
+	    		</div>
+    		</div>
+        </div>
+        <span id="servicios" class="fa-stack fa-5x">
+		  <i class="fa fa-circle fa-stack-2x" style="color:rgba(0,50,200, 0.5);"></i>
+		  <i class="fa fa-cog fa-stack-1x fa-inverse" style="color:rgba(0,0,0);"></i>
+		</span>
+    </div>
+
+    <div class="col-lg-3 grid-block slide visor">
+    	<div id="visor" class="caption">
+    		<div class="centerCol">
+	    		<div class="center-item">
+	    			<h3>VISOR DE</h3>
+	    			<h3 style="margin-top: 5px;">CARTOGRAFÍA</h3>
+	            	<p style="margin-top: 10%;">Visualiza en un mapa la Cartografía que dispone el ayuntamiento de Torrent. (WMS y WMTS)</p>
+	    			<p style="margin-top: 10%;"><a href="/visor" class="learn-more">Ir al visor</a></p>
+	    		</div>
+    		</div>
+        </div>
+        <span id="visor" class="fa-stack fa-5x">
+		  <i class="fa fa-circle fa-stack-2x" style="color:rgba(0,200,50, 0.5);"></i>
+		  <i class="fa fa-map-o fa-stack-1x fa-inverse" style="color:rgba(0,0,0);"></i>
+		</span>
+    </div>
+ 
+    <div class="col-lg-3 grid-block slide descargas">
+    	<div id="descargas" class="caption">
+    		<div class="centerCol">
+	    		<div class="center-item">
+	    			<h3>DESCARGAS</h3>
+	            	<p style="margin-top: 10%;">Descarga en formato SHP la cartografía que dispone el ayuntamiento de Torrent.</p>
+	    			<p style="margin-top: 10%;"><a href="/descargas" class="learn-more">Ir a descargas</a></p>
+	    		</div>
+    		</div>
+        </div>
+        <span id="descargas" class="fa-stack fa-5x">
+		  <i class="fa fa-circle fa-stack-2x" style="color:rgba(200,50,50, 0.5);"></i>
+		  <i class="fa fa-download fa-stack-1x fa-inverse" style="color:rgba(0,0,0);"></i>
+		</span>
+    </div>
+
+    <div class="col-lg-3 grid-block slide app">
+    	<div id="app" class="caption">
+    		<div class="centerCol">
+	    		<div class="center-item">
+	    			<h3>INFORMA TORRENT</h3>
+	            	<p style="margin-top: 10%;">La aplicación con la que podrás contribuir a la mejora de Torrent.</p>
+	    			<p style="margin-top: 10%;"><a href="/app" class="learn-more">Ir a la app</a></p>
+	    		</div>
+    		</div>
+        </div>
+        <span id="app" class="fa-stack fa-5x">
+		  <i class="fa fa-circle fa-stack-2x" style="color:rgba(200,50,0, 0.5);"></i>
+		  <i class="fa fa-bullhorn fa-stack-1x fa-inverse" style="color:rgba(0,0,0);"></i>
+		</span>
+    </div>
+    
+  </div>
+</div>
+
+<div style="background: #00bbff; height: 20px;"></div>
+
+<div class="container-fluid grid-block-container" style="height:600px; background: url('http://blogs.lasprovincias.es/soniavaliente/files/2012/05/15m.jpg'); background-size: cover;">
+	<div class="container-fluid centerRow" style="height: 90px; background: rgba(100,100,100,0.5); position: relative; margin-top: 0px; margin-bottom: 100px;">
+		<h1 style="color: #fff; font-size: 1.5em;">INFORMA TORRENT!</h1>
+	</div>
+</div>
+
+<div style="background: #00bbff; height: 20px;"></div>
+
+<div style="width:100%; height: 900px; background: #ffbb00;"></div>
+
+</body>
+</html>

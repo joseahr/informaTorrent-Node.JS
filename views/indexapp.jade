@@ -1,0 +1,32 @@
+extends layout.jade
+block script
+	script(type='text/javascript').
+block content
+	include ./includes/signin.jade
+	div(style={ margin:'0 auto'}).page-header
+		h1 ¿Para que sirve esta aplicación?
+	div(style={ padding:'0px', width:'100%'}).container
+		.col-md-4.centrado(style={'margin-top':'20px'})
+			| ¿Has encontrado por Torrent algo que te incomoda?
+			br
+			| No dudes en utilizar esta aplicación para mostrárselo a Torrent.
+			| Rellenando un simple formulario podrás mostrar de forma detallada
+			| la información de tu denuncia.
+		.col-md-4.centrado(style={'margin-top':'20px'})
+			| Tu denuncia será  vista por los usuarios de Informa Torrent
+			| y tendrá una repercusión. Los usuarios podrán apoyar tu denuncia,
+			| comentarla y compartirla en las redes sociales.
+		.col-md-4.centrado(style={'margin-top':'20px'})
+			| Informa Torrent busca hacer un mundo más justo y organizado
+			| de forma que los ciudadanos tengan una vía rápida de expresar
+			| su malestar. Se pide a los usuarios no usar esta aplicación 
+			| de manera malintencionada.
+	br
+	if login
+		include ./includes/login.jade
+	else if signup
+		include ./includes/signup.jade
+	else if forgot
+		include ./includes/forgot.jade
+	else if change
+		include ./includes/changePass.jade
