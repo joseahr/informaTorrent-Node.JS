@@ -1,0 +1,93 @@
+mixin pagination(start, numPages, curr, base)
+	- start    = start    || 1
+	- numPages = numPages || 10
+	- curr     = curr     || 1
+	- base     = base     || '#' 
+	- var prev = curr - 1
+	- var next = curr - (-1)   
+	- var last = start - 1 - (-numPages)    
+	
+	nav
+		ul.pagination
+			- if(curr==1) 
+				li.disabled
+					a(href='#{base}#{prev}' aria-label="Anterior")
+						span(aria-hidden="true") &laquo;
+			- else
+				li
+					a(href='#{base}#{prev}' aria-label="Anterior")
+						span(aria-hidden="true") &laquo;
+			- for(var i=start;i<start+numPages;i++) {
+				- if(i==curr)
+					li.active
+						a(href='#{base}#{i}') #{i}
+				- else
+					li
+						a(href='#{base}#{i}') #{i}
+			- }
+			if(curr==last)
+				li.disabled
+					a(href='#{base}#{next}' aria-label="Siguiente")
+						span(aria-hidden="true") &raquo;
+			else
+				li
+					a(href='#{base}#{next}' aria-label="Siguiente")
+						span(aria-hidden="true") &raquo;				
+extends layout.jade
+block content
+	div.page-header
+		h1 Denuncias
+			small(style={'float':'right'}) listado de denuncias
+	div(style={'width':'100%','margin-top': '25px', 'margin-bottom':'25px'}).container
+		div(style={float:'right'})
+			if(maxPages<5)
+				if page<=1
+					+pagination(1,maxPages, page, '/app/denuncias?page=')
+				else
+					+pagination(1,maxPages, page, '/app/denuncias?page=')				
+			else
+				if page<3
+					+pagination(1, 5, page,'/app/denuncias?page=')
+				else if((maxPages-page) <3)
+					+pagination(maxPages-4, 5, page,'/app/denuncias?page=')
+				else
+					+pagination(page-2, 5, page,'/app/denuncias?page=')
+		h1 #{next}
+		each denuncia in denuncias
+			hr(style={'margin': '35px 0px 0px 0px'})
+			div(style={'background':'rgba(255,255,255,0.3)', 'padding-top':'20px', 'padding-bottom':'20px'})
+				.media(style={ 'padding-left':'20px', 'padding-right':'20px'})
+					a.pull-left
+						if denuncia.imagenes != null
+							img(src="#{denuncia.imagenes[0].path}" style={'width' : '100px','height' : '100px'}).media-object.img-thumbnail
+						else
+							img(src="http://telecapita.org/sites/all/themes/flat/images/thumbnail-default.jpg" style={'width' : '100px','height' : '100px'}).media-object.img-thumbnail
+					.media-body
+						h4(style={'float':'left'}).media-heading #{denuncia.titulo}
+						p.text-right #{denuncia.fecha}						
+						p.text-right Por #{denuncia.usuario[0].profile.username} 
+						p.text-right 
+							a(href='/app/denuncia/#{denuncia.gid}').btn.btn-default Ver denuncia
+								i.glyphicon.glyphicon-chevron-right
+						div(style={'max-width':'100%','word-break':'break-all'})
+							i.fa.fa-comments
+							i  
+							if denuncia.comentarios != null
+								|  #{denuncia.comentarios.length}
+							else
+								| 0
+							i  | 
+							i.fa.fa-image 
+							i
+							if denuncia.imagenes != null	
+								|  #{denuncia.imagenes.length}
+							else
+								| 0
+							i  | 
+							i.fa.fa-tags
+							i  
+							if denuncia.tags != null
+								each tag in denuncia.tags
+									| ##{tag} 
+			hr(style={'margin': '0px 0px 20px 0px'})
+		

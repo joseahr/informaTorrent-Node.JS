@@ -8,7 +8,6 @@ var morgan = require('morgan');
 var express  = require('express');
 var app      = express();
 var port     = process.env.PORT || 3000;
-var mongoose = require('mongoose');
 var passport = require('passport');
 var flash    = require('connect-flash');
 
@@ -28,13 +27,9 @@ var configDB = require('./config/database.js');
 //    console.log(err);
 //});
 
-http.globalAgent.maxSockets = Infinity;
+//http.globalAgent.maxSockets = Infinity;
 
 
-//  Configuración mongoose passport
-//ongoose.connect(configDB.url); // connect to our database
-
-//require('./config/passport')(passport); // pass passport for configuration
 require('./config/config_passport_pg')(passport); // pass passport for configuration
 
 
@@ -96,6 +91,26 @@ console.log('The magic happens on port ' + port);
 //socket io
 var io = require('socket.io').listen(server);
 
+// Ruta /app/visor
+app.get('/app/visor', function(req, res){
+	var client = new pg.Client('postgres://jose:jose@localhost/denuncias');
+	
+	client.connect(function(error){
+		if (error) console.error('error conectando a la bdd', error);
+		else {
+			client.query('select *, st_asgeojson(the_geom) as geom from denuncias order by fecha DESC limit 1000', function(e, result){
+				client.end();
+				if (e) console.error(e);
+				else {
+					console.log(result.rows);
+					res.render('visor.jade', {denuncias: JSON.stringify(result.rows)});
+				}
+			});
+		}
+	});
+	
+});
+
 // Requires para controladores
 var dir = require('node-dir'),
 	exec = require( 'child_process' ).exec,
@@ -103,7 +118,6 @@ var dir = require('node-dir'),
 	crypto = require('crypto'),
 	mkdirp = require('mkdirp'),
 	User = require('./app/models/user_pg')
-	//User = require('./app/models/user'),
 	bcrypt = require('bcrypt-nodejs'),
 	async = require('async'),
 	validator = require('validator'),
@@ -111,14 +125,12 @@ var dir = require('node-dir'),
 
 
 var contHome = require('./app/controllers/home.js'); // Página principal, manejo de mensajes
-//var contPass_ = require('./app/controllers/passport.js'); // Iniciar sesión registrar...
-//var contPass = new contPass_(passport, User, bcrypt, async, crypto, nodemailer, contHome, validator);
 var contPass_ = require('./app/controllers/passport_pg_cont.js'); // Iniciar sesión registrar...
 var contPass = new contPass_(passport, pg, bcrypt, async, crypto, nodemailer, contHome, validator, User);
 var contUpload_ = require('./app/controllers/uploadDenuncia.js') // Subir imágenes al rellenar la denuncia
 var contUpload = new contUpload_(io, crypto, fs, path,exec,mkdirp, configUploadImagenes);
 var contPg_ = require('./app/controllers/pg.js');
-var contPg = new contPg_(fs, path, dir, exec, pg, User, validator); // Guardar, editar, eliminar denuncia, coments, imgs...
+var contPg = new contPg_(fs, path, dir, exec, pg, User, validator, io); // Guardar, editar, eliminar denuncia, coments, imgs...
 
 /*
  * Geoportal, lo servimos como archivos estáticos

@@ -1,16 +1,23 @@
 var random = '';
+var json = {}; // Objeto que se pasará al cuerpo de la petición XHR
 
 $(function() {
+
 	// Nos conectamos a Socket.io
 	var socket = io.connect("http://localhost:3000/app/denuncias/nueva");
 	
+	var socketEmit = io.connect("http://localhost:3000/app/visor");
+	
+	socketEmit.on('connect', function(){
+		alert('conectado visor');
+	});
 	// Cuando se conecte
 	socket.on('connect', function() {
 		// Almacenamos la sessionId que nos genera socket.io
 		// Lo utilizaremos para eliminar la carpeta temporal en caso 
 		// de que el usuario se desconecte
 		random = socket.io.engine.id;
-		
+		//alert(random);
 		//$("#file-dropzone").attr('action', "http://localhost:3000/app/fileUpload/" + random);
 		
 		$("#file-dropzone").addClass('dropzone');
@@ -61,10 +68,8 @@ $(function() {
 		
 		var titulo = formBasico[0].value; // Obtenemos el titulo del array anterior
 		
-		var contenido = $('textarea').sceditor('instance').val(); // contenido del SCEditor
-		
-		var json = {}; // Objeto que se pasará al cuerpo de la petición XHR
-		
+		var contenido = tinymce.activeEditor.getContent(); // contenido del SCEditor
+			
 		json.titulo = titulo;
 		json.contenido = contenido;
 		json.tempDir = random;
@@ -111,6 +116,7 @@ $(function() {
 			}
 			else
 			{
+				socketEmit.emit('new_denuncia_added', json);
 				// Ha habido éxito subiendo la denuncia
 				BootstrapDialog.show({
 					type: BootstrapDialog.TYPE_SUCCESS,

@@ -2,17 +2,29 @@
 <html>
 <head>
 <meta charset="utf-8">
-<link rel='stylesheet' href='https://bootswatch.com/united/bootstrap.min.css'></link>
-<link rel='stylesheet' href='/stylesheets/style.css'></link>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<link rel="stylesheet" href="/ol3/ol.css" type="text/css"></link>
+<link rel='stylesheet' href='https://bootswatch.com/united/bootstrap.min.css'></link>
+
+<link rel="stylesheet" href="/javascripts/openlayers/ol3/ol.css" type="text/css"></link>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.12/proj4.js"></script>
-<script src="/ol3/ol.js"></script>
-<link rel="stylesheet" href="/ol3-layerswitcher/src/ol3-layerswitcher.css"></link>
-<script src="/ol3-layerswitcher/src/ol3-layerswitcher.js"></script>
+<script src="/javascripts/openlayers/ol3/ol.js"></script>
+<link rel="stylesheet" href="/javascripts/openlayers/ol3-layerswitcher/src/ol3-layerswitcher.css"></link>
+<script src="/javascripts/openlayers/ol3-layerswitcher/src/ol3-layerswitcher.js"></script>
+
+<script src="/javascripts/openlayers/style.js"></script>
+<script src="/javascripts/openlayers/proj.js"></script>
+<script src="/javascripts/openlayers/capas.js"></script>
 
 <script type="text/javascript" src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js'></script>
 <link rel="stylesheet" href="http://openlayers.org/en/v3.11.0/examples/popup.css">
+<link rel='stylesheet' href='/stylesheets/style.css'></link>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+
+<script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
 <style>
 .ol-popup {
   position: absolute;
@@ -24,7 +36,7 @@
   border: 1px solid #cccccc;
   bottom: 12px;
   left: -50px;
-  width: 50%;
+  width: 50% !important;
 }
 .ol-popup:after, .ol-popup:before {
   top: 100%;
@@ -50,8 +62,9 @@
 .ol-popup-closer {
   text-decoration: none;
   position: absolute;
-  top: 2px;
+  top: 0px;
   right: 8px;
+  padding-bottom: 5px;
 }
 .ol-popup-closer:after {
   content: "✖";
@@ -62,34 +75,40 @@
 <script type="text/javascript">
 
 $(function(){
+	var helpTooltipElement, helpMsg;
+	
+	function createHelpTooltip() {
+	    if (helpTooltipElement) {
+	      helpTooltipElement.parentNode.removeChild(helpTooltipElement);
+	    }
+	    helpTooltipElement = document.createElement('div');
+	    helpTooltipElement.className = 'tooltip hidden';
+	    helpTooltip = new ol.Overlay({
+	      element: helpTooltipElement,
+	      offset: [15, 0],
+	      positioning: 'center-left'
+	    });
+	    map.addOverlay(helpTooltip);
+	}
+	
+	var pointerMoveHandler = function(evt) {
+		  if (evt.dragging || !info) {
+		    return;
+		  }
+		  /** @type {string} */
+		  var helpMsg = '<i class="fa fa-info-circle"></i> Click para obtener información';
+		
+		  helpTooltipElement.innerHTML = helpMsg;
+		  helpTooltip.setPosition(evt.coordinate);
+		
+		  $(helpTooltipElement).removeClass('hidden');
+		};
 	
 	$('#menu').addClass('goToTop');
 	$('.navbar-brand, .navbar-nav > li >  a').addClass('goToTop2');
 	$('.top-shadow').css({'display':'block'});
 	
-	// MAPA
-	var resolutions = new Array(22);
-	var matrixIds = new Array(22);
-	var resInicial = 0.703125;
-	
-	for (var i=0; i < 22; i++){
-		matrixIds[i] = "EPSG:4326:" + i;
-		resolutions[i] = resInicial/Math.pow(2,i);
-	}
-	
-	// EPSG: 4258 ETRS89 --> http://epsg.io
-	proj4.defs("EPSG:4258","+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs");
-	//Obtenemos la proyección definida
-	var proj = ol.proj.get('EPSG:4258');
-	// formato de imagen de las peticiones al servidor WMS
-    var format = 'image/png';
-    // Cogemos una extensión que incluya un poco más que nuestro municipio
-    var bounds = [-0.65, 39.35,
-                  -0.40, 39.46];
-    // Le damos una extensión a la proyección
-    // Esto es requerido para calcular el nivel de zoom 0
-    // El zoom 0 se adaptaría a la extensión de nuestro municipio
-	proj.setExtent(bounds);
+	var info = false;
     // MousePosition Control --> ol.control.MousePosition
 	var mousePositionControl = new ol.control.MousePosition({
         coordinateFormat: ol.coordinate.toStringHDMS,
@@ -126,340 +145,6 @@ $(function(){
     	})
     });
 	
-    // Capa vacía --> Cuando no queremos que haya mapa base
-    var layerVectorVacia = new ol.layer.Vector({
-    	title:'Vacía',
-    	type: 'base'
-    });
-    
-    /*
-     *  Capa de nuestro servidor WMS
-     */
-    
-    // Ortofoto
-    // Denuncias
-    var orto = new ol.layer.Tile({
-    	title: 'Ortofoto',
-    	visible: false,
-    	source: new ol.source.TileWMS({
-    		url: 'http://localhost:8080/geoserver/jahr/wms',
-    		params: {'FORMAT': format, 
-                 	 'VERSION': '1.1.0',
-                 	 tiled: true,
-                 	 LAYERS: 'jahr:ortofoto',
-                 	 STYLES: '',
-    		}
-    	})
-    });
-    
-    //Municipio
-    var municipio = new ol.layer.Tile({
-    	title: 'Municipio',
-    	visible: true,
-    	source: new ol.source.TileWMS({
-    		url: 'http://localhost:8080/geoserver/jahr/wms',
-    		params: {'FORMAT': format, 
-                 	 'VERSION': '1.1.0',
-                 	 tiled: true,
-                 	 LAYERS: 'jahr:muni_torrent',
-                 	 STYLES: '',
-    		}
-    	})
-    });
-    
-    // Manzanas
-    var manzanas = new ol.layer.Tile({
-    	title: 'Manzanas',
-    	visible: true,
-    	source: new ol.source.TileWMS({
-    		url: 'http://localhost:8080/geoserver/jahr/wms',
-    		params: {'FORMAT': format, 
-                 	 'VERSION': '1.1.0',
-                 	 tiled: true,
-                 	 LAYERS: 'jahr:manzanas',
-                 	 STYLES: '',
-    		}
-    	})
-    });
-    
-    // Viales
-    var viales = new ol.layer.Tile({
-    	title: 'Viales',
-    	visible: true,
-    	source: new ol.source.TileWMS({
-    		url: 'http://localhost:8080/geoserver/jahr/wms',
-    		params: {'FORMAT': format, 
-                 	 'VERSION': '1.1.0',
-                 	 tiled: true,
-                 	 LAYERS: 'jahr:viales',
-                 	 STYLES: '',
-    		}
-    	})
-    });
-    
-    // Caminos
-    var caminos = new ol.layer.Tile({
-    	title: 'Caminos',
-    	visible: true,
-    	source: new ol.source.TileWMS({
-    		url: 'http://localhost:8080/geoserver/jahr/wms',
-    		params: {'FORMAT': format, 
-                 	 'VERSION': '1.1.0',
-                 	 tiled: true,
-                 	 LAYERS: 'jahr:caminos',
-                 	 STYLES: '',
-    		}
-    	})
-    });
-    
-    // Etiquetas Viales
-    var nom_viales = new ol.layer.Tile({
-    	title: 'Etiquetado Calles',
-    	visible: true,
-    	source: new ol.source.TileWMS({
-    		url: 'http://localhost:8080/geoserver/jahr/wms',
-    		params: {'FORMAT': format, 
-                 	 'VERSION': '1.1.0',
-                 	 tiled: true,
-                 	 LAYERS: 'jahr:nombres_viales',
-                 	 STYLES: '',
-    		}
-    	})
-    });
-    
-    
-    // Portales
-    var portales = new ol.layer.Tile({
-    	title: 'Portales',
-    	visible: true,
-    	source: new ol.source.TileWMS({
-    		url: 'http://localhost:8080/geoserver/jahr/wms',
-    		params: {'FORMAT': format, 
-                 	 'VERSION': '1.1.0',
-                 	 tiled: true,
-                 	 LAYERS: 'jahr:portales',
-                 	 STYLES: '',
-    		}
-    	})
-    });
-    
-    
-    // Denuncias
-    var denuncias = new ol.layer.Tile({
-    	title: 'Denuncias',
-    	visible: true,
-    	source: new ol.source.TileWMS({
-    		url: 'http://localhost:8080/geoserver/jahr/wms',
-    		params: {'FORMAT': format, 
-                 	 'VERSION': '1.1.0',
-                 	 tiled: true,
-                 	 LAYERS: 'jahr:denuncias',
-                 	 STYLES: '',
-    		}
-    	})
-    });
-    
-    /*
-     *  Capa de nuestro servidor WMS Teselado (GeoWebCache)
-     */
-    
-    // Ortofoto
-    var ortoWMST = new ol.layer.Tile({
-    	title: 'Ortofoto',
-    	visible: false,
-    	source: new ol.source.WMTS({
-    		url: 'http://localhost:8080/geoserver/gwc/service/wmts',
-    		layer:'jahr:ortofoto',
-    		matrixSet: 'EPSG:4326',
-    		format: 'image/png',
-    		projection: proj,
-    		tileGrid: new ol.tilegrid.WMTS({
-    			origin : [-180, 90],
-    			resolutions : resolutions,
-    			matrixIds : matrixIds
-    		})
-    	})
-    });
-    
-    //Municipio
-    var municipioWMST = new ol.layer.Tile({
-    	title: 'Municipio',
-    	visible: false,
-    	source: new ol.source.TileWMS({
-    		url: 'http://localhost:8080/geoserver/jahr/wms',
-    		params: {'FORMAT': format, 
-                 	 'VERSION': '1.1.1',
-                 	 tiled: true,
-                 	 LAYERS: 'jahr:muni_torrent',
-                 	 STYLES: '',
-    		},
-    		gutter: 200
-    	})
-    });
-    
-    // Manzanas
-    var manzanasWMST = new ol.layer.Tile({
-    	title: 'Manzanas',
-    	visible: false,
-    	source: new ol.source.WMTS({
-    		url: 'http://localhost:8080/geoserver/gwc/service/wmts',
-    		layer:'jahr:manzanas',
-    		matrixSet: 'EPSG:4326',
-    		format: 'image/png',
-    		projection: proj,
-    		tileGrid: new ol.tilegrid.WMTS({
-    			origin : [-180, 90],
-    			resolutions : resolutions,
-    			matrixIds : matrixIds
-    		})
-    	}),
-    });
-    
-    // Viales
-    var vialesWMST = new ol.layer.Tile({
-    	title: 'Viales',
-    	visible: false,
-    	source: new ol.source.WMTS({
-    		url: 'http://localhost:8080/geoserver/gwc/service/wmts',
-    		layer:'jahr:viales',
-    		matrixSet: 'EPSG:4326',
-    		format: 'image/png',
-    		projection: proj,
-    		tileGrid: new ol.tilegrid.WMTS({
-    			origin : [-180, 90],
-    			resolutions : resolutions,
-    			matrixIds : matrixIds
-    		})
-    	}),
-    });
-    
-    // Caminos
-    var caminosWMST = new ol.layer.Tile({
-    	title: 'Caminos',
-    	visible: false,
-    	source: new ol.source.WMTS({
-    		url: 'http://localhost:8080/geoserver/gwc/service/wmts',
-    		layer:'jahr:caminos',
-    		matrixSet: 'EPSG:4326',
-    		format: 'image/png',
-    		projection: proj,
-    		tileGrid: new ol.tilegrid.WMTS({
-    			origin : [-180, 90],
-    			resolutions : resolutions,
-    			matrixIds : matrixIds
-    		})
-    	}),
-    });
-    
-    // Etiquetas Viales
-    var nom_vialesWMST = new ol.layer.Tile({
-    	title: 'Etiquetado Calles',
-    	visible: false,
-    	source: new ol.source.WMTS({
-    		url: 'http://localhost:8080/geoserver/gwc/service/wmts',
-    		layer:'jahr:nombres_viales',
-    		matrixSet: 'EPSG:4326',
-    		format: 'image/png',
-    		projection: proj,
-    		tileGrid: new ol.tilegrid.WMTS({
-    			origin : [-180, 90],
-    			resolutions : resolutions,
-    			matrixIds : matrixIds
-    		})
-    	}),
-    });
-    
-    // Portales
-    var portalesWMST = new ol.layer.Tile({
-    	title: 'Portales',
-    	visible: false,
-    	source: new ol.source.WMTS({
-    		url: 'http://localhost:8080/geoserver/gwc/service/wmts',
-    		layer:'jahr:portales',
-    		matrixSet: 'EPSG:4326',
-    		format: 'image/png',
-    		projection: proj,
-    		tileGrid: new ol.tilegrid.WMTS({
-    			origin : [-180, 90],
-    			resolutions : resolutions,
-    			matrixIds : matrixIds
-    		})
-    	}),
-    });
-    
-    // Denuncias
-    var denunciasWMST = new ol.layer.Tile({
-    	title: 'Denuncias',
-    	visible: false,
-    	source: new ol.source.WMTS({
-    		url: 'http://localhost:8080/geoserver/gwc/service/wmts',
-    		layer:'jahr:denuncias',
-    		matrixSet: 'EPSG:4326',
-    		format: 'image/png',
-    		projection: proj,
-    		tileGrid: new ol.tilegrid.WMTS({
-    			origin : [-180, 90],
-    			resolutions : resolutions,
-    			matrixIds : matrixIds
-    		})
-    	}),
-    });
-    
-    
-    
-    
-    /*
-     * Capas de otros servidores WMS
-     */
-    
-    //Mapa base del IGN
-    var ignBase = new ol.layer.Tile({
-    	title: 'IGN Base',
-    	visible: false,
-    	source: new ol.source.TileWMS({
-    		url: 'http://www.ign.es/wms-inspire/ign-base',
-    		params: {'FORMAT': format, 
-                 	 'VERSION': '1.1.1',
-                 	 tiled: true,
-                 	 LAYERS: 'IGNBaseTodo',
-                 	 STYLES: '',
-    		}
-    	})
-    });
-    
-    //Ortofoto PNOA
-    var ortoPNOA = new ol.layer.Tile({
-    	title: 'Ortofoto PNOA',
-    	visible: false,
-    	source: new ol.source.TileWMS({
-    		url: 'http://www.ign.es/wms-inspire/pnoa-ma',
-    		params: {'FORMAT': format, 
-                 	 'VERSION': '1.1.1',
-                 	 tiled: true,
-                 	 LAYERS: 'OI.OrthoimageCoverage',
-                 	 STYLES: '',
-    		}
-    	})
-    });
-    
-    // Grupo de Capas 1.--> Mapas base
-    // Capa vacía, mapa base ign, ortofoto PNOA
-    var groupCapasBase = new ol.layer.Group({
-    	title: 'Capas Base',
-    	layers: [layerVectorVacia, ignBase, ortoPNOA]
-    });
-    
-    // Grupo de Capas 2.--> Cartografía de nuestro servidor WMS
-    // orto, municipio, manzanas, viales, caminos, nom_viales, portales
-    var groupCartoTorrentWMS = new ol.layer.Group({
-    	title: 'Cartografía de Torrent WMS',
-    	layers: [orto, municipio, manzanas, viales, caminos, nom_viales, portales, denuncias]
-    });
-    var groupCartoTorrentWMST = new ol.layer.Group({
-    	title: 'Cartografía de Torrent WMS Teselado',
-    	layers: [ortoWMST, municipioWMST, manzanasWMST, vialesWMST, 
-    	         caminosWMST, nom_vialesWMST, portalesWMST, denunciasWMST]
-    });    
     map.addLayer(groupCapasBase); // Añadimos grupo de Capas 1
     map.addLayer(groupCartoTorrentWMST); // Añadimos grupo de Capas 2
     map.addLayer(groupCartoTorrentWMS); // Añadimos grupo de Capas 2
@@ -473,11 +158,14 @@ $(function(){
  	   })
     }));
     
+    ignBase.setVisible(false);
+    
     // GET FEATURE INFO
     var div = $('<div>');
     var hayInfo = false;
     map.on('singleclick', function(evt){
-    	
+    	if (!info) {$('.ol-popup').addClass('hidden'); return;}
+    	$('.ol-popup').removeClass('hidden');
     	$('#popup-content').empty();
     	div = $('<div>');
     	
@@ -497,7 +185,10 @@ $(function(){
     			$.get(url, function(data){ 
     				  hayInfo = true;
     	    		  $(div).append(data);
+    	    		  $('table.featureInfo').addClass('table table-responsive auto');
+    	    		  $('table.featureInfo tbody tr th').addClass('info auto');
     			});
+    			
     		}
 
     	});
@@ -515,7 +206,24 @@ $(function(){
     	  return false;
     });
     
+    map.on('pointermove', pointerMoveHandler);
+    createHelpTooltip();
+    
 	// FIN MAPA
+	
+	$('[data-toggle="tab"]').popover({
+	    trigger: 'hover',
+	    'placement': 'top'
+	});
+	
+	$('#mover').click(function(){
+		$(helpTooltipElement).addClass('hidden');
+		info = false;
+	});
+	$('#info').click(function(){
+		$(helpTooltipElement).removeClass('hidden');
+		info = true;
+	});
 	
 });
 
@@ -553,20 +261,29 @@ $(function(){
     </div>
   </div>
 </nav>
-<div style="width: 100%; height:90%;margin-top:80px;">
+<div style="width: 100%; height:90%;margin-top:70px;">
 <div class="container-fluid" style="padding: 0px !important;">
 
 <div class="row-fluid">
   <div class="span12">
-    <div id="map" class="map" style="width: 100%; height:100%;"></div>
-    <div id="popup" class="ol-popup">
+    <div id="map" class="map" style="width: 100%; height:100%;">
+    	<button id="mover" style="position:absolute; bottom: 10px; left: 20%; z-index: 10; width:15%;" class="btn btn-success" data-toggle="tab" data-content="Moverse en el mapa">
+    		<i class="fa fa-hand-pointer-o"></i>
+    	</button>
+    	<button id="info" style="position:absolute; bottom: 10px; left: 36%; z-index: 10; width:15%;" class="btn btn-success" data-toggle="tab" data-content="Obtener Información">
+			<i class="fa fa-info-circle"></i>
+		</button>
+    </div>
+    <div id="popup" class="ol-popup" style="min-width: 400px;">
       <a href="#" id="popup-closer" class="ol-popup-closer"></a>
-      <div id="popup-content" style="overflow-x:scroll"></div>
+      <div id="popup-content" style="overflow:scroll; max-height: 400px; width: 370px;"></div>
     </div>
   </div>
 </div>
 
 </div>
 </div>
+
+
 </body>
 </html>

@@ -14,21 +14,15 @@
     "express": "~3.4.8",
     "morgan": "~1.0.1",
     "passport-facebook": "~1.0.3",
-    "node-dir": "~0.1.10",
     "passport-local": "~0.1.6",
     "mkdirp": "~0.5.1",
     "passport-twitter": "~1.0.3",
     "nodemailer": "~0.7.1",
-    "mongoose": "~3.8.36",
     "passport-google-oauth": "~0.1.5",
     "passport": "~0.1.18",
     "jade": "~1.11.0",
     "pg": "~4.4.3",
     "async": "~1.4.2"
-  },
-  "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-ngrok": "^0.2.2"
   },
   "scripts": {
     "test": "node server",

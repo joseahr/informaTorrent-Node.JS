@@ -123,12 +123,12 @@ block script
 			    });
 		});
 block content
-	div#contenido
+	div#contenido(style={background: 'rgba(255,255,255,0)'})
 		div.page-header
-			h1 Perfil
+			h1(style={'font-size':'25px', color: '#00bbff'}) MI PERFIL
 				small(style={'float':'right'}) 
 					|  información de tu cuenta
-		.portlet
+		.portlet(style={background: 'rgba(200,50,0,0.4)', 'border-radius':'6px'})
 			.portlet-title
 				.caption.caption-red
 					i.glyphicon.glyphicon-pushpin

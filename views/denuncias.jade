@@ -55,7 +55,7 @@ block content
 		h1 #{next}
 		each denuncia in denuncias
 			hr(style={'margin': '35px 0px 0px 0px'})
-			div(style={'background':'#f7f7f7', 'padding-top':'20px', 'padding-bottom':'20px'})
+			div(style={'background':'rgba(255,255,255,0.3)', 'padding-top':'20px', 'padding-bottom':'20px'})
 				.media(style={ 'padding-left':'20px', 'padding-right':'20px'})
 					a.pull-left
 						if denuncia.imagenes != null
@@ -67,7 +67,7 @@ block content
 						p.text-right #{denuncia.fecha}						
 						p.text-right Por #{denuncia.usuario[0].profile.username} 
 						p.text-right 
-							a(href='/app/denuncia/#{denuncia.gid}').btn.btn-default Ver denuncia
+							a(href='/app/denuncia/#{denuncia.gid}').btn.btn-danger Ver denuncia
 								i.glyphicon.glyphicon-chevron-right
 						div(style={'max-width':'100%','word-break':'break-all'})
 							i.fa.fa-comments

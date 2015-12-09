@@ -14,6 +14,7 @@ html
 		//link(rel='stylesheet', href='/stylesheets/noJS.css')
 		link(rel='stylesheet', href='/foundation-icons/foundation-icons.css')
 		// foundation icon
+		script(src='//cdn.tinymce.com/4/tinymce.min.js')
 		
 		link(rel='stylesheet', href='/stylesheets/profile-menu.css')
 
@@ -25,9 +26,7 @@ html
 		script(type='text/javascript' src='/javascripts/bootstrap-dialog.js')
 		script(type='text/javascript' src='/javascripts/particulas.js')
 		link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.5/css/bootstrap-dialog.min.css')
-		link(rel="stylesheet" href="/editor/minified/themes/default.min.css" type="text/css" media="all")
-		script(type="text/javascript" src="/editor/minified/jquery.sceditor.bbcode.min.js")
-		
+
 		link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css")
 				
 		//
@@ -97,10 +96,15 @@ html
 				});
 			
 				//TEXTAREA WYSIWYG EDITOR
-				$("textarea").sceditor({
-					plugins: "xhtml",
-					style: "/editor/minified/jquery.sceditor.default.min.css",
-					emoticonsRoot: '/editor/'
+				tinymce.init({
+					selector: 'textarea',
+					plugins: ['advlist autolink link image lists charmap print preview hr anchor pagebreak spellchecker',
+					'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking',
+					'save table contextmenu directionality emoticons template paste textcolor'],
+					theme: 'modern',
+					language_url: '/langs/es.js',
+					min_width: 300,
+					resize: false
 				});
 			
 			
@@ -139,7 +143,8 @@ html
 								message: msg,
 								buttons: [{
 								label: 'Cerrar',
-								action: function(dialog){dialog.close();}}]
+								action: function(dialog){dialog.close()}
+								}]
 							}); 			
 					}
 				}
@@ -155,17 +160,50 @@ html
 				h2(style={color:'#00bbff', 'font-weight':'bold', margin:'0 auto'}) #{subtitle}
 		include ./includes/menuapp.jade
 		div.top-shadow
-		div.container-fluid(style={background:'#fff', padding:'0px'})
-			div#scroll(style={height:'73px', background:'#f7f7f7',display:'flex'})
+		div.container-fluid(style={padding:'0px'})
+			div#scroll(style={height:'73px', background:'rgba(200,50,0,0.3)',display:'flex'})
 				div(style={float:'left', position:'absolute', 'margin':'1px 0px 0px 15px'})
 					i.fa.fa-bullhorn(style={color:'#ffbb00','font-size':'65px', 'float':'left',position:'relative', top:'0px'})
-					h1(style={margin:'0px','float':'left', position:'relative', top:'8px'}) informaTorrent
+					h1(style={margin:'0px','float':'left', position:'relative', top:'8px', color: '#fff'}) informaTorrent
 					i.fa.fa-exclamation(style={color:'#00bbff','font-size':'65px','float':'left',position:'relative', top:'0px'})
-				div(style={height:'10px',width:'100%', background:'#ffbb00', 'align-self':'flex-end',margin:'0px'})
-			include ./includes/particulas.jade
-			div.body
-				block content
-			div#footer(style={position:'relative',height:'300px', background:'#ffbb00', 'margin-top':'50px','z-index':'6'})
-				.col-md-4.centrado skjhskjhskj
-				.col-md-4.centrado shkjhskjshjs
-				.col-md-4.centrado lslkjskljs
+				div(style={height:'10px',width:'100%', background:'rgba(255,187,0,0.3)', 'align-self':'flex-end',margin:'0px'})
+			
+			div(class="container-fluid" style={'padding-left':'0px', 'padding-right':'0px'})
+				div(class="grid-block-container" style="position: fixed; width: 100%; height: 100%; bottom: 0px; z-index: -1")
+				div(style="position: relative; width: 80%; margin: 0 auto;")
+					block content
+					div(class="top-shadow-no-fixed container" id="blur" style="border-top-left-radius: 20px; border-top-right-radius: 20px; width: 100%; position: absolute;background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1), rgba(255,255,255,0.3)),url('https://photosbybishop.files.wordpress.com/2013/06/jbd_4266.jpg'); background-size: 100% 100%; min-height: 500px;")
+					include ./includes/particulas.jade
+					div(class="col-lg-4" style={'margin-top':'75px !important'})
+						div(class="centerCol" style="align-self: center; background: rgba(200,50, 0, 0.5);border-radius: 4px; padding: 10px;min-height:350px;")
+							div(class="centerRow")
+								img(data-toggle="tab" data-content="OGC" style="width: 23%; padding: 1%;" src="http://www.virtualcitysystems.de/images/vcs/OGC_Logo.png")
+								img(data-toggle="tab" data-content="INSPIRE" style="width: 23%; padding: 1%;" src="http://www.linkvit.eu/wp-content/uploads/2014/10/inbspire.png")
+								img(data-toggle="tab" data-content="IGN" style="width: 23%; padding: 1%;" src="http://www.ign.es/ign/img/guiaNavegacion/Banner_insti_IGN.png")
+								img(data-toggle="tab" data-content="UPV" style="width: 23%; padding: 1%;" src="http://www.damres.webs.upv.es/portada/LogoUPV.png")
+		
+							div(class="centerRow")
+								img(data-toggle="tab" data-content="ETSIGCT" style="width: 23%; padding: 1%; clear: both;" src="http://jllerma.webs.upv.es/esc-gct.gif")
+								img(data-toggle="tab" data-content="Node JS" style="width: 23%; padding: 1%; clear: both;" src="http://code-maven.com/img/node.png")
+								img(data-toggle="tab" data-content="PostgreSQL" style="width: 23%; padding: 1%; clear: both;" src="http://3.bp.blogspot.com/-H9Vx0ecAx_E/U6xfwVosNqI/AAAAAAAAAe4/QNCuwOf50HI/s1600/postgresql_logo-555px.png")
+								img(data-toggle="tab" data-content="PostGIS" style="width: 23%; padding: 1%; clear: both;" src="http://boundlessgeo.com/wp-content/uploads/2015/10/post-gis.png")
+		
+							div(class="centerRow")
+								img(data-toggle="tab" data-content="HTML5, CSS3, JS5" style="width: 46%; padding: 1%; clear: both;" src="http://www.murciastudio.es/wp-content/uploads/2015/01/languages.png")
+								img(data-toggle="tab" data-content="GEOSERVER" style="width: 23%; padding: 1%; clear: both;" src="http://boundlessgeo.com/wp-content/uploads/2012/10/GeoServer_Icon1.png")
+								img(data-toggle="tab" data-content="BOOTSTRAP" style="width: 23%; padding: 1%; clear: both;" src="http://www.brucehan.me/img/10.Bootstrap.png")
+		
+							div(class="centerRow")
+								img(data-toggle="tab" data-content="SOCKET.IO" style="width: 46%; padding: 1%; clear: both;" src="http://www.cnydev.org/wp-content/uploads/2015/03/socketio2.png")
+								img(data-toggle="tab" data-content="OPENLAYERS 3" style="width: 23%; padding: 1%; clear: both;" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/OpenLayers_logo.svg/2000px-OpenLayers_logo.svg.png")
+					
+					div(class="col-lg-4" style={'margin-top':'75px !important'})
+						div(style="background: rgba(200,50, 0, 0.5);border-radius: 4px;padding: 10px;min-height:350px;" class="centerCol")
+							p(style="text-align: center; color: #fff") Proyecto de IDE, Geoportal y aplicación de denuncias para el ayuntamiento de Torrent.
+							p(style="text-align: center; color: #fff") Desarrollado por Jose Ángel Hermosilla Rodrigo como Trabajo de Fin de Grado.
+							p(style="text-align: center; color: #fff") Universidad Politécnica de Valencia
+							p(style="text-align: center; color: #fff") Escuela Técnica Superior de Ingeniería en Geomática y Topografía
+							p(style="text-align: center; color: #fff") &copy; Todos los derechos reservados. (2015 - 2016)
+				
+					div(class="col-lg-4" style={'margin-top':'75px !important'})
+						div(style="background: rgba(200,50, 0, 0.5);border-radius: 4px;padding: 10px;min-height:350px;" class="centerCol")

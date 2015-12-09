@@ -10,12 +10,13 @@ var connectionString = "postgres://jose:jose@localhost/denuncias", // BDD Denunc
 	config = require('../../config.js'),
 	User, // modelo de usuario
 	validator; // validator 
-var client;
+var client, io, io_visor;
 	
 /*
  * Constructor
  */
-function ContPg(fs_, path_, dir_, exec_, pg_, User_, validator_){
+function ContPg(fs_, path_, dir_, exec_, pg_, User_, validator_, sio){
+	io = sio;
 	fs = fs_;
 	path = path_;
 	dir = dir_;
@@ -23,6 +24,14 @@ function ContPg(fs_, path_, dir_, exec_, pg_, User_, validator_){
 	pg = pg_;
 	User = User_;
 	validator = validator_;
+	io.of('/app/visor').on('connection', function(socket){
+		console.log('conectdo visor' + socket.id);
+		socket.on('new_denuncia_added', function(data){
+			console.log('emit denuncias to all users' + data);
+			socket.broadcast.emit('new_denuncia', {denuncia: data});
+		});
+	});
+	
 }
 
 /*
@@ -56,8 +65,8 @@ ContPg.prototype.saveDenuncia = function(req, res){
 		var errormsg = ''; // mensaje de errores
 		
 		var imagenes = []; // Lista de imágenes a guardar en la base de datos
-		var titulo = req.body.titulo.replace(/["' # $ % & + ` -]/g, "");
-		var contenido = req.body.contenido.replace(/["' # $ % & + ` -]/g, "");
+		var titulo = req.body.titulo.replace(/["' # $ % & + ` -]/g, " ");
+		var contenido = req.body.contenido.replace(/["' # $ % & + ` -]/g, " ");
 		var wkt = req.body.wkt;
 		
 		var user_id = validator.escape(req.user._id); // id_usuario
@@ -65,6 +74,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 		
 		var tags_ = req.body.tags;  // tags introducidos por el usuarios
 		var tags = '{'; // hay que convertirlo en {'tag1', 'tag2', ...} para introducirlo en pgsql
+				
 		
 		// comprobando datos de la denuncia
 		if(!validator.isLength(titulo, 5, 50)) errormsg += '· El título debe tener entre 5 y 50 caracteres.\n';
@@ -131,6 +141,18 @@ ContPg.prototype.saveDenuncia = function(req, res){
 					console.log('Tu no eres del barrio mierda');
 					response.type = 'error';
 					response.msg = 'La geometría debe estar en Torrente';
+					return res.send(response);
+				}
+				else if(wkt.match(/LINESTRING/g) && estaDentro.rows[0].st_length > 500){
+					// Comprobar en caso de línea no supere cierta longitud (1000 metros)
+					response.type = 'error';
+					response.msg = 'La línea no debe tener una longitud mayor a 500 metros';
+					return res.send(response);
+				}
+				else if(wkt.match(/POLYGON/g) && estaDentro.rows[0].st_area > 10000){
+					// Comprobar en caso de polígono no supere cierto area
+					response.type = 'error';
+					response.msg = 'El polígono no debe superar un area de 10000 metros cuadrados';
 					return res.send(response);
 				}
 				else {
@@ -216,7 +238,6 @@ ContPg.prototype.saveDenuncia = function(req, res){
 									client.end();
 									if (err1)
 										return console.error('error en la consulta', err1);
-									
 									console.log('guardada');
 									response.type = 'success';
 									response.msg = 'Denuncia Guardada Correctamente';
@@ -607,8 +628,15 @@ var queries = {
 			+ user_id + "','" + tags + "') returning gid";
 		},
 		torrentContainsGeom : function(wkt){
-			return "select st_contains(muni_torrent.geom, st_geomfromtext('"+ wkt +"',4258)) " +
-			"from muni_torrent";
+			if (wkt.match(/POINT/g))
+				return "select st_contains(muni_torrent.geom, st_geomfromtext('"+ wkt +"',4258)) " +
+				"from muni_torrent";
+			else if(wkt.match(/LINESTRING/g))
+				return "select st_contains(muni_torrent.geom, st_geomfromtext('"+ wkt +"',4258)), " +
+				"st_length(st_transform(st_geomfromtext('"+ wkt +"',4258) , 25830)) from muni_torrent";
+			else if(wkt.match(/POLYGON/g))
+				return "select st_contains(muni_torrent.geom, st_geomfromtext('"+ wkt +"',4258)), " +
+				"st_area(st_transform(st_geomfromtext('"+ wkt +"',4258) , 25830)) from muni_torrent";
 		},
 		addComentario: function(user_id, id_denuncia, contenido){
 			return "insert into comentarios(id_usuario, id_denuncia, contenido) " +

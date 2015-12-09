@@ -2,7 +2,28 @@
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
 <style>
+
+.line-dragbox {
+	width: 2px;
+	color: #ffbb00 !important;
+}
+
+.bootstrap-dialog-message {
+	overflow: scroll;
+}
+
+.btn-info {
+	background: rgba(200,50,0,0.5) !important;
+	border-color: rgba(200,50,0,0.5) !important;
+}
+
+.well {
+	min-height: 90px !important;
+	max-height: 90px;
+}
 
 .bootstrap-select {
 	width: 100% !important;
@@ -19,10 +40,12 @@
 	background: rgba(200, 0, 50, 0.5);
 	border-radius: 5px;
 	width: 100%;
+	margin-top: 0px !important;
 }
 
 .page-header {
 	width: 100%;
+	margin-top: 0px !important;
 }
 
 /* Background images are set within the HTML using inline CSS, not here */
@@ -60,9 +83,9 @@
 	
     .grid-block-container {
     	height: auto;
-        background: url('https://farm1.staticflickr.com/268/20077516722_f938332a4c_o.jpg');
+        background: url('https://photosbybishop.files.wordpress.com/2013/06/jbd_4266.jpg');
     	background-size: cover;
-    	padding: 0 0 100 0px !important;
+    	filter: grayscale(70%);
 
     }
     .grid-block {
@@ -79,6 +102,16 @@
     
 </style>
 
+<link rel="stylesheet" href="/javascripts/openlayers/ol3/ol.css" type="text/css"></link>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.12/proj4.js"></script>
+<script src="/javascripts/openlayers/ol3/ol.js"></script>
+<link rel="stylesheet" href="/javascripts/openlayers/ol3-layerswitcher/src/ol3-layerswitcher.css"></link>
+<script src="/javascripts/openlayers/ol3-layerswitcher/src/ol3-layerswitcher.js"></script>
+
+<script src="/javascripts/openlayers/style.js"></script>
+<script src="/javascripts/openlayers/proj.js"></script>
+<script src="/javascripts/openlayers/capas.js"></script>
+
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 
 <!-- Latest compiled and minified CSS -->
@@ -90,9 +123,6 @@
 <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 <script type='text/javascript' src='/javascripts/bootstrap-dialog.js'></script>
 
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/default.min.css">
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/highlight.min.js"></script>
-
 
 <link rel="stylesheet" href="/bootstrap-select/dist/css/bootstrap-select.css">
 <script src="/bootstrap-select/js/bootstrap-select.js"></script>
@@ -103,15 +133,227 @@
 
 $(function(){
 	
+	var helpTooltipElement, helpMsg;
+	
+	function createHelpTooltip() {
+	    if (helpTooltipElement) {
+	      helpTooltipElement.parentNode.removeChild(helpTooltipElement);
+	    }
+	    helpTooltipElement = document.createElement('div');
+	    helpTooltipElement.className = 'tooltip hidden';
+	    helpTooltip = new ol.Overlay({
+	      element: helpTooltipElement,
+	      offset: [15, 0],
+	      positioning: 'center-left'
+	    });
+	    map.addOverlay(helpTooltip);
+	}
+	
+	var pointerMoveHandler = function(evt) {
+		  if (!hasbbox) {
+		    return;
+		  }
+		  
+		  $(helpTooltipElement).removeClass('hidden');
+		  
+		  if(evt.dragging){
+			  helpTooltipElement.innerHTML = 'Suelta para acabar el BBOX';
+			  helpTooltip.setPosition(evt.coordinate);
+			  return;
+		  }
+		  
+		  /** @type {string} */
+		  var helpMsg = 'Click para empezar a dibujar BBOX';
+		
+		  helpTooltipElement.innerHTML = helpMsg;
+		  helpTooltip.setPosition(evt.coordinate);
+		
+		  
+	};
+	
 	$('#menu').addClass('goToTop');
 	$('.navbar-brand, .navbar-nav > li >  a').addClass('goToTop2');
 	$('.top-shadow').css({'display':'block'});
 	//NAVBAR 
 	
 	$('.selectpicker').selectpicker();
+	$('#format').selectpicker('hide');
+	
+	$('#descargar').click(function(event){
+		console.log('descargar');
+		var capa = $('#capas').val();
+		var features = ($('#features').val() == 'todos') ? '' : $('#features').val();
+		console.log(capa + features);
+		
+		if (capa == 'jahr:ortofoto') {
+			window.open('http://localhost:8080/geoserver/jahr/wms?service=WMS&version=1.1.0&request=GetMap&layers=jahr:ortofoto&styles=&bbox=703922.4219253492,4361457.771400001,721973.2836746508,4370702.237000001&width=768' +
+					'&height=393&srs=EPSG:25830&format=' + $('#format').val());
+		}
+		else {
+			if (features == '')
+				window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
+				'&request=GetFeature&typeName=' + capa + '&outputFormat=shape-zip');
+			else
+				window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
+				'&request=GetFeature&typeName=' + capa + '&maxFeatures=' + features + '&outputFormat=shape-zip');		
+		}
+		
+	});
+	
+	$('#capas').change(function(){
+		console.log('change');
+		if($('#capas').val() == 'jahr:ortofoto'){
+			
+			$('#features-format').html('FORMATO');
+			$('#format').selectpicker('show');
+			$('#features').selectpicker('hide');
+			
+		}
+		else {
+			
+			$('#features-format').html('FEATURES');
+			$('#format').selectpicker('hide');
+			$('#features').selectpicker('show');
+		
+		}
+		
+	});
+	
+	$('[data-toggle="tab"]').popover({
+	    trigger: 'hover',
+	    'placement': 'top'
+	});
+	
+	$('#menu').addClass('goToTop');
+	$('.navbar-brand, .navbar-nav > li >  a').addClass('goToTop2');
+	$('.top-shadow').css({'display':'block'});
+	
+    // MousePosition Control --> ol.control.MousePosition
+	var mousePositionControl = new ol.control.MousePosition({
+        coordinateFormat: ol.coordinate.toStringHDMS,
+    });
+	
+    // GET FEATURE INFO
+    var popup = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
+	  element: document.getElementById('popup'),
+	  autoPan: true,
+	  autoPanAnimation: {
+	    duration: 250
+	  }
+	}));
+    
+	// Mapa --> ol.Map
+    var map = new ol.Map({
+    	controls: ol.control.defaults({ 
+    		attribution: false // No atribución
+    	}).extend([mousePositionControl, // MousePosition
+    	           new ol.control.FullScreen(), // FullScreen
+    	           new ol.control.LayerSwitcher({tipLabel: 'Leyenda'}), // LayerSwitcher
+    	           new ol.control.ScaleLine(), // ScaleLine
+    	           new ol.control.ZoomSlider() // ZoomSlider
+    	]),
+    	target: 'map',
+    	overlays : [popup],
+    	view: new ol.View({
+    		projection: proj,
+    		zoom: 3,
+    		center: ol.proj.fromLonLat([-0.47343, 39.42811], 'EPSG:4258'),
+    		minZoom: 0,
+    		maxZoom: 10
+    		// Importante poner nuestra proyección, aunque es un parámetro opcional HAY QUE PONERLO!
+    	})
+    });
+	
+    map.addLayer(groupCapasBase); // Añadimos grupo de Capas 1
+    map.addLayer(groupCartoTorrentWMST); // Añadimos grupo de Capas 2
+    map.addLayer(groupCartoTorrentWMS); // Añadimos grupo de Capas 2
+
+    
+    // Añadimos Control OverviewMap
+    map.addControl(new ol.control.OverviewMap({
+ 	   layers: [new ol.layer.Tile(ignBase.getProperties())], 
+ 	   view: new ol.View({ // Importante añadir la View con nuestra proyección
+ 		   projection: proj  
+ 	   })
+    }));
+    
+    ignBase.setVisible(false);
+    
+    var boundingBox;
+
+    boundingBox = new ol.interaction.DragBox({
+        condition: ol.events.condition.always, // default
+        className: 'line-dragbox'
+    });
+
+    map.addInteraction(boundingBox);
+    
+    boundingBox.on('boxend', function(e){
+    	 $(helpTooltipElement).addClass('hidden');
+    	console.log('boxend');
+    	
+		BootstrapDialog.show({
+			type: BootstrapDialog.TYPE_INFO,
+			title: 'DESCARGA DE CARTOGRAFÍA INTERACTIVA',
+			message: '<p>¿Desea descargar la cartografía seleccionada?</p><p>Capa: ' + $('#capas_mapa').val() + '</p>' +
+					 '<p> BBOX: [' + boundingBox.getGeometry().getExtent() + ']</p>',
+			buttons: [{
+			label: 'Cerrar',
+			action: function(dialog){dialog.close();}},
+			{label: 'SHP',
+			action: function(dialog){
+				dialog.close();
+				window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
+				'&request=GetFeature&typeName=' + $('#capas_mapa').val() + '&outputFormat=shape-zip&bbox=' + boundingBox.getGeometry().getExtent());
+			}},
+			{label: 'GeoJSON',
+			 action: function(dialog){
+				 dialog.close();
+				 window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
+				 '&request=GetFeature&typeName=' + $('#capas_mapa').val() + '&outputFormat=application/json&bbox=' + boundingBox.getGeometry().getExtent());
+			 }},
+			 {label: 'GML 3.2',
+			  action: function(dialog){
+				  dialog.close();
+				  window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
+				  '&request=GetFeature&typeName=' + $('#capas_mapa').val() + '&outputFormat=application%2Fgml%2Bxml%3B+version%3D3.2&bbox=' + boundingBox.getGeometry().getExtent());
+			  }}],
+		});
+
+    });
+    
+    
+    map.on('pointermove', pointerMoveHandler);
+    createHelpTooltip();
+    
+    
+	// FIN MAPA
+	var hasbbox = true;
+	
+	$('#mover').click(function(event){
+		console.log('mover');
+		map.removeInteraction(boundingBox);
+		hasbbox = false;
+		$(helpTooltipElement).addClass('hidden');
+		
+	});
+	
+	$('#bbox').click(function(event){
+		console.log('bbox');
+		if(!hasbbox){
+			map.addInteraction(boundingBox);
+			$(helpTooltipElement).removeClass('hidden');
+		}
+		
+	});
+	
+	$('[data-toggle="tab"]').popover({
+	    trigger: 'hover',
+	    'placement': 'top'
+	});
+	
+	
 });
-
-
 </script>
 </head>
 <body style="margin:0px;">
@@ -151,17 +393,20 @@ $(function(){
 
 <div class="top-shadow"></div>
 
-<div style="background: #00bbff; height: 20px; margin-top: 70px;"></div>
+<div style="background: rgba(0, 50, 200, 0.2); height: 20px; margin-top: 70px;"></div>
 
-<div class="container-fluid grid-block-container">
+<div class="container-fluid" style="height: auto; padding: 0 0 100 0px !important;">
+
+<div class="grid-block-container" style="position: fixed; width: 100%; height: 100%; bottom: 0px; z-index: -1"></div>
+
 
 <div class="container-fluid centerRow" style="height: 90px; background: rgba(100,100,100,0.5); position: relative; margin-top: 0px; margin-bottom: 100px;">
 	<h1 style="color: #fff; font-size: 1.5em;">¿Qué puede ofrecerte el Geoportal de Torrent?</h1>
 </div>
 
-  <div class="row-fluid">
+  <div class="row-fluid" style="width: 80%; margin: 0 auto;">
   
-    <div class="col-lg-4 grid-block slide servicios">
+    <div class="col-lg-4 grid-block">
     
     	<div class="centerCol">
     	
@@ -169,34 +414,60 @@ $(function(){
 	    		<h1 style="padding: 10px;">CAPAS</h1>
 	    	</div>
 	    	
-	    	<select class="selectpicker" data-style="btn-success" data-live-search="true">
-	    	    <option>Municipio</option>
-    			<option>Manzanas</option>
-    			<option>Viales</option>
-    			<option>Caminos</option>
-    			<option>Portales</option>
-    			<option>Etiquetado Calles</option>
-    			<option>Denuncias</option>
-    			<option>Ortofoto</option>
+	    	<div class="well centerCol" style="width:100%; background: rgba(0,187,255, 0.5); color: #fff;">
+	    	Selecciona la capa que quieres descargar.
+	    	</div>
+	    	
+	    	<select id="capas" class="selectpicker" data-style="btn-info" data-live-search="true">
+	    	    <option value="jahr:muni_torrent">Municipio</option>
+    			<option value="jahr:manzanas">Manzanas</option>
+    			<option value="jahr:viales">Viales</option>
+    			<option value="jahr:caminos">Caminos</option>
+    			<option value="jahr:portales">Portales</option>
+    			<option value="jahr:nombres_viales">Etiquetado Calles</option>
+    			<option value="jahr:denuncias">Denuncias</option>
+    			<option value="jahr:ortofoto">Ortofoto</option>
 	    	</select>
 	    	
     	</div>
 
     </div>
 
-    <div class="col-lg-4 grid-block slide visor">
+    <div class="col-lg-4 grid-block">
     
     	<div class="centerCol">
     	
 	    	<div class="page-header">
-	    		<h1 style="padding: 10px;">FEATURES</h1>
+	    		<h1 id="features-format" style="padding: 10px;">FEATURES</h1>
 	    	</div>
+	    	
+	    	<div class="well centerCol" style="width:100%; background: rgba(0,187,255, 0.5); color: #fff;">
+	    	Selecciona el nº máximo de elementos a descargar.
+	    	</div>
+	    	
+	    	<select id="features" class="selectpicker" data-style="btn-info" data-live-search="true">
+	    	   	<option value="todos">Todos</option>
+	    	    <option value="50">50</option>
+    			<option value="100">100</option>
+    			<option value="1000">1000</option>
+    			<option value="10000">10000</option>
+    			<option value="100000">100000</option>
+    			<option value="1000000">1000000</option>
+	    	</select>
+	    	
+	    	<select style="visibility: hidden;" id="format" class="selectpicker" data-style="btn-info" data-live-search="true">
+	    	   	<option value="image/png">PNG</option>
+	    	    <option value="image/gif">GIF</option>
+    			<option value="image/jpeg">JPEG</option>
+    			<option value="image/geotiff">GeoTiff</option>
+    			<option value="application/pdf">PDF</option>
+	    	</select>
 	    	
     	</div>
 
     </div>
  
-    <div class="col-lg-4 grid-block slide">
+    <div class="col-lg-4 grid-block">
 
     	<div class="centerCol">
     	
@@ -204,15 +475,107 @@ $(function(){
 	    		<h1 style="padding: 10px;">DESCARGAR</h1>
 	    	</div>
 	    	
+	    	<div class="well centerCol" style="width:100%; background: rgba(0,187,255, 0.5); color: #fff;">
+	    	Click en descargar para empezar la descarga.
+	    	</div>
+	    	
+	    	<button id="descargar" class="btn btn-success" style="width:100%;">DESCARGAR</button>
+	    	
     	</div>
 
     </div>
     
   </div>
+  
+  <div class="row-fluid" style="width: 80%; margin: 0 auto;">
+  	<div class="col-lg-12" style="margin-top: 50px;">
+  	
+  		<div class="centerCol">
+  			<div class="page-header">
+		  		<h1 style="padding: 10px; width:100%; text-align: center;">DESCARGA INTERACTIVA DESDE MAPA</h1>
+		  	</div>
+		  	 
+		  	<div class="well centerCol" style="width:100%; background: rgba(0,187,255, 0.5); color: #fff; text-align:center;">
+			    	Selecciona una capa y una extensión en el mapa.
+			</div>
+		     	
+		   	<select id="capas_mapa" class="selectpicker" data-style="btn-info" data-live-search="true">
+		   	    <option value="jahr:muni_torrent">Municipio</option>
+	 			<option value="jahr:manzanas">Manzanas</option>
+	 			<option value="jahr:viales">Viales</option>
+	 			<option value="jahr:caminos">Caminos</option>
+	 			<option value="jahr:portales">Portales</option>
+	 			<option value="jahr:nombres_viales">Etiquetado Calles</option>
+	 			<option value="jahr:denuncias">Denuncias</option>
+		   	</select>
+		     
+		    <div id="map" style="width:100%; height: 500px; background: rgba(255,255,255,0.8); border-radius: 4px; margin-top: 10px;">
+		    	<button id="mover" style="position:absolute; bottom: 10px; left: 20%; z-index: 10; width:15%;" class="btn btn-success" data-toggle="tab" data-content="Moverse en el mapa">
+		    		<i class="fa fa-hand-pointer-o"></i>
+		    	</button>
+		    	<button id="bbox" style="position:absolute; bottom: 10px; left: 36%; z-index: 10; width:15%;" class="btn btn-success" data-toggle="tab" data-content="Seleccionar BBOX">
+		    		<i class="fa fa-map-o"></i>
+		    	</button>
+		    </div>
+  		</div>
+  	
+  	</div>
+  </div>
+  
 </div>
 
+<!--  Footer  -->
 
-<div style="height: 500px;"></div>
+
+<div style="position: relative; width: 80%; margin: 0 auto;">
+	
+	<div class="top-shadow-no-fixed " id="blur" style="border-top-left-radius: 20px; border-top-right-radius: 20px; width: 100%; position: absolute;background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1), rgba(255,255,255,0.3)),url('https://photosbybishop.files.wordpress.com/2013/06/jbd_4266.jpg'); background-size: 100% 100%; height: 500px;"></div>
+	
+	<div class="col-lg-4" style="margin: 75 0 10 0px;">
+		<div class="centerCol" style="align-self: center; background: rgba(200,50, 0, 0.5);border-radius: 4px; padding: 10px;min-height:350px;">
+			<div class="centerRow">
+				<img data-toggle="tab" data-content="OGC" style="width: 23%; padding: 1%;" src="http://www.virtualcitysystems.de/images/vcs/OGC_Logo.png"></img>
+				<img data-toggle="tab" data-content="INSPIRE" style="width: 23%; padding: 1%;" src="http://www.linkvit.eu/wp-content/uploads/2014/10/inbspire.png"></img>
+				<img data-toggle="tab" data-content="IGN" style="width: 23%; padding: 1%;" src="http://www.ign.es/ign/img/guiaNavegacion/Banner_insti_IGN.png"></img>
+				<img data-toggle="tab" data-content="UPV" style="width: 23%; padding: 1%;" src="http://www.damres.webs.upv.es/portada/LogoUPV.png"></img>
+			</div>
+			<div class="centerRow">
+				<img data-toggle="tab" data-content="ETSIGCT" style="width: 23%; padding: 1%; clear: both;" src="http://jllerma.webs.upv.es/esc-gct.gif"></img>
+				<img data-toggle="tab" data-content="Node JS" style="width: 23%; padding: 1%; clear: both;" src="http://code-maven.com/img/node.png"></img>
+				<img data-toggle="tab" data-content="PostgreSQL" style="width: 23%; padding: 1%; clear: both;" src="http://3.bp.blogspot.com/-H9Vx0ecAx_E/U6xfwVosNqI/AAAAAAAAAe4/QNCuwOf50HI/s1600/postgresql_logo-555px.png"></img>
+				<img data-toggle="tab" data-content="PostGIS" style="width: 23%; padding: 1%; clear: both;" src="http://boundlessgeo.com/wp-content/uploads/2015/10/post-gis.png"></img>
+			</div>
+			<div class="centerRow">
+				<img data-toggle="tab" data-content="HTML5, CSS3, JS5" style="width: 46%; padding: 1%; clear: both;" src="http://www.murciastudio.es/wp-content/uploads/2015/01/languages.png"></img>
+				<img data-toggle="tab" data-content="GEOSERVER" style="width: 23%; padding: 1%; clear: both;" src="http://boundlessgeo.com/wp-content/uploads/2012/10/GeoServer_Icon1.png"></img>
+				<img data-toggle="tab" data-content="BOOTSTRAP" style="width: 23%; padding: 1%; clear: both;" src="http://www.brucehan.me/img/10.Bootstrap.png"></img>
+			</div>
+			<div class="centerRow">
+				<img data-toggle="tab" data-content="SOCKET.IO" style="width: 46%; padding: 1%; clear: both;" src="http://www.cnydev.org/wp-content/uploads/2015/03/socketio2.png"></img>
+				<img data-toggle="tab" data-content="OPENLAYERS 3" style="width: 23%; padding: 1%; clear: both;" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/OpenLayers_logo.svg/2000px-OpenLayers_logo.svg.png"></img>
+			</div>
+		</div>
+	</div>
+	
+	<div class="col-lg-4" style="margin: 75 0 10 0px;">
+		<div style="background: rgba(200,50, 0, 0.5);border-radius: 4px;padding: 10px;min-height:350px;" class="centerCol">
+		
+		<p style="text-align: center; color: #fff">Proyecto de IDE, Geoportal y aplicación de denuncias para el ayuntamiento de Torrent.</p>
+		<p style="text-align: center; color: #fff">Desarrollado por Jose Ángel Hermosilla Rodrigo como Trabajo de Fin de Grado.</p>
+		<p style="text-align: center; color: #fff">Universidad Politécnica de Valencia</p>
+		<p style="text-align: center; color: #fff">Escuela Técnica Superior de Ingeniería en Geomática y Topografía</p>
+		<p style="text-align: center; color: #fff"> &copy; Todos los derechos reservados. (2015 - 2016)</p>
+		
+		</div>
+	</div>
+
+	<div class="col-lg-4" style="margin: 75 0 10 0px;">
+		<div style="background: rgba(200,50, 0, 0.5);border-radius: 4px;padding: 10px;min-height:350px;">
+
+		</div>
+	</div>
+
+</div>
 
 </body>
 </html>
