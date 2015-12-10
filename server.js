@@ -42,7 +42,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'jade'); // Jade
 app.set('port', process.env.PORT || 3000);
 
-app.use(require('connect-multiparty')())
+app.use(require('connect-multiparty')());
 
 // Necesarios para passport
 app.use(session({ secret: 'peroqueestasdisiendotu' })); // Almacenar sesiones 
@@ -53,31 +53,38 @@ app.use(flash()); // Flashear mensaje almacenados en la sesión
 // Vamos a usar una ruta middleware para pasar mensajes de error 
 // para cualquier rquest de nuestra aplicación
 app.use(function(req, res, next){
-	// Con esta función le decimos al router que debe ejecutarse
-	// para cualquier petición de nuestra aplicación
-//	if(req.user && req.user.local)
-//	{
-//		if(req.user.local.active){
-//			res.locals.user = req.user;
-//		}
-//		else if(req.user.facebook || req.user.twitter){
-//			res.locals.user = req.user;
-//		}
-//		else req.locals.user = undefined;
-//	}
-//	else if(req.user && (req.user.facebook || req.user.twitter)) res.locals.user = req.user;
-//	else res.locals.user = undefined;
 	
-	res.locals.message = {
-			error: req.flash('error'),
-			success: req.flash('success'),
-			info : req.flash('info')
-	}
-	
-	
-	res.locals.title = 'informaTorrent!';
-	res.locals.subtitle = 'La app con la que podrás contribuir a la mejora de Torrent.'
-	next();
+	var client = new pg.Client('postgres://jose:jose@localhost/denuncias');
+
+	client.connect(function(error){
+		if (error) console.error('error conectando bdd', error);
+		else {
+			client.query('select count(*) as count from denuncias', function(e, result){
+				client.end();
+				if (e) console.error('error consultando', e);
+				else {
+					res.locals({numdenun: result.rows[0].count});
+					
+					res.locals({message: {
+						error: req.flash('error'),
+						success: req.flash('success'),
+						info : req.flash('info')
+						},
+						title:'informaTorrent!',
+						subtitle: 'La app con la que podrás contribuir a la mejora de Torrent.',
+					});
+					
+					if(req.user){
+						console.log(req.user);
+						res.locals({id_usuario: req.user._id});
+					}
+					else
+						res.locals({id_usuario: 'undefined'});
+					next();
+				}
+			});
+		}
+	});
 	
 });
 
@@ -123,6 +130,7 @@ var dir = require('node-dir'),
 	validator = require('validator'),
 	nodemailer = require('nodemailer');
 
+require('./app/controllers/sockets.js')(io, pg, path, mkdirp, exec, configUploadImagenes); // SOCKET.IO LADO DEL SERVIDOR
 
 var contHome = require('./app/controllers/home.js'); // Página principal, manejo de mensajes
 var contPass_ = require('./app/controllers/passport_pg_cont.js'); // Iniciar sesión registrar...

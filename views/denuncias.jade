@@ -8,7 +8,7 @@ mixin pagination(start, numPages, curr, base)
 	- var last = start - 1 - (-numPages)    
 	
 	nav
-		ul.pagination
+		ul.pagination(style={'border-radius':'0px', background:'#fff', width:'auto', padding:'0px'}).container
 			- if(curr==1) 
 				li.disabled
 					a(href='#{base}#{prev}' aria-label="Anterior")
@@ -16,14 +16,14 @@ mixin pagination(start, numPages, curr, base)
 			- else
 				li
 					a(href='#{base}#{prev}' aria-label="Anterior")
-						span(aria-hidden="true") &laquo;
+						span(aria-hidden="true" style={color:'#000'}) &laquo;
 			- for(var i=start;i<start+numPages;i++) {
 				- if(i==curr)
 					li.active
 						a(href='#{base}#{i}') #{i}
 				- else
 					li
-						a(href='#{base}#{i}') #{i}
+						a(href='#{base}#{i}' style={color:'#000'}) #{i}
 			- }
 			if(curr==last)
 				li.disabled
@@ -32,7 +32,7 @@ mixin pagination(start, numPages, curr, base)
 			else
 				li
 					a(href='#{base}#{next}' aria-label="Siguiente")
-						span(aria-hidden="true") &raquo;				
+						span(aria-hidden="true" style={color:'#000'}) &raquo;				
 extends layout.jade
 block content
 	div.page-header

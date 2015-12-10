@@ -4,13 +4,8 @@ var json = {}; // Objeto que se pasará al cuerpo de la petición XHR
 $(function() {
 
 	// Nos conectamos a Socket.io
-	var socket = io.connect("http://localhost:3000/app/denuncias/nueva");
+	var socket = io.connect("http://192.168.1.19:3000/app/denuncias/nueva");
 	
-	var socketEmit = io.connect("http://localhost:3000/app/visor");
-	
-	socketEmit.on('connect', function(){
-		alert('conectado visor');
-	});
 	// Cuando se conecte
 	socket.on('connect', function() {
 		// Almacenamos la sessionId que nos genera socket.io
@@ -116,7 +111,8 @@ $(function() {
 			}
 			else
 			{
-				socketEmit.emit('new_denuncia_added', json);
+				num_denuncias_io.emit('new_denuncia_added', res.denuncia);
+				console.log(res.denuncia);
 				// Ha habido éxito subiendo la denuncia
 				BootstrapDialog.show({
 					type: BootstrapDialog.TYPE_SUCCESS,

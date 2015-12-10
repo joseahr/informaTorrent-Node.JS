@@ -24,13 +24,6 @@ function ContPg(fs_, path_, dir_, exec_, pg_, User_, validator_, sio){
 	pg = pg_;
 	User = User_;
 	validator = validator_;
-	io.of('/app/visor').on('connection', function(socket){
-		console.log('conectdo visor' + socket.id);
-		socket.on('new_denuncia_added', function(data){
-			console.log('emit denuncias to all users' + data);
-			socket.broadcast.emit('new_denuncia', {denuncia: data});
-		});
-	});
 	
 }
 
@@ -74,7 +67,9 @@ ContPg.prototype.saveDenuncia = function(req, res){
 		
 		var tags_ = req.body.tags;  // tags introducidos por el usuarios
 		var tags = '{'; // hay que convertirlo en {'tag1', 'tag2', ...} para introducirlo en pgsql
-				
+		
+		var denuncia_io = req.body;
+		denuncia_io.id_usuario = user_id;
 		
 		// comprobando datos de la denuncia
 		if(!validator.isLength(titulo, 5, 50)) errormsg += '· El título debe tener entre 5 y 50 caracteres.\n';
@@ -211,6 +206,8 @@ ContPg.prototype.saveDenuncia = function(req, res){
 							// en la consulta de INSERT --> returning gid;
 							var id_denuncia = result.rows[0].gid;
 							
+							denuncia_io.id = id_denuncia;
+							
 							// Añadir las imágenes
 							var values = '';
 							
@@ -220,6 +217,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 								console.log('guardada - no imgs');
 								response.type = 'success';
 								response.msg = 'Denuncia Guardada Correctamente';
+								response.denuncia = denuncia_io;
 								res.send(response);
 							}
 							else
@@ -241,6 +239,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 									console.log('guardada');
 									response.type = 'success';
 									response.msg = 'Denuncia Guardada Correctamente';
+									response.denuncia = denuncia_io;
 									res.send(response);
 											
 								}); // insert into imagenes

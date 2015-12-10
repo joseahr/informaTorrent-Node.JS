@@ -18,25 +18,6 @@ function UploadFoto(sio, crypto_, fs_, path_,exec_,mkdirp_, config_) {
 	exec = exec_;
 	mkdirp = mkdirp_;
 	config = config_;
-	console.log('socketio');
-	io.of('/app/denuncias/nueva').on('connection', function(socket){
-		socket.join('sessionId');
-		console.log(socket.id + ' sessionID');
-		
-		// Creamos una carpeta temporal dentro de public/files/temp/
-		// cuyo nombre es el identificador del socket
-		mkdirp(path.join(config.TEMPDIR, socket.id), function (err){
-			if(err) console.log(err);
-		}); // Crea un directorio si no existe
-		
-		
-		socket.on('disconnect', function(){
-			console.log(this.id + ' desconectado');
-			exec( 'rm -r ' + config.TEMPDIR + "/" + this.id, function ( errD, stdout, stderr ){
-				if (errD) console.log(errD);
-			});
-		});
-	});
 }
 	
 /*

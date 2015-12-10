@@ -20,8 +20,7 @@ block script
 	
 		var wktFormat = new ol.format.WKT();
 	
-		var socket = io.connect("http://localhost:3000/app/visor");
-		socket.on('new_denuncia', function(data){
+		num_denuncias_io.on('new_denuncia', function(data){
 			var denuncia = data.denuncia;
 			console.log('denuncia añadida socket.io');
 		

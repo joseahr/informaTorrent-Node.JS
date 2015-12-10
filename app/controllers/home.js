@@ -3,6 +3,7 @@
  *  Renderizamos la página principal de nuestra aplicación
  */
 exports.getAppHomePage = function(req, res){
+	
 	datos(req, res, 'indexapp', '');
 }
 

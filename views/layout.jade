@@ -21,18 +21,41 @@ html
 		link(href="http://fonts.googleapis.com/css?family=Average|Courgette" rel="stylesheet" type="text/css")
 		script(type="text/javascript" src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js')
 		script(type="text/javascript" src='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js')
-		//script(type="text/javascript" src='/javascripts/jquery.hoverdir.js')
-		//script(type="text/javascript" src='/javascripts/modernizr.custom.97074.js')
+
 		script(type='text/javascript' src='/javascripts/bootstrap-dialog.js')
 		script(type='text/javascript' src='/javascripts/particulas.js')
 		link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.5/css/bootstrap-dialog.min.css')
 
 		link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css")
-				
+		script(src="https://cdn.socket.io/socket.io-1.3.7.js")
+		// SOCKET.IO
 		//
 		script.
-			$(function(){
+			alert(#{numdenun});
+			var num_denuncias_io = io.connect("http://192.168.1.19:3000/app/visor");
 			
+			num_denuncias_io.on('num_usuarios_conectados', function(data){
+				alert(data.num_usuarios);
+			});
+
+			num_denuncias_io.on('denuncia_cerca', function(data){
+				alert(data);
+			});
+			
+			num_denuncias_io.on('connect', function(socket){
+				console.log('#{id_usuario}');
+				if('#{id_usuario}' != 'undefined')
+					num_denuncias_io.emit('get_id_usuario', {id_usuario: '#{id_usuario}'});
+			});
+			
+			num_denuncias_io.on('new_denuncia', function(data){
+				 var num = parseInt($('#numdenun').text());
+				 $('#numdenun').empty();
+				$('#numdenun').text(num + 1);
+			});
+			
+			$(function(){
+				$('#numdenun').hide();
 				$('[data-toggle="tab"]').popover({
 				    trigger: 'hover',
 				    'placement': 'top'
@@ -63,7 +86,7 @@ html
 				//
 				var aux = false;
 				function addClass(){
-					
+					$('#numdenun').show();
 					$('#menuapp').addClass('goToTop');
 					$('.navbar-brand, .navbar-nav > li >  a').addClass('goToTop2');
 					$('.top-shadow').css({'display':'block'});
@@ -76,6 +99,7 @@ html
 					}
 				}
 				function removeClass(){
+					$('#numdenun').hide();
 					$('#menuapp').removeClass('goToTop');
 					$('.navbar-brand, .navbar-nav > li > a').removeClass('goToTop2');
 					$('.top-shadow').css({'display':'none'});
@@ -160,6 +184,11 @@ html
 				h2(style={color:'#00bbff', 'font-weight':'bold', margin:'0 auto'}) #{subtitle}
 		include ./includes/menuapp.jade
 		div.top-shadow
+		
+		div#numdenun(style={position:'fixed', 'z-index':'999',top:'100px', left:'90%', right:'10px'})
+			.col-lg-12(style={background:'rgba(200,50,0,0.3)', color:'#fff'}).text-center Nº DENUNCIAS
+			.col-lg-12(id="numdenun" style={background:'rgba(200,50,0,0.3)', color:'#fff'}).text-center= numdenun
+					
 		div.container-fluid(style={padding:'0px'})
 			div#scroll(style={height:'73px', background:'rgba(200,50,0,0.3)',display:'flex'})
 				div(style={float:'left', position:'absolute', 'margin':'1px 0px 0px 15px'})
