@@ -4,7 +4,7 @@ var json = {}; // Objeto que se pasará al cuerpo de la petición XHR
 $(function() {
 
 	// Nos conectamos a Socket.io
-	var socket = io.connect("http://192.168.1.19:3000/app/denuncias/nueva");
+	var socket = io.connect("http://" + ip + ":3000/app/denuncias/nueva");
 	
 	// Cuando se conecte
 	socket.on('connect', function() {

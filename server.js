@@ -44,15 +44,24 @@ app.set('port', process.env.PORT || 3000);
 
 app.use(require('connect-multiparty')());
 
+
+
 // Necesarios para passport
 app.use(session({ secret: 'peroqueestasdisiendotu' })); // Almacenar sesiones 
 app.use(passport.initialize());
 app.use(passport.session()); // Sesiones Login Persistentes
 app.use(flash()); // Flashear mensaje almacenados en la sesión
 
+var os = require('os');
+console.log(os.networkInterfaces()['ens33'][0]['address']);
+
+var IP = os.networkInterfaces()['ens33'][0]['address'];
+
 // Vamos a usar una ruta middleware para pasar mensajes de error 
 // para cualquier rquest de nuestra aplicación
 app.use(function(req, res, next){
+	
+	res.locals({ip: IP});
 	
 	var client = new pg.Client('postgres://jose:jose@localhost/denuncias');
 

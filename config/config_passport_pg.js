@@ -12,8 +12,6 @@ var connectionString = "postgres://jose:jose@localhost/denuncias";
 
 var pg = require('pg');
 
-var client;
-
 module.exports = function(passport) {
 
     // Serializa al usuario para la sesión
@@ -24,20 +22,23 @@ module.exports = function(passport) {
     // Deserializa el usuario
     passport.deserializeUser(function(id, done) {
     	var result;
-    	client = new pg.Client(connectionString);
+    	var client = new pg.Client(connectionString);
     	client.connect(function(error){
     		if (error) return console.error('error consultandoPP', error);
     		else {
     			console.log(id);
     			client.query("select * from usuarios where _id ='" + id + "'", 
     			function(e, result_){
-    				result = result_;
+    				if (e){
+    					client.end();
+    					return console.error('error ', e);
+    				}
     				client.end();
-    				if (result.rows.length == 0){
+    				if (result_.rows.length == 0){
     					done(new Error());
     				}
     				else {
-    					var user = result.rows[0];
+    					var user = result_.rows[0];
     					done(e, user);
     				}
     			});
@@ -59,7 +60,7 @@ module.exports = function(passport) {
         // asíncrono
         process.nextTick(function() {
         	
-        	client = new pg.Client(connectionString);
+        	var client = new pg.Client(connectionString);
         	client.connect(function(error){
         		if (error) {
         			done(error);
@@ -132,7 +133,7 @@ module.exports = function(passport) {
                 return done(null, false, req.flash('error', 'Deben de coincidir las contraseñas.'));
             // Validamos los campos
             
-            client = new pg.Client(connectionString);
+            var client = new pg.Client(connectionString);
         	client.connect(function(error){
         		if (error) return console.error('error consultando', error);
         		else {
@@ -226,7 +227,7 @@ module.exports = function(passport) {
             // Usuario no conectado
             if (!req.user) {
             	
-            	client = new pg.Client(connectionString);
+            	var client = new pg.Client(connectionString);
             	client.connect(function(e_){
             		if (e_) return done(e_);
             		else {
@@ -267,7 +268,7 @@ module.exports = function(passport) {
                 user.facebook.email = (profile.emails[0].value || '').toLowerCase();
                 user.facebook.photo = profile.photos[0].value;
                 
-                client = new pg.Client(connectionString);
+                var client = new pg.Client(connectionString);
                 client.connect(function(e_){
             		if (e_) return done(e_);
             		else {
@@ -320,7 +321,7 @@ module.exports = function(passport) {
             // Usuario no loggeado
             if (!req.user) {
 
-            	client = new pg.Client(connectionString);
+            	var client = new pg.Client(connectionString);
             	client.connect(function(e_){
             		if (e_) return done(e_);
             		else {
@@ -361,7 +362,7 @@ module.exports = function(passport) {
                 user.twitter.displayName = profile.displayName;
                 user.twitter.photo = profile.photos[0].value;
                 
-                client = new pg.Client(connectionString);
+                var client = new pg.Client(connectionString);
 
                 client.connect(function(e_){
             		if (e_) return done(e_);

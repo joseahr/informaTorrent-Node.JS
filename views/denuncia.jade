@@ -15,6 +15,11 @@ block script
 	script(src="/javascripts/openlayers/ol3/ol.js")
 	link(rel="stylesheet" href="/javascripts/openlayers/ol3-layerswitcher/src/ol3-layerswitcher.css")
 	script.
+		var denuncia = {
+			titulo: '#{denuncia.titulo}',
+			gid: '#{denuncia.gid}',
+			id_usuario: '#{denuncia.id_usuario}'
+		};
 		var geojsonDenuncia = !{denuncia.geometria}; // geometría del servidor
 		// solo podemos acceder a ella desde este tipo de scripts que tienen un punto al final
 	script(src="/javascripts/openlayers/ol3-layerswitcher/src/ol3-layerswitcher.js")
@@ -24,6 +29,13 @@ block script
 	script(src="/javascripts/openlayers/olvisor.js")
 	script(type='text/javascript').
 		$(document).ready(function(){
+		
+			$('#form_add_comentario').submit(function(){
+				alert('click');
+				num_denuncias_io.emit('new_comentario_added', {denuncia: denuncia});
+				return true;
+			});
+		
 			//alert(!{denuncia.geometria});
 			var html = '!{denuncia.descripcion}';
 			//alert(html);

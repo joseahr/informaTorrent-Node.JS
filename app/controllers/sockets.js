@@ -6,7 +6,14 @@ var clients = {}; // Un cliente puede tener varios sockets abiertos
 
 module.exports = function(io, pg, path, mkdirp, exec, config){
 	
-	io.of('/app/visor').on('connection', function(socket){		
+	io.of('/app/visor').on('connection', function(socket){
+		
+		socket.on('get_num_usuarios', function(){
+			// Lo emite un cliente loggeado o no para obtener el número de usuarios conectados
+			// Emitimos el evento
+			socket.emit('num_usuarios_conectados', {num_usuarios: Object.keys(clients).length});
+		});
+		
 		socket.on('get_id_usuario', function(data){
 			// Evento que lanza el cliente una vez se conecta
 			// Almacenamos el cliente y sus sockets abiertos 
@@ -82,11 +89,18 @@ module.exports = function(io, pg, path, mkdirp, exec, config){
 								if(clients[id_usuario._id] && id_usuario._id != id_usuario_from){
 									// Si el usuario está conectado y es distinto al usuario que emite la
 									// denuncia emitimos esa notificación a el usuario
-									for(var socketId in clients[id_usuario._id]){
-										console.log(socketId);
-										console.log('El usuario ' + data.id_usuario + ' ha publicado una denuncia carca de la ubicación del usuario ' + id_usuario);
-										clients[id_usuario._id][socketId].emit('denuncia_cerca', {denuncia: data});	
-									}
+									
+									client.query("select * from usuarios where _id='" + id_usuario_from +"'"
+									, function(_e, _result){
+										client.end();
+										if(_e) return console.error(_e);
+										for(var socketId in clients[id_usuario._id]){
+											console.log(socketId);
+											console.log('El usuario ' + data.id_usuario + ' ha publicado una denuncia carca de la ubicación del usuario ' + id_usuario);
+											clients[id_usuario._id][socketId].emit('denuncia_cerca', {denuncia: data, from: _result.rows[0]});	
+										}
+									});
+									
 								}
 							});
 							if(values.length > 0)
@@ -105,9 +119,47 @@ module.exports = function(io, pg, path, mkdirp, exec, config){
 		
 		socket.on('new_comentario_added', function(data){
 			// Cuando se lance este evento obtenemos la id del 
-			// usuario 
+			// usuario, guardamos la notificación en postgresql y 
+			// emitimos al cliente si está conectado
+			
+			if (this.id_usuario == data.denuncia.id_usuario) return;
+			
+			var denuncia = data.denuncia;
+			console.log('denuncia comentada ' + denuncia.gid);
+			
+			var id_usuario_from = this.id_usuario;
+			var client = new pg.Client('postgres://jose:jose@localhost/denuncias');
+			
+			client.connect(function(error){
+				
+				if(error) return console.error('Error conectando bdd ', error);
+				
+				values = "('"+ denuncia.gid +"','"+ id_usuario_from +"','"+ denuncia.id_usuario +"','COMENTARIO_DENUNCIA')";
+				
+				client.query("insert into notificaciones(id_denuncia, id_usuario_from, id_usuario_to, tipo) " +
+				"values " + values, function(e_, result_){
+					
+					if(e_) {
+						client.end();
+						return console.error('Error consultando',e_);
+					}
+					
+					if(clients[denuncia.id_usuario]){
+						client.query("select * from usuarios where _id='" + id_usuario_from +"'"
+						, function(_e, _result){
+							client.end();
+							if(_e) return console.error(_e);
+							for(var socketId in clients[denuncia.id_usuario]){
+								clients[denuncia.id_usuario][socketId].emit('denuncia_comentada', {denuncia: denuncia, from: _result.rows[0]});
+							}
+						});
+					}
+					
+				});
+				
+			});
+			
 		});
-		
 		
 	});
 
@@ -129,7 +181,5 @@ module.exports = function(io, pg, path, mkdirp, exec, config){
 			});
 		});
 	});
-	
-	
 	
 }

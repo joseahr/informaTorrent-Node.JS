@@ -1,0 +1,117 @@
+<style>
+
+
+.carousel-caption h2 {
+
+	color: #fff;
+	padding: 5px;
+	background: rgba(200,50,0,0.5);
+	font-size: 1.5em;
+	border-radius: 15px;
+}
+
+.carousel,
+.item,
+.active {
+    height: 100%;
+}
+
+.carousel {
+	height: 50%;
+}
+
+.carousel-inner {
+    height: 100%;
+}
+
+/* Background images are set within the HTML using inline CSS, not here */
+
+.fill {
+    width: 100%;
+    height: 100%;
+    background-position: center;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    background-size: cover;
+    -o-background-size: cover;
+}
+
+
+	.centerRow {
+		display: flex;
+    	flex-flow: row;
+    	justify-content: center;
+    	align-content: center;
+    	align-items: center;
+	}
+	.centerCol {
+		display: flex;
+    	flex-flow: column;
+    	justify-content: space-around;
+    	align-content: center;
+    	align-items: center;
+	}
+	
+	.center-item {
+		align-self: auto;
+	}
+	
+    .grid-block-container {
+    	height: auto;
+        background: url('https://photosbybishop.files.wordpress.com/2013/06/jbd_4266.jpg');
+    	background-size: cover;
+    	filter: grayscale(70%);
+    	
+
+    }
+    .grid-block {
+    	height: 300px;
+    	margin: 0 auto;
+    	text-align:center;
+    	display: flex;
+    	flex-flow: row;
+    	justify-content: center;
+    	align-content: center;
+    	align-items: center;
+    	padding: 5px;
+    }
+     
+    .caption {
+    	display: none;
+    	position: absolute;
+    	z-index: 1000;
+    	top: 0;
+    	left: 0;
+    	background: rgba(200, 50, 0, 0.5);
+    	width: 100%;
+    	height: 100%;
+    	border-radius: 50px;
+    	
+    }
+    .caption h3, .caption p {
+    	margin: 20px;
+    }
+    .caption h3 {
+    	font-weight: bold;
+    	color: #00bbff;
+    	margin: 20px 20px 10px;
+    }
+    .caption p {
+    	color: #fff;
+    	font-size: 1.5em;
+    	line-height: 1.0em;
+    	margin: 0 20px 15px;
+    }
+    .caption a.learn-more {
+    	padding: 5px 10px;
+    	background: #08c;
+    	color: #fff;
+    	border-radius: 2px;
+    	-moz-border-radius: 2px;
+    	font-weight: bold;
+    	text-decoration: none;
+    }
+    .caption a.learn-more:hover {
+    	background: #fff;
+    	color: #08c;
+    }

@@ -5,6 +5,7 @@ html
 		//the viewport is important for mobile devices
 		meta(name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no")
 		title= title
+		link(rel='stylesheet' href='/stylesheets/carousel.css')
 		link(rel='stylesheet', href='/stylesheets/bootstrap-social.css')
 		// bootstrap social
 		link(rel='stylesheet', href='https://bootswatch.com/united/bootstrap.min.css')
@@ -31,15 +32,25 @@ html
 		// SOCKET.IO
 		//
 		script.
+			var ip = '#{ip}';
+			alert(ip);
 			alert(#{numdenun});
-			var num_denuncias_io = io.connect("http://192.168.1.19:3000/app/visor");
+			var num_denuncias_io = io.connect("http://" + ip + ":3000/app/visor");
+			
+			num_denuncias_io.emit('get_num_usuarios');
 			
 			num_denuncias_io.on('num_usuarios_conectados', function(data){
 				alert(data.num_usuarios);
 			});
 
 			num_denuncias_io.on('denuncia_cerca', function(data){
-				alert(data);
+				alert('data denuncia: ' + JSON.stringify(data.denuncia) + 
+					  'from: ' + JSON.stringify(data.from));
+			});
+			
+			num_denuncias_io.on('denuncia_comentada', function(data){
+				alert('data denuncia: ' + JSON.stringify(data.denuncia) + 
+					  'from: ' + JSON.stringify(data.from));
 			});
 			
 			num_denuncias_io.on('connect', function(socket){
@@ -173,21 +184,41 @@ html
 					}
 				}
 			});
+
 		block script
 	body(style={'background':'#fff'})
 		div#fb-root 
 		// SDK Facebook
 		script(src="/javascripts/share.js" type="text/javascript") 
-		div#imgheader(style={ width:'100%','height':'700px',background:'url(http://torrentaldia.com/wp-content/uploads/2014/03/MG_7829b.jpg)','background-size':'100% 100%', 'background-repeat':'no repeat'})
-			div(style={display:'flex', 'align-items':'center',position:'relative', top:'500px', width:'100%', background:'rgba(100,100,100,0.5)', height:'200px'})
-				h1(style={color:'#ffbb00', 'font-weight':'bold', margin:'0 auto'}) #{title}
-				h2(style={color:'#00bbff', 'font-weight':'bold', margin:'0 auto'}) #{subtitle}
+		header#myCarousel.carousel.slide(style={height: '35%'})
+			ol.carousel-indicators
+				li.active(data-target='#myCarousel', data-slide-to='0')
+				li(data-target='#myCarousel', data-slide-to='1')
+				li(data-target='#myCarousel', data-slide-to='2')
+			.carousel-inner
+				.item.active
+					.fill(style="background-image:url('http://torrentaldia.com/wp-content/uploads/2014/03/MG_7829b.jpg');")
+					.carousel-caption
+						h2 BIENVENIDO AL GEOPORTAL DE TORRENT
+				.item
+					.fill(style="background-image:url('http://torrentaldia.com/wp-content/uploads/2014/03/MG_7829b.jpg');")
+					.carousel-caption
+						h2 DESCARGA CARTOGRAFÍA
+				.item
+					.fill(style="background-image:url('http://torrentaldia.com/wp-content/uploads/2014/03/MG_7829b.jpg');")
+					.carousel-caption
+						h2 DESCARGA CARTOGRAFÍA
+			a.left.carousel-control(href='#myCarousel', data-slide='prev')
+				span.icon-prev(style={'font-size': '80px'})
+			a.right.carousel-control(href='#myCarousel', data-slide='next')
+				span.icon-next(style={'font-size': '80px'})
+				
 		include ./includes/menuapp.jade
 		div.top-shadow
 		
-		div#numdenun(style={position:'fixed', 'z-index':'999',top:'100px', left:'90%', right:'10px'})
+		div(style={position:'fixed', 'z-index':'999',top:'100px', left:'90%', right:'10px'})
 			.col-lg-12(style={background:'rgba(200,50,0,0.3)', color:'#fff'}).text-center Nº DENUNCIAS
-			.col-lg-12(id="numdenun" style={background:'rgba(200,50,0,0.3)', color:'#fff'}).text-center= numdenun
+			div.col-lg-12(id="numdenun" style={background:'rgba(200,50,0,0.3)', color:'#fff'}).text-center= numdenun
 					
 		div.container-fluid(style={padding:'0px'})
 			div#scroll(style={height:'73px', background:'rgba(200,50,0,0.3)',display:'flex'})
