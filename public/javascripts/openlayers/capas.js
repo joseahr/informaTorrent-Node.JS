@@ -2,6 +2,8 @@
  * Variables de las capas de los visores
  */
 
+var ip = 'http://localhost:8080'
+
 // Capa vacía --> Cuando no queremos que haya mapa base
 var layerVectorVacia = new ol.layer.Vector({
 	title:'Vacía',
@@ -17,7 +19,7 @@ var orto = new ol.layer.Tile({
 	title: 'Ortofoto',
 	visible: false,
 	source: new ol.source.TileWMS({
-		url: 'http://localhost:8080/geoserver/jahr/wms',
+		url: ip + '/geoserver/jahr/wms',
 		params: {'FORMAT': format, 
              	 'VERSION': '1.1.0',
              	 tiled: true,
@@ -32,7 +34,7 @@ var municipio = new ol.layer.Tile({
 	title: 'Municipio',
 	visible: true,
 	source: new ol.source.TileWMS({
-		url: 'http://localhost:8080/geoserver/jahr/wms',
+		url: ip + '/geoserver/jahr/wms',
 		params: {'FORMAT': format, 
              	 'VERSION': '1.1.0',
              	 tiled: true,
@@ -47,7 +49,7 @@ var manzanas = new ol.layer.Tile({
 	title: 'Manzanas',
 	visible: true,
 	source: new ol.source.TileWMS({
-		url: 'http://localhost:8080/geoserver/jahr/wms',
+		url: ip + '/geoserver/jahr/wms',
 		params: {'FORMAT': format, 
              	 'VERSION': '1.1.0',
              	 tiled: true,
@@ -62,7 +64,7 @@ var viales = new ol.layer.Tile({
 	title: 'Viales',
 	visible: true,
 	source: new ol.source.TileWMS({
-		url: 'http://localhost:8080/geoserver/jahr/wms',
+		url: ip + '/geoserver/jahr/wms',
 		params: {'FORMAT': format, 
              	 'VERSION': '1.1.0',
              	 tiled: true,
@@ -77,7 +79,7 @@ var caminos = new ol.layer.Tile({
 	title: 'Caminos',
 	visible: true,
 	source: new ol.source.TileWMS({
-		url: 'http://localhost:8080/geoserver/jahr/wms',
+		url: ip + '/geoserver/jahr/wms',
 		params: {'FORMAT': format, 
              	 'VERSION': '1.1.0',
              	 tiled: true,
@@ -92,7 +94,7 @@ var nom_viales = new ol.layer.Tile({
 	title: 'Etiquetado Calles',
 	visible: true,
 	source: new ol.source.TileWMS({
-		url: 'http://localhost:8080/geoserver/jahr/wms',
+		url: ip + '/geoserver/jahr/wms',
 		params: {'FORMAT': format, 
              	 'VERSION': '1.1.0',
              	 tiled: true,
@@ -108,7 +110,7 @@ var portales = new ol.layer.Tile({
 	title: 'Portales',
 	visible: true,
 	source: new ol.source.TileWMS({
-		url: 'http://localhost:8080/geoserver/jahr/wms',
+		url: ip + '/geoserver/jahr/wms',
 		params: {'FORMAT': format, 
              	 'VERSION': '1.1.0',
              	 tiled: true,
@@ -124,7 +126,7 @@ var denuncias = new ol.layer.Tile({
 	title: 'Denuncias',
 	visible: true,
 	source: new ol.source.TileWMS({
-		url: 'http://localhost:8080/geoserver/jahr/wms',
+		url: ip + '/geoserver/jahr/wms',
 		params: {'FORMAT': format, 
              	 'VERSION': '1.1.0',
              	 tiled: true,
@@ -143,7 +145,7 @@ var ortoWMST = new ol.layer.Tile({
 	title: 'Ortofoto',
 	visible: false,
 	source: new ol.source.WMTS({
-		url: 'http://localhost:8080/geoserver/gwc/service/wmts',
+		url: ip + '/geoserver/gwc/service/wmts',
 		layer:'jahr:ortofoto',
 		matrixSet: 'EPSG:4326',
 		format: 'image/png',
@@ -161,7 +163,7 @@ var municipioWMST = new ol.layer.Tile({
 	title: 'Municipio',
 	visible: false,
 	source: new ol.source.TileWMS({
-		url: 'http://localhost:8080/geoserver/jahr/wms',
+		url: ip + '/geoserver/jahr/wms',
 		params: {'FORMAT': format, 
              	 'VERSION': '1.1.1',
              	 tiled: true,
@@ -177,7 +179,7 @@ var manzanasWMST = new ol.layer.Tile({
 	title: 'Manzanas',
 	visible: false,
 	source: new ol.source.WMTS({
-		url: 'http://localhost:8080/geoserver/gwc/service/wmts',
+		url: ip + '/geoserver/gwc/service/wmts',
 		layer:'jahr:manzanas',
 		matrixSet: 'EPSG:4326',
 		format: 'image/png',
@@ -195,7 +197,7 @@ var vialesWMST = new ol.layer.Tile({
 	title: 'Viales',
 	visible: false,
 	source: new ol.source.WMTS({
-		url: 'http://localhost:8080/geoserver/gwc/service/wmts',
+		url: ip + '/geoserver/gwc/service/wmts',
 		layer:'jahr:viales',
 		matrixSet: 'EPSG:4326',
 		format: 'image/png',
@@ -213,7 +215,7 @@ var caminosWMST = new ol.layer.Tile({
 	title: 'Caminos',
 	visible: false,
 	source: new ol.source.WMTS({
-		url: 'http://localhost:8080/geoserver/gwc/service/wmts',
+		url: ip + '/geoserver/gwc/service/wmts',
 		layer:'jahr:caminos',
 		matrixSet: 'EPSG:4326',
 		format: 'image/png',
@@ -231,7 +233,7 @@ var nom_vialesWMST = new ol.layer.Tile({
 	title: 'Etiquetado Calles',
 	visible: false,
 	source: new ol.source.WMTS({
-		url: 'http://localhost:8080/geoserver/gwc/service/wmts',
+		url: ip + '/geoserver/gwc/service/wmts',
 		layer:'jahr:nombres_viales',
 		matrixSet: 'EPSG:4326',
 		format: 'image/png',
@@ -249,7 +251,7 @@ var portalesWMST = new ol.layer.Tile({
 	title: 'Portales',
 	visible: false,
 	source: new ol.source.WMTS({
-		url: 'http://localhost:8080/geoserver/gwc/service/wmts',
+		url: ip + '/geoserver/gwc/service/wmts',
 		layer:'jahr:portales',
 		matrixSet: 'EPSG:4326',
 		format: 'image/png',
@@ -267,7 +269,7 @@ var denunciasWMST = new ol.layer.Tile({
 	title: 'Denuncias',
 	visible: false,
 	source: new ol.source.WMTS({
-		url: 'http://localhost:8080/geoserver/gwc/service/wmts',
+		url: ip + '/geoserver/gwc/service/wmts',
 		layer:'jahr:denuncias',
 		matrixSet: 'EPSG:4326',
 		format: 'image/png',

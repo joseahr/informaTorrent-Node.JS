@@ -25,15 +25,6 @@
 <!-- Highlight CSS -->
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/styles/default.min.css">
 
-<!-- Bootstrap Select CSS -->
-<link rel="stylesheet" href="/javascripts/plugins/bootstrap-select/dist/css/bootstrap-select.css">
-
-<!-- Prefix free -->
-<script src="https://raw.githubusercontent.com/LeaVerou/prefixfree/gh-pages/prefixfree.min.js"></script>
-
-<!-- Título -->
-<title>Geoportal de Torrent</title>
-
 </head>
 
 <body class="no-trans">
@@ -185,7 +176,7 @@
 												<div class="btn-group-vertical col-lg-12">
 													<button id="ir" type="button" class="btn btn-default col-lg-12" service_url="http://localhost:8080/geoserver/jahr/wms?service=WMS&request=GetCapabilities&version=1.3.0">Servicio</button>
 													<button id="copy" service_url="http://localhost:8080/geoserver/jahr/wms?service=WMS&request=GetCapabilities&version=1.3.0" type="button" class="btn btn-default">Copiar url</button>
-													<button id="capabilities" service_url="http://localhost:8080/geoserver/jahr/wms?service=WMS&request=GetCapabilities&version=1.3.0" service_name="Servicio WMS - GetCapabilities" type="button" class="btn btn-default">Get Capabilities</button>
+													<button id="capabilities" service_url="http://localhost:8080/geoserver/jahr/wms?service=WMS&request=GetCapabilities&version=1.3.0" service_name="Servicio WMS - GetCapabilities" type="button" class="btn btn-default">GetCapabilities</button>
 												</div>
 												<br>
 												<p>Los servicios web de mapas <b>WMS (Web Map Service)</b> producen mapas (imágenes digitales georeferenciadas) a partir de datos georeferenciados.</p>
@@ -266,77 +257,6 @@
 			</div>
 		</div>
 		<!-- section end -->
-		
-		<!-- section start -->
-		<!-- ================ -->
-		<div class="section clearfix object-non-visible" data-animation-effect="fadeInRightBig">
-			<div class="container">
-				<div class="row">
-					<div class="col-md-12">
-						<h1 id="descargas" class="title text-center">Descarga de <span>Información Geográfica</span></h1>
-						<p class="lead text-center">Servicio de descarga de cartografía digital</p>
-						<div class="space"></div>
-						<div class="row">
-							<div class="col-md-6 text-center object-non-visible" data-animation-effect="tada">
-								<i class="fa fa-download" style="font-size: 300px; color: #339BEB;"></i>
-								<div class="space"></div>
-							</div>
-							<div class="col-md-6 object-non-visible text-center" data-animation-effect="bounce">
-								<p>Selecciona alguna de las capas disponibles y el número máximo de elementos a descargar o en caso de la ortofoto el formato de imagen.</p>
-								
-								<div style="float:left; width: 50%;">
-									<select id="capas" class="selectpicker" data-style="btn-info" data-live-search="true">
-							    	    <option value="jahr:muni_torrent">Municipio</option>
-						    			<option value="jahr:manzanas">Manzanas</option>
-						    			<option value="jahr:viales">Viales</option>
-						    			<option value="jahr:caminos">Caminos</option>
-						    			<option value="jahr:portales">Portales</option>
-						    			<option value="jahr:nombres_viales">Etiquetado Calles</option>
-						    			<option value="jahr:denuncias">Denuncias</option>
-						    			<option value="jahr:ortofoto">Ortofoto</option>
-		    						</select>
-	    						</div>
-	    						
-	    						<div style="float:right; width: 50%;">
-									<select id="features" class="selectpicker" data-style="btn-default" data-live-search="true">
-							    	   	<option value="todos">Todos</option>
-							    	    <option value="50">50</option>
-						    			<option value="100">100</option>
-						    			<option value="1000">1000</option>
-						    			<option value="10000">10000</option>
-						    			<option value="100000">100000</option>
-						    			<option value="1000000">1000000</option>
-							    	</select>
-						    	</div>
-						    	
-	    						<div style="float:right; width: 50%;">					
-							    	<select style="visibility: hidden;" id="format" class="selectpicker" data-style="btn-default" data-live-search="true">
-							    	   	<option value="image/png">PNG</option>
-							    	    <option value="image/gif">GIF</option>
-						    			<option value="image/jpeg">JPEG</option>
-						    			<option value="image/geotiff">GeoTiff</option>
-						    			<option value="application/pdf">PDF</option>
-							    	</select>
-						    	</div>
-						    	
-						    	<div style="clear: both; width: 100%; padding-top: 10px;">					
-						    		<buttton class="btn btn-success" id="descargar" style="width: 100%;">
-						    		DESCARGAR
-						    		</buttton>
-						    	</div>
-						    	
-						    	<div style="clear: both; width: 100%; padding-top: 10px;" class="text-center">
-						    		<p>También puedes seleccionar features específicas y descargarlas empleando nuestro <span><a href="descargas"> Visor de Descargas</a></span>.</p>
-						    	</div>
-						    	
-							</div>
-						</div>
-
-					</div>
-				</div>
-			</div>
-		</div>
-		<!-- section end -->
 
 <!-- Plugins Javascript situados al final de la página, así el contenido carga antes -->
 
@@ -362,56 +282,9 @@
 <!-- Highlight JS -->
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/highlight.min.js"></script>
 
-<!-- Bootstrap Select JS -->
-<script src="/javascripts/plugins/bootstrap-select/js/bootstrap-select.js"></script>
-
 <script type="text/javascript">
 
-	$('.selectpicker').selectpicker({
-		width: '100%'
-	});
-	
-	$('#format').selectpicker('hide');
-	
-	$('#descargar').click(function(event){
-		console.log('descargar');
-		var capa = $('#capas').val();
-		var features = ($('#features').val() == 'todos') ? '' : $('#features').val();
-		console.log(capa + features);
-		
-		if (capa == 'jahr:ortofoto') {
-			window.open('http://localhost:8080/geoserver/jahr/wms?service=WMS&version=1.1.0&request=GetMap&layers=jahr:ortofoto&styles=&bbox=703922.4219253492,4361457.771400001,721973.2836746508,4370702.237000001&width=768' +
-					'&height=393&srs=EPSG:25830&format=' + $('#format').val());
-		}
-		else {
-			if (features == '')
-				window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
-				'&request=GetFeature&typeName=' + capa + '&outputFormat=shape-zip');
-			else
-				window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
-				'&request=GetFeature&typeName=' + capa + '&maxFeatures=' + features + '&outputFormat=shape-zip');		
-		}
-		
-	});
-	
-	$('#capas').change(function(){
-		console.log('change');
-		if($('#capas').val() == 'jahr:ortofoto'){
-			
-			$('#features-format').html('FORMATO');
-			$('#format').selectpicker('show');
-			$('#features').selectpicker('hide');
-			
-		}
-		else {
-			
-			$('#features-format').html('FEATURES');
-			$('#format').selectpicker('hide');
-			$('#features').selectpicker('show');
-		
-		}
-		
-	});
+	var map = false;
 
 	// FitText
 	$("h1, h2").each(function(){

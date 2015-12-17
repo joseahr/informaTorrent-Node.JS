@@ -31,20 +31,26 @@ ol.control.LayerSwitcher = function(opt_options) {
 
     var this_ = this;
 
-    element.onmouseover = function(e) {
-        this_.showPanel();
-    };
+//    element.onmouseover = function(e) {
+//        this_.showPanel();
+//    };
 
     button.onclick = function(e) {
+    	
+    	BootstrapDialog.show({
+    		title: 'Capas visibles y leyenda',
+    		message: $(this_.panel)
+    	});
+    	
         this_.showPanel();
     };
 
-    element.onmouseout = function(e) {
-        e = e || window.event;
-        if (!element.contains(e.toElement)) {
-            this_.hidePanel();
-        }
-    };
+//    element.onmouseout = function(e) {
+//        e = e || window.event;
+//        if (!element.contains(e.toElement)) {
+//            this_.hidePanel();
+//        }
+//    };
 
     ol.control.Control.call(this, {
         element: element,
@@ -157,6 +163,7 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
     var this_ = this;
 
     var li = document.createElement('li');
+    li.setAttribute('style', 'clear: both;');
 
     var lyrTitle = lyr.get('title');
     var lyrId = lyr.get('title').replace(/\s+/g, '-') + '_' + idx;
@@ -170,27 +177,56 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
         li.appendChild(label);
         var ul = document.createElement('ul');
         li.appendChild(ul);
-
+        
         this.renderLayers_(lyr, ul);
 
     } else {
     	
+        var input = document.createElement('input');
+        
+        if (lyr.get('type') === 'base') {
+            input.type = 'radio';
+            input.name = 'base';
+        } else {
+            input.type = 'checkbox';
+        }
+        input.id = lyrId;
+        input.checked = lyr.get('visible');
+        input.onchange = function(e) {
+            this_.setVisible_(lyr, e.target.checked);
+        };
+        //li.appendChild(input);
+
+        label.htmlFor = lyrId;
+        label.innerHTML = lyrTitle;
+        
+        //li.appendChild(label);
+        
+        var divLayer = document.createElement('div');
+        divLayer.appendChild(input);
+        divLayer.appendChild(label);
+//        divLayer.setAttribute('style', 'float:left;');
+        //li.appendChild(divLayer);
         /*
          * Añadimos leyenda de cada capa
          */
-        
         var span = document.createElement('span');
         span.className = 'caret';
         
-        var button = document.createElement('div');
-        button.className = 'btn btn-success dropdown dropdown-toggle';
+        var divButton = document.createElement('div');
+        divButton.setAttribute('style', 'float:right;');
+        divButton.className= 'dropdown';
+        
+        var button = document.createElement('button');
+        button.className = 'btn btn-success dropdown-toggle';
         button.setAttribute('data-toggle', 'dropdown');
         button.setAttribute('type', 'button');
-        button.setAttribute('style', 'margin-right: 10px;');
+        button.setAttribute('style', 'margin-right: 10px; font-size: 12px;margin-bottom: 5px; ');
+        button.innerHTML = 'Ver Leyenda ';
         button.appendChild(span);
         
         var uldp = document.createElement('ul');
-        uldp.className = 'dropdown-menu';
+        uldp.className = 'dropdown dropdown-menu';
         uldp.setAttribute('role','menu');
         
         
@@ -214,29 +250,15 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
         	img.setAttribute('style', 'max-width: 100%; background-size: 100% 100%; padding: 5px;');
         	lidp.appendChild(img);
         	uldp.appendChild(lidp);
-        	button.appendChild(uldp);
-        	li.appendChild(button);
+        	divButton.appendChild(uldp);
+        	divButton.appendChild(button);
+        	divLayer.appendChild(divButton);
+        	li.appendChild(divLayer);
+   
         	//li.appendChild(span);
         	//li.appendChild(img);
         }
         // FIIN
-        var input = document.createElement('input');
-        if (lyr.get('type') === 'base') {
-            input.type = 'radio';
-            input.name = 'base';
-        } else {
-            input.type = 'checkbox';
-        }
-        input.id = lyrId;
-        input.checked = lyr.get('visible');
-        input.onchange = function(e) {
-            this_.setVisible_(lyr, e.target.checked);
-        };
-        li.appendChild(input);
-
-        label.htmlFor = lyrId;
-        label.innerHTML = lyrTitle;
-        li.appendChild(label);
         
     }
 

@@ -219,7 +219,7 @@ Passport.prototype.getResetToken = function(req, res) {
 				}
 				if (result.rows.length == 0){
 					req.flash('error', 'La URL solicitada no es válida o ha expirado.');
-				    return res.redirect('/app/forgot#scroll')
+				    return res.redirect('/app/#olvidaste')
 				}
 				else {
 					contHome.datos(req, res, 'indexapp', 'cambiarPass', {token: req.params.token});
@@ -264,7 +264,7 @@ Passport.prototype.postForgot = function(req, res, next) {
 						if (result.rows.length == 0) {
 							client.end();
 					        req.flash('error', 'No existe ninguna cuenta con el e-mail ' + req.body.email);
-					        done(new Error());
+					        done('');
 						}
 						else {
 							var user = result.rows[0];
@@ -282,6 +282,7 @@ Passport.prototype.postForgot = function(req, res, next) {
     	});
     },
     function(token, user, done) {
+      if(!user) return res.redirect('/app/#olvidaste');
       var smtpTransport = nodemailer.createTransport('SMTP', {
         service: 'Gmail',
         auth: {

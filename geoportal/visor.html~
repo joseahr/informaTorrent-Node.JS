@@ -7,7 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <!-- Bootstrap CSS -->
-<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<link href="/stylesheets/bootstrap/css/bootstrap.css" rel="stylesheet">
+
 <!-- Font Awesome Iconos -->
 <link rel="stylesheet" href="/stylesheets/font-awesome/css/font-awesome.css">
 
@@ -33,19 +34,36 @@
 <!-- CSS OpenLayers Popup -->
 <link rel="stylesheet" href="http://openlayers.org/en/v3.11.0/examples/popup.css">
 
-<!-- Bootstrap Select CSS -->
-<link rel="stylesheet" href="/javascripts/plugins/bootstrap-select/dist/css/bootstrap-select.css">
-
-<!-- Prefix free -->
-<script src="https://raw.githubusercontent.com/LeaVerou/prefixfree/gh-pages/prefixfree.min.js"></script>
+<style> .ol-popup { z-index: 999999;}</style>
 
 </head>
 
 <body class="no-trans">
+
+	<!-- Mapa -->
+	<div id="map">
+
+	<!-- Botón Moverse por mapa -->
+	<button id="mover" type="button" class="btn btn-small btn-info" style="z-index:2; position: absolute; right: 0.5em; bottom: 10%; min-width: 1.375em">
+			<i class="fa fa-hand-o-up"></i>
+	</button>
+
+	<!-- Botón Info -->
+	<button id="info" type="button" class="btn btn-small btn-info" style="z-index:2; position: absolute; right: 0.5em; bottom: 20%; min-width: 1.375em">
+			<i class="fa fa-info-circle"></i>
+	</button>
+
+	<!-- Popup Info -->
+	<div id="popup" class="ol-popup" style="min-width: 400px;">
+		<a href="#" id="popup-closer" class="ol-popup-closer"></a>
+		<div id="popup-content" style="overflow:scroll; max-height: 400px; width: 370px;"></div>
+	</div>
+	
+	</div>
 	
 	<!-- header start -->
 	<!-- ================ --> 
-	<header class="header clearfix navbar navbar-fixed-top" style="margin-bottom: 0px !important;" data-animation-effect="fadeOutLeft">
+	<header class="header fixed clearfix navbar navbar-fixed-top" style="margin-bottom: 0px !important">
 		<div class="container">
 			<div class="row">
 				<div class="col-md-4">
@@ -117,57 +135,20 @@
 						</div>
 						<!-- main-navigation end -->
 	
-					</header>
+					</div>
 					<!-- header-right end -->
 	
 				</div>
 			</div>
 		</div>
-	</div>
+	</header>
 	<!-- header end -->
-	
-	
-	<!-- section start -->
-	<!-- ================ -->
-	<div id="map" class="clearfix object-non-visible" data-animation-effect="fadeInRightBig">
-				
-		<!-- Botón abrir cerrar menú página -->
-		<!-- Botón Moverse por mapa -->
-		<button id="show_menu" type="button" class="btn btn-small btn-info btn-map" style="position: absolute; right: 0.5em; bottom: 30%; min-width: 1.375em">
-			<i class="fa fa-navicon"></i>
-		</button>
-				
-		<!-- Botón Moverse por mapa -->
-		<button id="mover" type="button" class="btn btn-small btn-info btn-map" style="position: absolute; right: 0.5em; bottom: 10%; min-width: 1.375em">
-			<i class="fa fa-hand-o-up"></i>
-		</button>
-	
-		<!-- Botón BBOX -->
-		<button id="bbox" type="button" class="btn btn-small btn-info btn-map" style="position: absolute; right: 0.5em; bottom: 20%; min-width: 1.375em">
-			<i class="fa fa-download"></i>
-		</button>
-		
-		<!-- Selector Capas Descargar -->
-		<div style="position: absolute; top: 0.5em; left: 20%; right: 20%;" class="btn-map">
-			<select id="capas_mapa" class="selectpicker" data-style="btn-info" data-live-search="false" style="width: 100%">
-		   		<option value="jahr:muni_torrent">Municipio</option>
-	 			<option value="jahr:manzanas">Manzanas</option>
-	 			<option value="jahr:viales">Viales</option>
-	 			<option value="jahr:caminos">Caminos</option>
-	 			<option value="jahr:portales">Portales</option>
-	 			<option value="jahr:nombres_viales">Etiquetado Calles</option>
-	 			<option value="jahr:denuncias">Denuncias</option>
-		   	</select>
-		</div>
-	</div>
-	<!-- section end -->
-	
 
 <!-- Plugins Javascript situados al final de la página, así el contenido carga antes -->
 
 <!-- JQuery y Bootstrap -->
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
 <!-- Modernizr -->
 <script type="text/javascript" src="/javascripts/plugins/modernizr.js"></script>
@@ -187,9 +168,6 @@
 <!-- Highlight JS -->
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/highlight.min.js"></script>
 
-<!-- Abrir cerrar header efecto movil mapa-->
-<script src="/javascripts/close_header_mobile_map.js"></script>
-
 <!-- Proj4.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.12/proj4.js"></script>
 
@@ -208,23 +186,10 @@
 <!-- Capas -->
 <script src="/javascripts/openlayers/capas.js"></script>	
 
-<!-- Bootstrap Select JS -->
-<script src="/javascripts/plugins/bootstrap-select/js/bootstrap-select.js"></script>
-
-<!-- Mobile-Detect JS -->
-<script src="//cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.3.0/mobile-detect.min.js"></script>
 
 <script type="text/javascript">
 
-$('.selectpicker').selectpicker({
-	width: '100%'
-});
-
-$("h1, h2").each(function(){
-	var fontSize = $(this).css('font-size');
-	console.log(fontSize);
-	$(this).fitText(1.1, {maxFontSize: fontSize});
-});
+var map = true;
 
 var helpTooltipElement, helpMsg;
 
@@ -243,31 +208,32 @@ function createHelpTooltip() {
 }
 
 var pointerMoveHandler = function(evt) {
-	  if (!hasbbox) {
+	  if (evt.dragging || !info) {
 	    return;
 	  }
-	  
-	  $(helpTooltipElement).removeClass('hidden');
-	  
-	  if(evt.dragging){
-		  helpTooltipElement.innerHTML = 'Suelta para acabar el BBOX';
-		  helpTooltip.setPosition(evt.coordinate);
-		  return;
-	  }
-	  
 	  /** @type {string} */
-	  var helpMsg = 'Click para empezar a dibujar BBOX';
+	  var helpMsg = '<i class="fa fa-info-circle"></i> Click para obtener información';
 	
 	  helpTooltipElement.innerHTML = helpMsg;
 	  helpTooltip.setPosition(evt.coordinate);
 	
-	  
-};
+	  $(helpTooltipElement).removeClass('hidden');
+	};
 
-//MousePosition Control --> ol.control.MousePosition
+var info = false;
+// MousePosition Control --> ol.control.MousePosition
 var mousePositionControl = new ol.control.MousePosition({
     coordinateFormat: ol.coordinate.toStringHDMS,
 });
+
+// GET FEATURE INFO
+var popup = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
+  element: document.getElementById('popup'),
+  autoPan: true,
+  autoPanAnimation: {
+    duration: 250
+  }
+}));
 
 // Mapa --> ol.Map
 var map = new ol.Map({
@@ -280,6 +246,7 @@ var map = new ol.Map({
 	           new ol.control.ZoomSlider() // ZoomSlider
 	]),
 	target: 'map',
+	overlays : [popup],
 	view: new ol.View({
 		projection: proj,
 		zoom: 3,
@@ -305,75 +272,81 @@ map.addControl(new ol.control.OverviewMap({
 
 ignBase.setVisible(false);
 
+// GET FEATURE INFO
+var div = $('<div>');
+var hayInfo = false;
 
-var boundingBox;
+map.on('singleclick', function(evt){
 
-boundingBox = new ol.interaction.DragBox({
-    condition: ol.events.condition.always, // default
-    className: 'line-dragbox'
-});
+	if (!info) {$('.ol-popup').addClass('hidden'); return;}
 
-map.addInteraction(boundingBox);
+	$('.ol-popup').removeClass('hidden');
 
-boundingBox.on('boxend', function(e){
-	 $(helpTooltipElement).addClass('hidden');
-	console.log('boxend');
+	$('#popup-content').empty();
+
+	div = $('<div>');
 	
-	BootstrapDialog.show({
-		type: BootstrapDialog.TYPE_INFO,
-		title: 'DESCARGA DE CARTOGRAFÍA INTERACTIVA',
-		message: '<p>¿Desea descargar la cartografía seleccionada?</p><p>Capa: ' + $('#capas_mapa').val() + '</p>' +
-				 '<p> BBOX: [' + boundingBox.getGeometry().getExtent() + ']</p>',
-		buttons: [{
-		label: 'Cerrar',
-		action: function(dialog){dialog.close();}},
-		{label: 'SHP',
-		action: function(dialog){
-			dialog.close();
-			window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
-			'&request=GetFeature&typeName=' + $('#capas_mapa').val() + '&outputFormat=shape-zip&bbox=' + boundingBox.getGeometry().getExtent());
-		}},
-		{label: 'GeoJSON',
-		 action: function(dialog){
-			 dialog.close();
-			 window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
-			 '&request=GetFeature&typeName=' + $('#capas_mapa').val() + '&outputFormat=application/json&bbox=' + boundingBox.getGeometry().getExtent());
-		 }},
-		 {label: 'GML 3.2',
-		  action: function(dialog){
-			  dialog.close();
-			  window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
-			  '&request=GetFeature&typeName=' + $('#capas_mapa').val() + '&outputFormat=application%2Fgml%2Bxml%3B+version%3D3.2&bbox=' + boundingBox.getGeometry().getExtent());
-		  }}],
+	var coordinate = evt.coordinate;
+	
+	div.append('<p>' + ol.coordinate.toStringHDMS(coordinate) + '</p>');
+	
+	groupCartoTorrentWMS.getLayers().forEach(function(layer){
+		console.log(layer);
+		var url;
+		var append = '';
+		if(layer.getSource() instanceof ol.source.TileWMS && layer.getVisible())
+		{
+			url = layer.getSource().getGetFeatureInfoUrl(coordinate, 
+									map.getView().getResolution(), 
+									proj, {'INFO_FORMAT': 'text/html'});
+			$.get(url, function(data){ 
+				  hayInfo = true;
+	    		  $(div).append(data);
+	    		  $('table.featureInfo').addClass('table table-responsive auto');
+	    		  $('table.featureInfo tbody tr th').addClass('info auto');
+			});
+			
+		}
+
 	});
+	if (hayInfo){
+    	$('#popup-content').append(div);
+    	popup.setPosition(coordinate);
+    	hayInfo = false;
+	}
 
 });
 
+$('#popup-closer').click(function() {
+	  popup.setPosition(undefined);
+	  $(this).blur();
+	  return false;
+});
 
 map.on('pointermove', pointerMoveHandler);
 createHelpTooltip();
 
-
 // FIN MAPA
-var hasbbox = true;
 
-$('#mover').click(function(event){
-	console.log('mover');
-	map.removeInteraction(boundingBox);
-	hasbbox = false;
+$('[data-toggle="tab"]').popover({
+    trigger: 'hover',
+    'placement': 'top'
+});
+
+$('#mover').click(function(){
 	$(helpTooltipElement).addClass('hidden');
-	
+	info = false;
+});
+$('#info').click(function(){
+	$(helpTooltipElement).removeClass('hidden');
+	info = true;
 });
 
-$('#bbox').click(function(event){
-	console.log('bbox');
-	if(!hasbbox){
-		hasbbox = true;
-		map.addInteraction(boundingBox);
-		$(helpTooltipElement).removeClass('hidden');
-	}
-	
-});
+map.getViewport().addEventListener('mouseout', function(evt){
+    $(helpTooltipElement).addClass('hidden');
+}, false);
+
+
 
 
 </script>

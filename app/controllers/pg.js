@@ -66,6 +66,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 		var tempDirID = req.body.tempDir; // nombre del directorio temporal donde se guardan las imágenes
 		
 		var tags_ = req.body.tags;  // tags introducidos por el usuarios
+		console.log(tags_);
 		var tags = '{'; // hay que convertirlo en {'tag1', 'tag2', ...} para introducirlo en pgsql
 		
 		var denuncia_io = req.body;
@@ -264,10 +265,24 @@ ContPg.prototype.getProfile = function(req, res) {
 		  }
 		  
 		  client.query(queries.getUserDenuncias(req.user._id),function(err1, misDenuncias){
-			  client.end();
+			  //client.end();
 			  console.log('Er');
-			  if(err1) return console.error('errrrrrrror', err1);
-			  else res.render('profile', {user : req.user, misDenuncias: misDenuncias.rows});
+			  if(err1) {
+				  client.end();
+				  return console.error('errrrrrrror', err1);
+			  }
+			  else {
+				  // Obtener notificaciones
+				  client.query(queries.getUserNotifications(req.user._id), function(err2, noti){
+					  client.end();
+					  if(err2) return console.error('error consultando notificaciones', err2);
+					  
+					  res.render('profile', {user : req.user, 
+						  misDenuncias: misDenuncias.rows,
+						  misNotificaciones: noti.rows
+					  });
+				  });
+			  }
 		  });
 	});
 
@@ -607,7 +622,7 @@ var queries = {
 	  		"ST_AsGeoJSON(the_geom) as geometria FROM denuncias " +
 	  		"LEFT   JOIN LATERAL (" +
 	  		"SELECT json_agg(com) AS comentarios " +
-	  		"FROM  (SELECT id_usuario, contenido, to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY a las HH24:MI:SS') as fecha FROM comentarios WHERE id_denuncia = denuncias.gid ORDER BY fecha DESC) com" +
+	  		"FROM  (SELECT id_usuario, contenido, to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha FROM comentarios WHERE id_denuncia = denuncias.gid ORDER BY fecha DESC) com" +
 	  		") comentarios ON true " +
 	  		"LEFT   JOIN LATERAL (" +
 	  		"SELECT json_agg(img) AS imagenes " +
@@ -652,6 +667,9 @@ var queries = {
 		},
 		deleteDenunciaImagen : function(path){
 			return "delete from imagenes where path='" + path + "'";
+		},
+		getUserNotifications : function(id){
+			return "select n.*, to_char(n.fecha::timestamp,'DD TMMonth YYYY HH24:MI:SS') as fecha, u.profile as profile_from from notificaciones n, usuarios u where n.id_usuario_to='" + id + "' and n.id_usuario_from=u._id order by n.fecha desc";
 		}
 };
 

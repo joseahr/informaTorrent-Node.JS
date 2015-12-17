@@ -1,32 +1,117 @@
 extends layout.jade
-block script
-	script(type='text/javascript').
 block content
-	include ./includes/signin.jade
-	div.container(style={'margin-bottom': '100px'})
-		if login
-			include ./includes/login.jade
-		else if signup
-			include ./includes/signup.jade
-		else if forgot
-			include ./includes/forgot.jade
-		else if change
-			include ./includes/changePass.jade
-		div(style={ margin:'0 auto', 'border-bottom': '1px solid #ffbb00 !important'}).page-header
-			h1(style={color: '#00bbff'}) ¿Para que sirve esta aplicación?
-		div(style={ padding:'0px', width:'100%',color:'#fff'}).container
-			.col-md-4.centerCol(style={'margin-top':'20px', background:'rgba(0,50,200, 0.3)', padding:'10px'})
-				| ¿Has encontrado por Torrent algo que te incomoda?
-				br
-				| No dudes en utilizar esta aplicación para mostrárselo a Torrent.
-				| Rellenando un simple formulario podrás mostrar de forma detallada
-				| la información de tu denuncia.
-			.col-md-4.centerCol(style={'margin-top':'20px', background:'rgba(0,50,200, 0.3)', padding:'10px'})
-				| Tu denuncia será  vista por los usuarios de Informa Torrent
-				| y tendrá una repercusión. Los usuarios podrán apoyar tu denuncia,
-				| comentarla y compartirla en las redes sociales.
-			.col-md-4.centerCol(style={'margin-top':'20px', background:'rgba(0,50,200, 0.3)', padding:'10px'})
-				| Informa Torrent busca hacer un mundo más justo y organizado
-				| de forma que los ciudadanos tengan una vía rápida de expresar
-				| su malestar. Se pide a los usuarios no usar esta aplicación 
-				| de manera malintencionada.
+    // Iniciar Sesión
+    .section.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
+      .container
+        .row
+          .col-md-12
+            h1#iniciar.title.text-center Iniciar
+              span  Sesión
+            p.lead.text-center Inicia Sesión con tu cuenta de usuario
+            .space
+            .row
+              form(action="/app/login" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', margin: '0 auto',  width: '80%'}).form-horizontal
+                .col-md-6
+                  .input-group(style={'margin-top':'5px'})
+                    span.input-group-addon
+                      i.fa.fa-envelope-o.fa-fw
+                    input.form-control.btn-default(type='text', name="email", placeholder='Correo electrónico')
+                .col-md-6
+                  .input-group(style={'margin-top':'5px'})
+                    span.input-group-addon
+                      i.fa.fa-key.fa-fw
+                    input.form-control.btn-default(type='password', name="password", placeholder='Contraseña')
+                .col-lg-12(style={float:'none', margin: '0 auto'})
+                  .input-group(style={'padding-top':'5px'})
+                    span.input-group-addon
+                      i.fa.fa-sign-in.fa-fw
+                    input.form-control.btn-success(type="submit", value="Iniciar Sesión")
+            .space
+            p.lead.text-center O con tu cuenta de Twitter o Facebook
+            .row
+              div(style={padding: '5%', background: 'rgba(0,50,187, 0.1)',margin: '0 auto', width: '80%'}).form-horizontal.container-fluid
+                .col-md-6
+                  .input-group
+                    span.input-group-addon
+                      i.fa.fa-facebook.fa-fw(style={color: '#3b5998'})
+                    a(href="/app/auth/facebook")
+                      input.form-control.btn-default.facebook-button(type="button" value="Iniciar Sesión")
+                .col-md-6
+                  .input-group
+                    span.input-group-addon
+                      i.fa.fa-twitter.fa-fw(style={color: '#1dcaff'})
+                    a(href="/app/auth/twitter")
+                      input.form-control.btn-default.twitter-button.text-center(type="button" value="Iniciar Sesión")
+    // Registrarse
+    .section.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
+      .container
+        .row
+          .col-md-12
+            h1#registrarse.title.text-center Nuevo
+              span  Usuario
+            p.lead.text-center Crea una cuenta de usuario
+            .space
+            .row
+              form.form-horizontal.container-fluid(action="/app/signup" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', float: 'none', width: '80%'})
+                // Correo Electrónico
+                .col-md-4
+                  .input-group(style={'margin-top':'5px'})
+                    span.input-group-addon
+                      i.fa.fa-envelope-o.fa-fw
+                    input.form-control.btn-default(type='text', name="email", placeholder='Correo electrónico')
+                // Contraseña
+                .col-md-4(style={'margin-top':'5px'})
+                  .input-group
+                    span.input-group-addon
+                      i.fa.fa-key.fa-fw
+                    input.form-control.btn-default(type='password', name="password", placeholder='Contraseña')
+                // Repetir Contraseña
+                .col-md-4(style={'margin-top':'5px'})
+                  .input-group
+                    span.input-group-addon
+                      i.fa.fa-key.fa-fw
+                    input.form-control.btn-default(type='password', name="repassword", placeholder='Reescriba Contraseña')
+                // Nombre de Usuario
+                .col-md-4
+                  .input-group(style={'margin-top':'5px'})
+                    span.input-group-addon
+                      i.fa.fa-user.fa-fw
+                    input.form-control.btn-default(type='text', name="username", placeholder='Nombre de Usuario')
+                // Nombre
+                .col-md-4(style={'margin-top':'5px'})
+                  .input-group
+                    span.input-group-addon
+                      i.fa.fa-user.fa-fw
+                    input.form-control.btn-default(type='text', name="name", placeholder='Nombre')
+                // Apellidos
+                .col-md-4(style={'margin-top':'5px'})
+                  .input-group
+                    span.input-group-addon
+                      i.fa.fa-user.fa-fw
+                    input.form-control.btn-default(type='text', name="surname", placeholder='Apellidos')
+                .col-lg-12.container-fluid(style={margin: '0 auto', float: 'none'})
+                  .input-group(style={'padding-top':'5px'})
+                    span.input-group-addon
+                      i.fa.fa-sign-in.fa-fw
+                    input.form-control.btn-success(type="submit", value="Registrar")
+    // olvidaste contraseña
+    .section.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
+      .container
+        .row
+          .col-md-12
+            h1#olvidaste.title.text-center Recuperar
+              span  Contraseña
+            p.lead.text-center Se enviará un e-mail a tu correo con los datos necesarios para recuperar tu contraseña
+            .space
+            .row
+              form(action="/app/forgot" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', margin: '0 auto',  width: '80%'}).form-horizontal
+                .col-md-12
+                  .input-group(style={'margin-top':'5px'})
+                    span.input-group-addon
+                      i.fa.fa-envelope-o.fa-fw
+                    input.form-control.btn-default(type='text', name="email", placeholder='Correo electrónico')
+                .col-lg-12(style={float:'none', margin: '0 auto'})
+                  .input-group(style={'padding-top':'5px'})
+                    span.input-group-addon
+                      i.fa.fa-send.fa-fw
+                    input.form-control.btn-success(type="submit", value="Enviar e-mail")

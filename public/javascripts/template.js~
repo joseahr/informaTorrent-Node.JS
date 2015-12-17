@@ -1,3 +1,12 @@
+/* Theme Name: Worthy - Free Powerful Theme by HtmlCoder
+ * Author:HtmlCoder
+ * Author URI:http://www.htmlcoder.me
+ * Version:1.0.0
+ * Created:November 2014
+ * License: Creative Commons Attribution 3.0 License (https://creativecommons.org/licenses/by/3.0/)
+ * File Description: Initializations of plugins 
+ */
+
 (function($){
 	$(document).ready(function(){
 	
@@ -6,7 +15,16 @@
 		// Fixed header
 		//-----------------------------------------------
 		$(window).resize(function(){
-			if ($(window).width() < 767) $("body").addClass("fixed-header-on");
+			if(map) {
+				console.log('resize');
+				$('#map').css('left', '0px');
+				$('#map').css('right', '0px');
+				$('#map').css('bottom', '0px');
+				$('#map').css('top', $('header').outerHeight() + 'px');
+				
+				return true;
+			}
+			else if ($(window).width() < 767) $("body").addClass("fixed-header-on");
 			else $("body").removeClass("fixed-header-on");
 		});
 		
@@ -23,6 +41,21 @@
 		});
 
 		$(window).load(function() {
+			if(map) {
+				
+				$("header")
+				.on("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd",
+				function(e){
+					$('#map').css('height', 'auto');
+					$('#map').css('position', 'absolute');
+					$('#map').css('bottom', '0px');
+					$('#map').css('top', $('header').outerHeight() + 'px');
+				});
+				
+				$('body').addClass("fixed-header-on");
+				
+				return;
+			}
 			if (($(".header.fixed").length > 0)) { 
 				if(($(this).scrollTop() > 0) && ($(window).width() > 767)) {
 					$("body").addClass("fixed-header-on");

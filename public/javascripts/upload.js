@@ -1,99 +1,103 @@
 var random = '';
 var json = {}; // Objeto que se pasará al cuerpo de la petición XHR
 
-$(function() {
+// Nos conectamos a Socket.io
+var socket = io.connect("http://" + ip + ":3000/app/denuncias/nueva");
 
-	// Nos conectamos a Socket.io
-	var socket = io.connect("http://" + ip + ":3000/app/denuncias/nueva");
+// Cuando se conecte
+socket.on('connect', function() {
+	// Almacenamos la sessionId que nos genera socket.io
+	// Lo utilizaremos para eliminar la carpeta temporal en caso 
+	// de que el usuario se desconecte
+	random = socket.io.engine.id;
+	//alert(random);
+	//$("#file-dropzone").attr('action', "http://localhost:3000/app/fileUpload/" + random);
 	
-	// Cuando se conecte
-	socket.on('connect', function() {
-		// Almacenamos la sessionId que nos genera socket.io
-		// Lo utilizaremos para eliminar la carpeta temporal en caso 
-		// de que el usuario se desconecte
-		random = socket.io.engine.id;
-		//alert(random);
-		//$("#file-dropzone").attr('action', "http://localhost:3000/app/fileUpload/" + random);
-		
-		$("#file-dropzone").addClass('dropzone');
-		
-		// Configuración del dropzone
-		$("#file-dropzone").dropzone({ 
-		    url: "/app/fileUpload/" + random,
-		    maxFilesize: 2,
-		    maxFiles: 10,
-		    paramName: "uploadfile",
-		    maxThumbnailFilesize: 30,
-		    addRemoveLinks: true,
-		    acceptedFiles: 'image/*',
-		    dictDefaultMessage: '¡Arrastra imágenes aquí!',
-		    dictFallbackMessage: 'Tu navegador no soporta subidas mediante Drag & Drop',
-		    dictInvalidFileType: 'Tipo de archivo no permitido',
-		    dictFileTooBig: 'Imagen demasiado grande',
-		    dictResponseError: 'Error subiendo la imagen',
-		    dictMaxFilesExceeded: 'Límite máximo de 10 imágenes subidas alcanzado',
-		    dictCancelUpload: 'Cancelar',
-		    dictCancelUploadConfirmation: 'Cancelada subida de imagen',
-		    dictRemoveFile: 'Eliminar imagen',
-		    init : function(){
-		    	this.on('removedfile', function(file){
-		    		
-		    	    $.ajax({
-		 	           url:'/app/deleteFile/'+ random + '/' + file.name,
-		 	           type:'GET', // Método GET
-		 	           data:{},
-		 	           success:function(res){
-		 	        	   
-		 	           }
-		    	    });
+	$("#file-dropzone").addClass('dropzone');
+	
+	// Configuración del dropzone
+	$("#file-dropzone").dropzone({ 
+	    url: "/app/fileUpload/" + random,
+	    maxFilesize: 2,
+	    maxFiles: 10,
+	    paramName: "uploadfile",
+	    maxThumbnailFilesize: 30,
+	    addRemoveLinks: true,
+	    acceptedFiles: 'image/*',
+	    dictDefaultMessage: '¡Arrastra imágenes aquí!',
+	    dictFallbackMessage: 'Tu navegador no soporta subidas mediante Drag & Drop',
+	    dictInvalidFileType: 'Tipo de archivo no permitido',
+	    dictFileTooBig: 'Imagen demasiado grande',
+	    dictResponseError: 'Error subiendo la imagen',
+	    dictMaxFilesExceeded: 'Límite máximo de 10 imágenes subidas alcanzado',
+	    dictCancelUpload: 'Cancelar',
+	    dictCancelUploadConfirmation: 'Cancelada subida de imagen',
+	    dictRemoveFile: 'Eliminar imagen',
+	    init : function(){
+	    	this.on('removedfile', function(file){
+	    		
+	    	    $.ajax({
+	 	           url:'/app/deleteFile/'+ random + '/' + file.name,
+	 	           type:'GET', // Método GET
+	 	           data:{},
+	 	           success:function(res){
+	 	        	   
+	 	           }
+	    	    });
 
-		    	});
-		    }
-		 }); // CONFIG DROPZONE	
-	}); // CONECTAMOS A SOCKET.IO
+	    	});
+	    }
+	 }); // CONFIG DROPZONE	
+}); // CONECTAMOS A SOCKET.IO
+
+// Click en botón submitDenuncia
+$(function(){
+	$('#submitDenuncia').click( function(event){
 	
-	// Click en botón submitDenuncia
-	$('#submitDenuncia').submit( function(event){
-	
-		event.preventDefault();  // preventDefault
-		
+		alert('sendd');
+				
 		toWKT(); //llamamos a la función para generar el WKT (openlayers.js)
-		
-		var formBasico = $('#basico').serializeArray(); // Obtenemos un json array del formulario
-		
-		var titulo = formBasico[0].value; // Obtenemos el titulo del array anterior
-		
-		var contenido = tinymce.activeEditor.getContent(); // contenido del SCEditor
-			
+		alert('sendd22');	
+		var titulo = $('#titulo').val(); // Obtenemos el titulo del array anterior
+		alert('sendd33');
+		var contenido = (tinymce.activeEditor) ? tinymce.activeEditor.getContent() : $('textarea').val();
+		alert('sendd444');
 		json.titulo = titulo;
 		json.contenido = contenido;
 		json.tempDir = random;
 		json.wkt = wkt;
 		
 		// Añadimos los tags a la lista
-		$('#et input[type=text]').each(function(){
-				tags.push($(this).val());
-		});
-		
+		var tags = tagElement ? tagElement.getTags() : [];
+		alert('send5');
 		// Añadimos la lista al objeto
 		json.tags = tags;
 		
 		/*******/
 		
 		var formData = new FormData(); // FormData
-		
+		alert('send6');
 		formData.append('uploadDenuncia', json);
 		
 		var xhr = new XMLHttpRequest(); // Petición XMLHttpRequest
 		
-		xhr.open('post', '/app/denuncias/nueva/save/' , true); // Método POST
+		
+		xhr.open('POST', '/app/denuncias/nueva/save/' , true); // Método POST
 		
 		xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); // Especificamos cabecera
+		alert('enviando');
+		try {
+			xhr.send(JSON.stringify(json)); // Enviamos petición
+		}
+		catch(e){alert(e)}
 		
-		xhr.send(JSON.stringify(json)); // Enviamos petición
+		xhr.onerror(function(error){
+			alert(error);
+		});
 		
 		// Recibimos respuesta del servidor
 		xhr.onload = function(){
+			alert('recibidoWS');
 			// El Response que nos envía el servidor
 			var res = JSON.parse(xhr.responseText);
 			
@@ -125,8 +129,7 @@ $(function() {
 					// Cuando se cierre redirigimos al usuario 
 				});
 			}
-	
-		}; 
+		};
+		event.preventDefault();  // preventDefault
 	});	//Submit denuncia
-
-}); // $(function)
+});

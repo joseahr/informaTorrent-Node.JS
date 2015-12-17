@@ -1,3 +1,26 @@
+/* Botones RS
+----------------------------------------------------------------------------- */
+.facebook-button {
+	color: #3b5998 !important;
+}
+
+.facebook-button:hover {
+	color: #fff !important;
+	background: #8b9dc3 !important;
+	border-color: #8b9dc3 !important;
+}
+
+.twitter-button {
+	color: #4099ff !important;
+}
+
+.twitter-button:hover {
+	color: #fff !important;
+	background: #1dcaff !important;
+	border-color: #1dcaff !important;
+}
+
+
 /* Typography
 ----------------------------------------------------------------------------- */
 body {
@@ -255,7 +278,7 @@ blockquote {
 	}
 }
 .space {
-	padding: 20px 0;
+	padding: 0.5em 0;
 }
 .pr-10 {
 	padding-right: 10px;

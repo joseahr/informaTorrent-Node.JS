@@ -1,310 +1,142 @@
 extends layout
-block script
-	link(rel='stylesheet', href='/stylesheets/profile-menu.css')
-	script.
-		$(function(){
-			/**
-			*********** XHR Eliminar
-			**/
-			
-			$('.eliminar').click(function(e){
-								
-				var xhr = new XMLHttpRequest();  // XMLHttpRequest
-	    
-			    xhr.open('get', '/app/eliminar?id=' + $(this).attr('id'), true); // Método POSGT
-			    
-			    // Si hay algún error subiendo la imagen
-			    xhr.onerror = function(e) {
-			    	alert('Hubo un error eliminando la denuncia.');
-			    };
-			    
-			    // Se elimina correctamente
-			    var a = $(this);
-			    xhr.onload = function() {			    	
-			    	var msg = xhr.responseText; // Obtenemos la respuesta del servidor
-					a.closest("tr").remove();
-					
-					$('#bodyTablaDenuncias tr td:first-child').each(function(index){
-						//alert(index);
-						$(this).html(index + 1);
-					});
-					
-			    	BootstrapDialog.show({
-						type: BootstrapDialog.INFO,
-						title: 'Info',
-						message: msg,
-						closable: true,
-						buttons: [{
-							label: 'Cerrar',
-							action: function(dialog){dialog.close()}
-						}]
-					});
-			    	
-			    };
-			    // Enviamos la petición
-			    xhr.send();
-			    return false; // prevent default
-			    
-			});
-			
-			profileEdit = {};
-		
-			$('*[id*=oculto]').css('visibility','');
-			$('*[id*=oculto]').slideUp(0);
-			// Clicamos en el checkbox para editar
-			$('input[type=checkbox]').bind('change', function(){
-				if($(this).prop('checked'))
-				{
-					$('*[id*=change]').prop('disabled', false);
-					$('*[id*=oculto]').stop(true, true).slideDown(500);
-					//alert('enabled');
-				}
-				else
-				{
-					if(jQuery.isEmptyObject(profileEdit))
-					{
-						$('*[id*=change]').prop('disabled', true);
-						$('*[id*=oculto]').stop(true, true).slideUp(500);
-					}
-					else
-					{
-						$(this).prop('checked', true);
-						alert('Has cambiado propiedades de tu perfil');
-					}
-					//alert('disabled');
-				}
-			});
-			// Editamos el perfil
-			$('.form-control').bind('change', function(){
-				var name = $(this).prop('name');
-				profileEdit[name] = $(this).prop('value');
-			});
-			
-			// Tabla mis denuncias
-			    $('.filterable .btn-filter').click(function(){
-			        var $panel = $(this).parents('.filterable'),
-			        $filters = $panel.find('.filters input'),
-			        $tbody = $panel.find('.table tbody');
-			        if ($filters.prop('disabled') == true) {
-			            $filters.prop('disabled', false);
-			            $filters.first().focus();
-			        } else {
-			            $filters.val('').prop('disabled', true);
-			            $tbody.find('.no-result').remove();
-			            $tbody.find('tr').show();
-			        }
-			    });
-			
-			    $('.filterable .filters input').keyup(function(e){
-			        /* Ignore tab key */
-			        var code = e.keyCode || e.which;
-			        if (code == '9') return;
-			        /* Useful DOM data and selectors */
-			        var $input = $(this),
-			        inputContent = $input.val().toLowerCase(),
-			        $panel = $input.parents('.filterable'),
-			        column = $panel.find('.filters th').index($input.parents('th')),
-			        $table = $panel.find('.table'),
-			        $rows = $table.find('tbody tr');
-			        /* Dirtiest filter function ever ;) */
-			        var $filteredRows = $rows.filter(function(){
-			            var value = $(this).find('td').eq(column).text().toLowerCase();
-			            return value.indexOf(inputContent) === -1;
-			        });
-			        /* Clean previous no-result if exist */
-			        $table.find('tbody .no-result').remove();
-			        /* Show all rows, hide filtered ones (never do that outside of a demo ! xD) */
-			        $rows.show();
-			        $filteredRows.hide();
-			        /* Prepend no-result row if all rows are filtered */
-			        if ($filteredRows.length === $rows.length) {
-			            $table.find('tbody').prepend($('<tr class="no-result text-center"><td colspan="'+ $table.find('.filters th').length +'">No result found</td></tr>'));
-			        }
-			    });
-		});
 block content
-	div#contenido(style={background: 'rgba(255,255,255,0)'})
-		div.page-header
-			h1(style={'font-size':'25px', color: '#00bbff'}) MI PERFIL
-				small(style={'float':'right'}) 
-					|  información de tu cuenta
-		.portlet(style={background: 'rgba(200,50,0,0.4)', 'border-radius':'6px'})
-			.portlet-title
-				.caption.caption-red
-					i.glyphicon.glyphicon-pushpin
-					span.caption-subject.bold.font-yellow-crusta.uppercase #{user.profile.username || user.facebook.name || user.twitter.username}
-					span.caption-helper   Hola de nuevo!
-				ul.nav.nav-tabs
-					li
-						a(href='#portlet_tab3', data-toggle='tab') Cuentas Asociadas 
-					li
-						a(href='#portlet_tab2', data-toggle='tab') Mis denuncias
-					li.active
-						a(href='#portlet_tab1', data-toggle='tab') Perfil
-			.portlet-body(style={'min-height':'600px'})
-				.tab-content(style={'height':'100%'})
-					#portlet_tab1.tab-pane.active
-						.col-lg-4(style={'height':'300px'})
-							img(src="#{user.profile.picture || user.facebook.photo || user.twitter.photo}" style={'width':'150px', 'margin-left':'25%'}).img-thumbnail
-							hr
-							div
-								div.centrado Mis denuncias
-								div.centrado Nueva denuncia
-								div.centrado Cerrar Sesión
-						.col-lg-8
-							div(style={float:'right'}).well.checkbox.form-group.col-lg-12
-								label
-									input(type='checkbox') 
-									| Editar Perfil
-							.form-group.col-lg-6(style={'margin':'0 auto'})
-								label.control-label(for='email') Email:
-								input.form-control(name='email' value='#{user.local.email}', type='text', disabled)
-								hr
-							.form-group.col-lg-6(style={'margin':'0 auto'})
-								label.control-label(for='usename') Nombre de usuario:
-								input#change.form-control(name='username' value='#{user.profile.username}', type='text', disabled)
-								hr
-							.form-group.col-lg-6(style={'margin':'0 auto'})
-								label.control-label(for='nombre') Nombre:
-								input#change.form-control(name='nombre' value='#{user.profile.nombre}', type='text', disabled)
-								hr
-							.form-group.col-lg-6(style={'margin':'0 auto'})
-								label.control-label(for='apellidos') Apellidos:
-								input#change.form-control(name='apellidos' value='#{user.profile.apellidos}', type='text', disabled)
-								hr
-							.form-group.col-lg-6(style={'margin':'0 auto'})
-								label.control-label(for='location') Localización preferida:
-								input.form-control(name='location' value='#{JSON.stringify(user.profile.locationPref)}', type='text', disabled)
-							#oculto.form-group.col-lg-6(style={'margin':'0 auto', visibility:'hidden'}) 
-								div(style={width: '100%'} role='group').btn-group-vertical
-									a(href="/app/changePass#scroll" target="_blank").btn.btn-default
-										p(style={color: '#fff'}) Cambiar Contraseña
-									button(type="button" class="btn btn-default")
-										a(href="" target="_blank") 
-											p(style={color: '#fff'}) Cambiar Localizacion
-									button(type="button" class="btn btn-default")
-										a(href="/" target="_blank") 
-											p(style={color: '#ffbb00'}) Guardar
-					
-					#portlet_tab2.tab-pane 
-						div.page-header
-							h4 Mis denuncias
-						br
-						div(class="panel panel-primary filterable")
-							div(class="panel-heading")
-								h3(class="panel-title") Mis Denuncias
-								div(class="pull-right")
-									button(class="btn btn-default btn-xs btn-filter")
-										span(class="glyphicon glyphicon-filter") 
-										| Filtrar
-							table#tablaDenuncias.table.table-condensed.table-hover
-								thead
-									tr(class="filters")
-										th
-											input(type="text" class="form-control" placeholder="#" disabled).text-center
-										th
-											input(type="text" class="form-control" placeholder="Título" disabled).text-center
-										th
-											input(type="text" class="form-control" placeholder="Fecha" disabled).text-center
-										th
-											input(type="text" class="form-control" placeholder="Comentarios" disabled).text-center
-										th
-											input(type="text" class="form-control" placeholder="Imágenes" disabled).text-center
-										th.text-center Editar
-										th.text-center Eliminar
-								tbody#bodyTablaDenuncias
-									- var i = 0;
-									each denuncia in misDenuncias
-										- i+=1
-										tr(style={'word-break':'break-all'})
-											td.text-center #{i}
-											td.text-center
-												a(href="/app/denuncia/#{denuncia.gid}" target="_blank") #{denuncia.titulo}
-											td.text-center #{denuncia.fecha}
-											if denuncia.comentarios
-												td.text-center #{denuncia.comentarios.length}
-											else
-												td.text-center 0
-											if denuncia.imagenes
-												td.text-center #{denuncia.imagenes.length}
-											else
-												td.text-center 0
-											td.text-center
-												a(href="/app/editar?id=#{denuncia.gid}")
-													i.fa.fa-edit(style={'font-size':'30px'})
-											td.text-center
-												a(href='#' id='#{denuncia.gid}' table-row=i).eliminar
-													i.fa.fa-trash(style={'font-size':'30px'})						
-					#portlet_tab3.tab-pane 
-						div.page-header
-							h4 Cuentas linqueadas
-						
-						div.col-lg-4(style={background:'#ffbb00', height:'300px', 'border-bottom-left-radius':'10px', 'border-top-left-radius':'10px'})
-							div.page-header(style={'margin-top':'0px'})
-								h4(style={color:'#fff'}) Cuenta local
-							table.table.table-condensed.table-hover.centrado
-								tbody
-									tr
-										td.blackb ID
-										td.black 
-											div.psus #{user._id}
-									tr
-										td.blackb EMAIL
-										td.black 
-											div.psus #{user.local.email}
-									tr
-										td.blackb USUARIO
-										td.black 
-											div.psus #{user.profile.username}												
-						div.col-lg-4(style={background:'#3B5998', height:'300px'})
-							div.page-header(style={'margin-top':'0px'})
-								h4(style={color:'#fff'}) Facebook
-							if (user.facebook && user.facebook.token)
-								table.table.table-condensed.table-hover
-									tbody
-										tr
-											td.blackb ID
-											td.black 
-												div.psus #{user.facebook.id}
-										tr
-											td.blackb TOKEN
-											td.black 
-												div.psus #{user.facebook.token}
-										tr
-											td.blackb EMAIL
-											td.black 
-												div.psus #{user.facebook.email}
-										tr
-											td.blackb NOMBRE
-											td.black 
-												div.psus #{user.facebook.name}
-
-								a(href="/app/unlink/facebook" style={width:'100%'}).btn.btn-primary Deslinquear
-							else
-								a(href="/app/connect/facebook" style={width:'100%'}).btn.btn-primary Conectar con Facebook
-							
-						div.col-lg-4(style={background:'#00ACED', height:'300px', 'border-bottom-right-radius':'10px', 'border-top-right-radius':'10px'})
-							div.page-header(style={'margin-top':'0px'})
-								h4(style={color:'#fff'}) Twitter
-							if (user.twitter && user.twitter.token)
-								table.table.table-condensed.table-hover
-									tbody
-										tr
-											td.blackb ID
-											td.black 
-												div.psus #{user.twitter.id}
-										tr
-											td.blackb TOKEN
-											td.black 
-												div.psus #{user.twitter.token}
-										tr
-											td.blackb NOMBRE USUARIO
-											td.black 
-												div.psus #{user.twitter.username}
-										tr
-											td.blackb NOMBRE
-											td.black 
-												div.psus #{user.twitter.displayName}
-								a(href="/app/unlink/twitter" style={width:'100%'}).btn.btn-primary Deslinquear
-							else
-								a(href="/app/connect/twitter" style={width:'100%'}).btn.btn-primary Conectar con Twitter
+	.section.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
+		// Header Inicio Perfil +  Nombre Usuario
+		.container
+			.row
+				.col-md-12
+					h1#iniciar.title
+						i.fa.fa-user(style={'margin-left':'5px', 'margin-right': '5px'})
+						span #{user.profile.nombre} #{user.profile.apellidos}
+		// Contenedor del contenido del perfil
+		.container
+			.row
+				// Columna Izquierda
+				.col-md-4
+					.row(style="margin:0 5 0 5px;")
+						div(style={background: 'rgba(0,50,187, 0.1)', width: '100%', padding:'10 5 10 5px'}).form-horizontal.text-center
+							img.img-circle.img-responsive.img-thumbnail(src="#{user.profile.picture}" style={'margin': '0 auto', 'max-width':'200'})
+							.space
+							a.btn.btn-default(href="/app/denuncias/nueva" style={'min-width': '250px'}) Nueva Denuncia
+							.space
+							a.btn.btn-default(style={'min-width': '250px'}) Editar Perfil
+							.space
+							a.btn.btn-default(style={'width': '250px'}) Editar/Eliminar Denuncia
+							.space
+							a.btn.btn-danger(href="/app/logout" style={'width': '250px'}) Cerrar Sesión
+				// Columna Central
+				.col-md-8
+					.row(style="margin:0 5 0 5px;")
+						div(style={background: 'rgba(0,50,187, 0)', width: 'auto; margin: 0 auto;'}).form-horizontal.text-center
+							#accordion.panel-group(role='tablist', aria-multiselectable='true')
+								.panel.panel-default
+									// Notificaciones
+									#headingOne.panel-heading(role='tab')
+										h4.panel-title
+											a(data-toggle='collapse' data-parent='#accordion' href='#notificaciones' aria-expanded='true' aria-controls='notificaciones')
+												.col-lg-12.text-center
+													i.fa.fa-inbox
+													|  Notificaciones
+												div(style="position: absolute;top: 30%;left:1%;")
+													span.badge(style="background:#5BC0DE;float:left") 100
+													span.badge(style="background:#D9534F;float:right") 3
+									#notificaciones.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingOne')
+										.panel-body(style='text-align: center;height: 60%;overflow-y:scroll;')
+											each noti in misNotificaciones
+												.row(style={margin: '0 5 10 5px', background: 'rgba(0,50,187,0.1)', padding: '5%'})
+													if (noti.vista == false)
+														.col-lg-12.btn.btn-danger(style="margin-bottom: 10px") NUEVA
+													.col-xs-2
+														a(target="_blank" href="/app/usuarios/#{noti.id_usuario_from}")
+															img.img-responsive.img-thumbnail.img-circle(src="#{noti.profile_from.picture}" style={'min-width':'50px'})
+														if(noti.tipo == 'DENUNCIA_CERCA')
+															span.fa-stack.fa-lg
+																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
+																i.fa.fa-map-marker.fa-stack-1x.fa-inverse
+														else
+															span.fa-stack.fa-lg
+																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
+																i.fa.fa-comments.fa-stack-1x.fa-inverse															
+													.col-xs-10
+														.col-lg-12
+															p.lead #{noti.fecha}
+														p.lead 
+															span 
+																a(target="_blank" href="/app/usuarios/#{noti.id_usuario_from}") #{noti.profile_from.nombre} #{noti.profile_from.apellidos}
+															if(noti.tipo == 'DENUNCIA_CERCA')
+																|  ha publicado una 
+																span 
+																	a(href="/app/denuncia/#{noti.id_denuncia}") denuncia
+																|  " titulo denuncia " cerca de tu ubicación
+															else
+																|  ha comentado una 
+																span
+																	a(href="/app/denuncia/#{noti.id_denuncia}") denuncia tuya
+								.panel.panel-default
+									// Notificaciones
+									#headingTwo.panel-heading(role='tab')
+										h4.panel-title
+											a(data-toggle='collapse', data-parent='#accordion', href='#mis_denuncias', aria-expanded='true', aria-controls='mis_denuncias')
+												i.fa.fa-files-o
+												| Mis Denuncias
+									#mis_denuncias.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTwo')
+										.panel-body(style='text-align: center;height: 60%;overflow-y:scroll;')
+											p.lead ¡Has realizado #{misDenuncias.length} denuncias!
+											- var count = 1;
+											each denuncia in misDenuncias
+												// Contenedor
+												.row(style={margin: '0 5 10 5px', background: 'rgba(0,50,187,0.1)', padding: '5%'})
+													.col-lg-12
+														// Nombre denuncia
+														p.lead.btn-warning(style={'word-break':'break-all', 'border':'1px solid #fff'})
+															span(style={float:'left'}) ##{count} - &nbsp;
+															| #{denuncia.titulo}
+														// Fecha Denuncia
+														p.btn-default.lead(style={margin: '10 0 20 0px'}) #{denuncia.fecha}
+													.col-lg-12
+														.col-md-4(style={'padding':'0px'})
+															div(style={width: '100%', margin: '0 auto'})
+																if(denuncia.imagenes != null)
+																	img.img-thumbnail.img-responsive(src="#{denuncia.imagenes[0].path}" style={'width':'100%'})
+																else
+																	img.img-thumbnail.img-responsive(src="/files/images/bg.jpg" style={'width':'100%'})
+																// Coments Tags Imágenes
+																.col-lg-12(style={'padding':'10 0 0 0px'}).text-center
+																	p
+																		i.fa.fa-comments
+																			if denuncia.comentarios
+																				| &nbsp #{denuncia.comentarios.length} &nbsp
+																			else 
+																				| &nbsp 0 &nbsp	
+																		i.fa.fa-image
+																			if denuncia.imagenes
+																				| &nbsp #{denuncia.imagenes.length} &nbsp
+																			else 
+																				| &nbsp 0 &nbsp
+																		i.fa.fa-tags
+																			if denuncia.tags.length > 0
+																				| &nbsp #{denuncia.tags.length} &nbsp
+																			else 
+																				| &nbsp 0 &nbsp																		
+														.col-md-8(style={'padding':'0px'})
+															.col-lg-12(style={overflow: 'hidden', 'height': '23%', padding: '5px', 'white-space':'normal', 'text-overflow':'ellipsis', 'word-break':'break-all'}) !{denuncia.descripcion}														
+															.col-md-4(style={'padding':'10 0 0 0px'})
+																.input-group(style={'border-radius': '5px', padding: '0 5 0 5px'})
+																	span.input-group-addon
+																		i.fa.fa-eye
+																	a(href="/app/denuncia/#{denuncia.gid}")
+																		input.form-control.btn-default(type="button" value="VER" style={'border-top-right-radius': '5px', 'border-bottom-right-radius': '5px'})
+															.col-md-4(style={'padding':'10 0 0 0px'})
+																.input-group(style={'border-radius': '5px', padding: '0 5 0 5px'})
+																	span.input-group-addon
+																		i.fa.fa-pencil-square-o
+																	a(href="#")
+																		input.form-control.btn-default(type="button" value="EDITAR" style={'border-top-right-radius': '5px', 'border-bottom-right-radius': '5px'})														
+															.col-md-4(style={'padding':'10 0 0 0px'})
+																.input-group(style={'border-radius': '5px', padding: '0 5 0 5px'})
+																	span.input-group-addon
+																		i.fa.fa-trash(style={color: '#'})
+																	a(href="#")
+																		input.form-control.btn-danger(type="button" value="ELIMINAR" style={'border-top-right-radius': '5px', 'border-bottom-right-radius': '5px'})
+												- count++;
+											
