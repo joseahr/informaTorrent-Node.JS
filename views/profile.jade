@@ -81,15 +81,16 @@ block content
 												| Mis Denuncias
 									#mis_denuncias.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTwo')
 										.panel-body(style='text-align: center;height: 60%;overflow-y:scroll;')
-											p.lead ¡Has realizado #{misDenuncias.length} denuncias!
+											p.lead ¡Has realizado 
+												span#has_realizado.lead #{misDenuncias.length} 
+												| denuncias!
 											- var count = 1;
 											each denuncia in misDenuncias
 												// Contenedor
-												.row(style={margin: '0 5 10 5px', background: 'rgba(0,50,187,0.1)', padding: '5%'})
+												.row(id="#{denuncia.gid}" style={margin: '0 5 10 5px', background: 'rgba(0,50,187,0.1)', padding: '5%'})
 													.col-lg-12
 														// Nombre denuncia
 														p.lead.btn-warning(style={'word-break':'break-all', 'border':'1px solid #fff'})
-															span(style={float:'left'}) ##{count} - &nbsp;
 															| #{denuncia.titulo}
 														// Fecha Denuncia
 														p.btn-default.lead(style={margin: '10 0 20 0px'}) #{denuncia.fecha}
@@ -124,19 +125,39 @@ block content
 																.input-group(style={'border-radius': '5px', padding: '0 5 0 5px'})
 																	span.input-group-addon
 																		i.fa.fa-eye
-																	a(href="/app/denuncia/#{denuncia.gid}")
+																	a(target="_blank" href="/app/denuncia/#{denuncia.gid}")
 																		input.form-control.btn-default(type="button" value="VER" style={'border-top-right-radius': '5px', 'border-bottom-right-radius': '5px'})
 															.col-md-4(style={'padding':'10 0 0 0px'})
 																.input-group(style={'border-radius': '5px', padding: '0 5 0 5px'})
 																	span.input-group-addon
 																		i.fa.fa-pencil-square-o
-																	a(href="#")
+																	a(target="_blank" href="/app/editar?id=#{denuncia.gid}")
 																		input.form-control.btn-default(type="button" value="EDITAR" style={'border-top-right-radius': '5px', 'border-bottom-right-radius': '5px'})														
 															.col-md-4(style={'padding':'10 0 0 0px'})
 																.input-group(style={'border-radius': '5px', padding: '0 5 0 5px'})
 																	span.input-group-addon
-																		i.fa.fa-trash(style={color: '#'})
-																	a(href="#")
-																		input.form-control.btn-danger(type="button" value="ELIMINAR" style={'border-top-right-radius': '5px', 'border-bottom-right-radius': '5px'})
+																		i.fa.fa-trash
+																	button.form-control.btn-danger(onclick="eliminar('#{denuncia.gid}')" style={'border-top-right-radius': '5px', 'border-bottom-right-radius': '5px'}) ELIMINAR
 												- count++;
-											
+block script
+	script.
+		function eliminar(id){
+			//alert(id);
+			BootstrapDialog.show({
+				title: 'Eliminar denuncia',
+				message: '¿Estás seguro de eliminar esta denuncia?',
+				type: BootstrapDialog.TYPE_INFO,
+				buttons: [
+					{label: 'Aceptar', action: function(dialog){
+						$.get('/app/eliminar?id=' + id,
+						function(res){
+							dialog.close();
+							$('#' + id).remove();
+							$('#has_realizado').html((parseInt($('#has_realizado').html()) -1) + ' ');
+							BootstrapDialog.alert(res);
+						});
+					}}, 
+					{label: 'Cancelar', action: function(dialog){dialog.close();}}
+				]
+			});
+		}										

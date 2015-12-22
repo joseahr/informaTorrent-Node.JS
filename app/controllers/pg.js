@@ -65,9 +65,8 @@ ContPg.prototype.saveDenuncia = function(req, res){
 		var user_id = validator.escape(req.user._id); // id_usuario
 		var tempDirID = req.body.tempDir; // nombre del directorio temporal donde se guardan las imágenes
 		
-		var tags_ = req.body.tags;  // tags introducidos por el usuarios
+		var tags_ = req.body.tags.length > 0 ? req.body.tags : undefined;  // tags introducidos por el usuarios
 		console.log(tags_);
-		var tags = '{'; // hay que convertirlo en {'tag1', 'tag2', ...} para introducirlo en pgsql
 		
 		var denuncia_io = req.body;
 		denuncia_io.id_usuario = user_id;
@@ -78,33 +77,39 @@ ContPg.prototype.saveDenuncia = function(req, res){
 		if(wkt == undefined) errormsg += '· Debe agregar un punto, línea o polígono\n';	
 		
 		//  Formateamos los tags para introducirlos como ARRAY(TEXT) en pgsql
-		tags_.forEach(function(tag, index, that){
-			
-			tag = tag.replace(/["' # $ % & + ` - \s]/g, "");
-			if (!validator.isLength(tags, 1, 10)){
-				response.type = 'error';
-				response.msg += 'El tag "' + tag + '" no debe tener más de 10 caracteres\n'
-			}
-			if(index == that.length - 1)
-			{
-				if (tag == '')
-					tags = tags + '}';
+		if(tags_){
+			var tags = '{'; // hay que convertirlo en {'tag1', 'tag2', ...} para introducirlo en pgsql
+			tags_.forEach(function(tag, index, that){
+				
+				tag = tag.replace(/["' # $ % & + ` - \s]/g, "");
+				if (!validator.isLength(tags, 1, 10)){
+					response.type = 'error';
+					response.msg += 'El tag "' + tag + '" no debe tener más de 10 caracteres\n'
+				}
+				if(index == that.length - 1)
+				{
+					if (tag == '')
+						tags = tags + '}';
+					else
+						tags = tags + ',' + tag + '}';
+				}
+				else if(index == 0)
+				{
+					if (tag != '')
+						tags = tags + tag;
+				}
 				else
-					tags = tags + ',' + tag + '}';
-			}
-			else if(index == 0)
-			{
-				if (tag != '')
-					tags = tags + tag;
-			}
-			else
-			{
-				if (tag != '')
-					tags = tags + ',' + tag;
-					
-			}
-		});
-		
+				{
+					if (tag != '')
+						tags = tags + ',' + tag;
+						
+				}
+			});
+		}
+		else {
+			var tags = '{}';
+
+		}
 		// Si hay algún error en los datos devolvemos la denuncia
 		if(errormsg.length > 0){
 			console.log('error_mensaje --> ' + errormsg);
@@ -594,7 +599,7 @@ var queries = {
 		updateDenuncia: function(id_denuncia, titulo, contenido, wkt, tags){
 			return "UPDATE denuncias SET (titulo, descripcion, the_geom, tags) = ("
 			+ "'" + titulo + "','" + contenido + "', st_geomfromtext('" + wkt + "',4258),'" + tags + "')" +
-					" WHERE gid='" + id_denuncia + "'";//TODO
+					" WHERE gid='" + id_denuncia + "'";
 		},
 		denuncias: function(page){
 			return "SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha," +
@@ -677,183 +682,207 @@ var queries = {
  * Update Denuncia
  */
 ContPg.prototype.updateDenuncia = function(req, res){
-	
-	var id_denuncia = req.query.id;
-	
-	var response = {};
-	var errormsg = '';
-	
-	var imagenes = [];
-	var titulo = req.body.titulo.replace(/["' # $ % & + ` -]/g, "");
-	var contenido = req.body.contenido.replace(/["' # $ % & + ` -]/g, "");
-	var wkt = req.body.wkt;
-	//var descImgs = req.body.images_desc;
-	//console.log(descImgs);
-	
-	var user_id = validator.escape(req.user._id);
-	var tempDirID = req.body.tempDir;
-	
-	var tags_ = req.body.tags;
-	var tags = '{';
-	
-	// comprbando datos de la denuncia
-	if(!validator.isLength(titulo, 5, 50)) errormsg += '· El título debe tener entre 5 y 50 caracteres.\n';
-	if(!validator.isLength(contenido, 50, 10000)) errormsg += '· El contenido debe tener entre 100 y 10000 caracteres.\n';
-	if(wkt == undefined) errormsg += '· Debe agregar un punto, línea o polígono\n';	
-	
-	//  Formateamos los tags para introducirlos como ARRAY(TEXT) en pgsql
-	tags_.forEach(function(tag, index, that){
+	process.nextTick(function(){
+		var response = {}; // La respuesta que se envía
+		var errormsg = ''; // mensaje de errores
 		
-		tag = tag.replace(/["' # $ % & / \ ( ) + ` { } - \s]/g, "");
-		if (!validator.isLength(tags, 0, 10)){
-			response.type = 'error';
-			response.msg += 'El tag "' + tag + '" no debe tener más de 10 caracteres\n'
-		}
-		if(index == that.length - 1)
-		{
-			if (tag == '')
-				tags = tags + '}';
-			else
-				tags = tags + ',' + tag + '}';
-		}
-		else if(index == 0)
-		{
-			if (tag != '')
-				tags = tags + tag;
-		}
-		else
-		{
-			if (tag != '')
-				tags = tags + ',' + tag;
+		var imagenes = []; // Lista de imágenes a guardar en la base de datos
+		var titulo = req.body.titulo.replace(/["' # $ % & + ` -]/g, " ");
+		var contenido = req.body.contenido.replace(/["' # $ % & + ` -]/g, " ");
+		var wkt = req.body.wkt;
+		
+		var user_id = validator.escape(req.user._id); // id_usuario
+		var tempDirID = req.body.tempDir; // nombre del directorio temporal donde se guardan las imágenes
+		
+		var tags_ = req.body.tags.length > 0 ? req.body.tags : undefined;  // tags introducidos por el usuarios
+		console.log(tags_);
+		
+		var denuncia_io = req.body;
+		denuncia_io.id_usuario = user_id;
+		
+		// comprobando datos de la denuncia
+		if(!validator.isLength(titulo, 5, 50)) errormsg += '· El título debe tener entre 5 y 50 caracteres.\n';
+		if(!validator.isLength(contenido, 50, 10000)) errormsg += '· El contenido debe tener entre 50 y 10000 caracteres.\n';
+		if(wkt == undefined) errormsg += '· Debe agregar un punto, línea o polígono\n';	
+		
+		//  Formateamos los tags para introducirlos como ARRAY(TEXT) en pgsql
+		if(tags_){
+			var tags = '{'; // hay que convertirlo en {'tag1', 'tag2', ...} para introducirlo en pgsql
+			tags_.forEach(function(tag, index, that){
 				
-		}
-	});
-	
-	// Si hay algún error en los datos devolvemos la denuncia
-	if(errormsg.length > 0){
-		console.log('error_mensaje --> ' + errormsg);
-		response.type = 'error';
-		response.msg = errormsg;
-		return res.send(response);			
-	};
-
-	// Nos conectamos a la base de Datos Carto_Torrent para comprobar que la geometría
-	// introducida está dentro de torrent
-	// Utilizamos la función ST_Contains(geom, geom) de postGIS
-	var clientCarto = new pg.Client(connectionStringCarto);
-	
-	clientCarto.connect(function(errCartoConnect){
-		if(errCartoConnect) {
-			return console.error('error fetching client from pool', errCartoConnect);
-		}
-		console.log(wkt);
-		// Consulta para saber si el punto está dentro 
-		clientCarto.query(queries.torrentContainsGeom(wkt),
-		function(errorCartoIn, estaDentro){
-			// error al realizar la consulta
-			clientCarto.end();
-			if(errorCartoIn) return console.error('error en la consulta espacial', errorCartoIn);
-			
-			console.log(estaDentro.rows[0].st_contains);
-			
-			// Si la denuncia no está dentro...
-			if (estaDentro.rows[0].st_contains == false){
-				console.log('Tu no eres del barrio mierda');
-				response.type = 'error';
-				response.msg = 'La geometría debe estar en Torrente';
-				return res.send(response);
-			}
-			else {
-				// La geometría está dentro de Torrent
-				
-				dir.files(config.TEMPDIR + "/" + tempDirID, function(err, files) {
-					// Recorremos el directorio temporal en busca de imágenes añadidas a la denuncia.
-					// Almacenamos el path (TODO: almacenar también la descripción) en una lista
-					// para luego introducir esos path en la bdd
-					  if (err) {
-						  errormsg += '· Fail' +err;
-						  console.log('error_mensaje --> ' + errormsg);
-						  response.type = 'error';
-						  response.msg = errormsg;
-						  return res.send(response);
-					  }
-					  
-					  // Para cada imagen subida la movemos del directorio temporal 
-					  // a la carpeta final
-					  files.forEach(function(ruta) {
-						  
-						  console.log('img: ' + path.basename(ruta));
-					    
-						  var from = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
-						  var to = path.join(config.UPLOADDIR, tempDirID +"-" + path.basename(ruta));
-						  
-						 // Movemos la imagen desde la carpeta temporal hasta la carpeta final
-						 fs.rename(from, to, function(err) {
-							 if(err) errormsg += err;
-							 
-							 imagenes.push("/files/denuncias/" + path.basename(to)); 
-							 console.log('imgs list(' + imagenes.length + '): ' + imagenes);
-						  
-						 });
-					  });
-				});
-				client = new pg.Client(connectionString);		
-				client.connect(function(err){
-					if(err) {
-						return console.error('error fetching client from pool', err);
-					}
-					// SI hay un error en la conexión a postgre lo mostramos
-			  
-					// Si no ejecutamos la consulta para obtener las denuncias
-			  
-					client.query(queries.updateDenuncia(id_denuncia, titulo, contenido, wkt, tags), 
-					function(err, result){
-						//console.log(result.rows);
-						console.log('e11111111');
-						if (err){
-							client.end();
-							return console.error('error', err);
-						}
-						// Añadir las imágenes
-						var values = '';
+				tag = tag.replace(/["' # $ % & + ` - \s]/g, "");
+				if (!validator.isLength(tags, 1, 10)){
+					response.type = 'error';
+					response.msg += 'El tag "' + tag + '" no debe tener más de 10 caracteres\n'
+				}
+				if(index == that.length - 1)
+				{
+					if (tag == '')
+						tags = tags + '}';
+					else
+						tags = tags + ',' + tag + '}';
+				}
+				else if(index == 0)
+				{
+					if (tag != '')
+						tags = tags + tag;
+				}
+				else
+				{
+					if (tag != '')
+						tags = tags + ',' + tag;
 						
-						if(imagenes.length == 0){
-							// Si no hay imágenes... Denuncia guardada correctamente
-							client.end();
-							console.log('guardada - no imgs');
-							response.type = 'success';
-							response.msg = 'Denuncia Guardada Correctamente';
-							res.send(response);
+				}
+			});
+		}
+		else {
+			var tags = '{}';
+
+		}
+		// Si hay algún error en los datos devolvemos la denuncia
+		if(errormsg.length > 0){
+			console.log('error_mensaje --> ' + errormsg);
+			response.type = 'error';
+			response.msg = errormsg;
+			return res.send(response);			
+		};
+
+		// Nos conectamos a la base de Datos Carto_Torrent para comprobar que la geometría
+		// introducida está dentro de torrent
+		// Utilizamos la función ST_Contains(geom, geom) de postGIS
+		
+		var clientCarto = new pg.Client(connectionStringCarto);
+		clientCarto.connect(function(errCartoConnect){
+			if(errCartoConnect) {
+				return console.error('error fetching client from pool', errCartoConnect);
+			}
+			console.log(wkt);
+			// Consulta para saber si el punto está dentro 
+			clientCarto.query(queries.torrentContainsGeom(wkt),
+			function(errorCartoIn, estaDentro){
+				// error al realizar la consulta
+				clientCarto.end();
+				if(errorCartoIn) return console.error('error en la consulta espacial', errorCartoIn);
+				
+				console.log(estaDentro.rows[0].st_contains);
+				
+				// Si la denuncia no está dentro...
+				if (estaDentro.rows[0].st_contains == false){
+					console.log('Tu no eres del barrio mierda');
+					response.type = 'error';
+					response.msg = 'La geometría debe estar en Torrente';
+					return res.send(response);
+				}
+				else if(wkt.match(/LINESTRING/g) && estaDentro.rows[0].st_length > 500){
+					// Comprobar en caso de línea no supere cierta longitud (1000 metros)
+					response.type = 'error';
+					response.msg = 'La línea no debe tener una longitud mayor a 500 metros';
+					return res.send(response);
+				}
+				else if(wkt.match(/POLYGON/g) && estaDentro.rows[0].st_area > 10000){
+					// Comprobar en caso de polígono no supere cierto area
+					response.type = 'error';
+					response.msg = 'El polígono no debe superar un area de 10000 metros cuadrados';
+					return res.send(response);
+				}
+				else {
+					// La geometría está dentro de Torrent
+					
+					dir.files(config.TEMPDIR + "/" + tempDirID, function(err, files) {
+						// Recorremos el directorio temporal en busca de imágenes añadidas a la denuncia.
+						// Almacenamos el path (TODO: almacenar también la descripción) en una lista
+						// para luego introducir esos path en la bdd
+						  if (err) {
+							  errormsg += '· Fail' +err;
+							  console.log('error_mensaje --> ' + errormsg);
+							  response.type = 'error';
+							  response.msg = errormsg;
+							  return res.send(response);
+						  }
+						  
+						  // Para cada imagen subida la movemos del directorio temporal 
+						  // a la carpeta final
+						  files.forEach(function(ruta) {
+							  
+						    console.log('img: ' + path.basename(ruta));
+						    
+							  var from = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
+							  var to = path.join(config.UPLOADDIR, tempDirID +"-" + path.basename(ruta));
+							  
+							 // Movemos la imagen desde la carpeta temporal hasta la carpeta final
+							 fs.rename(from, to, function(err) {
+								 if(err) errormsg += err;
+								 
+								 imagenes.push("/files/denuncias/" + path.basename(to)); 
+								 console.log('imgs list(' + imagenes.length + '): ' + imagenes);
+							  
+							 });
+						  });
+					});
+					
+					client = new pg.Client(connectionString);
+					client.connect(function(err){
+						if(err) {
+							return console.error('error fetching client from pool', err);
 						}
-						else
-						{
-							// values para la consulta SQL
-							imagenes.forEach(function(img, index, that){		
-								//var desc = img.desc.replace(/["' # $ % & / \ ( ) + ` { } - \s]/g, "");
-								if (index == that.length - 1)
-									values += "('" + img + "','" + id_denuncia + "','" + user_id + "')";
-								else
-									values += "('" + img + "','" + id_denuncia + "','" + user_id + "'),";
-							});
+						// SI hay un error en la conexión a postgre lo mostramos
+				  
+						// Si no ejecutamos la consulta para obtener las denuncias
+				  
+						client.query(queries.updateDenuncia(user_id, titulo, contenido, wkt, tags), 
+						function(err, result){
+							//console.log(result.rows);
 							
-							// Insertamos las paths e info de las imágenes en la bdd
-							client.query(queries.insertImagenes(values), 
-							function(err1, result1){
+							if (err){
 								client.end();
-								console.log('e222222222222222');
-								if (err1)
-									return console.error('error en la consulta', err1);
-								
-								console.log('guardada');
+								return console.error('error', err);
+							}
+							// ID de la denuncia introducida, lo obtenemos ya que lo hemos devuelto 
+							// en la consulta de INSERT --> returning gid;
+							var id_denuncia = result.rows[0].gid;
+							
+							denuncia_io.id = id_denuncia;
+							
+							// Añadir las imágenes
+							var values = '';
+							
+							if(imagenes.length == 0){
+								client.end();
+								// Si no hay imágenes... Denuncia guardada correctamente
+								console.log('guardada - no imgs');
 								response.type = 'success';
-								response.msg = 'Denuncia Actualizada Correctamente';
+								response.msg = 'Denuncia Guardada Correctamente';
+								response.denuncia = denuncia_io;
 								res.send(response);
-										
-							}); // insert into imagenes
-						}}); // cliet.query(insert into denuncias)
-				}); // Pg connect
-			}});	// Geom está dentro de Torrente, function(err, estaDentro));
-	}); // Pg connect Carto
+							}
+							else
+							{
+								// values para la consulta SQL
+								imagenes.forEach(function(img, index, that){		
+									if (index == that.length - 1)
+										values += "('" + img + "','" + id_denuncia + "','" + user_id + "')";
+									else
+										values += "('" + img + "','" + id_denuncia + "','" + user_id + "'),";
+								});
+								
+								// Insertamos las paths e info de las imágenes en la bdd
+								client.query(queries.insertImagenes(values), 
+								function(err1, result1){
+									client.end();
+									if (err1)
+										return console.error('error en la consulta', err1);
+									console.log('guardada');
+									response.type = 'success';
+									response.msg = 'Denuncia Guardada Correctamente';
+									response.denuncia = denuncia_io;
+									res.send(response);
+											
+								}); // insert into imagenes
+							}}); // cliet.query(insert into denuncias)
+					}); // Pg connect
+				}});	// Geom está dentro de Torrente, function(err, estaDentro));
+		}); // Pg connect Carto
+	});
 }; // Fin saveDenuncia
 
 module.exports = ContPg;

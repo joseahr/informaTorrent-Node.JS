@@ -1,176 +1,151 @@
-extends layout
-block script
-	script.
-		var tags=[];
-		var denuncia_id = "#{denuncia.gid}";
-		var json = !{denuncia.geometria};
-	script(src='/javascripts/tags.js')
-	// AÑADIR TAGS
+extends map-layout
+// block link
+block link
 	link(rel="stylesheet" href='//cdnjs.cloudflare.com/ajax/libs/dropzone/3.8.4/css/dropzone.css')
+	link(rel="stylesheet" href="/javascripts/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.css")
+	style.
+		.bootstrap-tagsinput {
+		    width: 100%;
+		}
+		.label {
+		    line-height: 2 !important;
+		}
 	// CSS DROPZONE
+// Botones mapa
+block botonesmapa
+	button#dibujar.btn.btn-small.btn-info.btn-map(type='button', style='position: absolute; right: 0.5em; bottom: 40%; min-width: 1.375em')
+		i.fa.fa-pencil
+	button#rellenar.btn.btn-small.btn-info.btn-map.cd-btn(type='button', style='position: absolute; right: 0.5em; bottom: 50%; min-width: 1.375em')
+		i.fa.fa-list-alt
+	button#eliminar.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 50%; min-width: 1.375em')
+		i.fa.fa-trash
+	button#editar.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 40%; min-width: 1.375em')
+		i.fa.fa-pencil-square-o
+	button#punto.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 30%; min-width: 1.375em')
+		img.img-responsive(src="http://www.fontsaddict.com/images/icons/png/15253.png" style="max-width: 1.375em; min-width: 1.375em; max-height: 1em")
+	button#linea.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 20%; min-width: 1.375em')
+		img.img-responsive(src="http://www.clker.com/cliparts/3/d/6/b/11949947211019452702polyline.svg.hi.png" style="max-width: 1.375em; min-width: 1.375em; max-height: 1em")
+	button#poligono.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 10%; min-width: 1.375em')
+		img.img-responsive(src="http://uxrepo.com/static/icon-sets/windows/svg/vector-polygon.svg" style="max-width: 1.375em; min-width: 1.375em; max-height: 1em")
+// Panel lateral - rellenar denuncia
+block panel-lateral
+	.cd-panel.from-right
+		.cd-panel-header
+			h1(style="margin-top: 2%; color: #55ACEE !important; font-size: 20px;") NUEVA DENUNCIA
+			a.cd-panel-close(href='#0') Close
+		.cd-panel-container
+			.cd-panel-content 
+				form.form-horizontal
+					.input-group(style={'margin-top':'5px'})
+						span.input-group-addon Título
+						input#titulo.form-control.btn-default(type='text', name="titulo", placeholder='Añade un título')
+					.space
+					h4 Añade una descripción
+					textarea#contenido(name="contenido" rows='3' style={'height':'300px'}).form-control
+					.space
+					h4 Imágenes
+					div(id="file-dropzone" style={background:'#55ACEE', border:'1px dashed'})
+						.dz-message.text-center(style={color:'#fff'}) Arrastra imágenes o haz click aquí.
+					.space
+					h4 Tags
+					input.col-lg-12(id="tags" type="text" name="tags" placeholder="Introduce tags")
+					.col-lg-12.input-group.space(style={'margin-top':'5px', 'margin-bottom':'15px'})
+						span.input-group-addon
+							i.fa.fa-send.fa-fw
+						input#submitDenuncia.form-control.btn-success(type="button", value="Guardar Cambios")
+// block script
+block script
+	// TAGS
+	script(src="/javascripts/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.js")
+	// TinyMCE Editor
+	script(src="//cdn.tinymce.com/4/tinymce.min.js")
 	script(src='http://cdnjs.cloudflare.com/ajax/libs/dropzone/3.8.4/dropzone.min.js')
 	// JS DROPZONE
-	link(href="/stylesheets/form.css" rel="stylesheet")
-	//CSS Formulario nueva denuncia / editar denuncia
-	script(src="https://cdn.socket.io/socket.io-1.3.7.js")
-	// SOCKET.IO
-	link(rel="stylesheet" href="/javascripts/openlayers/ol3/ol.css" type="text/css")
-	// OPENLAYERS 3.11.1 CSS
-	script(src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.12/proj4.js")
-	// PROJ4JS
-	script(src="/javascripts/openlayers/ol3/ol.js")
-	// OPENLAYERS 3.11.1 JS
-	link(rel="stylesheet" href="/javascripts/openlayers/ol3-layerswitcher/src/ol3-layerswitcher.css")
-	// OPENLAYERS LAYERSWITCHER CSS
-	script(src="/javascripts/openlayers/ol3-layerswitcher/src/ol3-layerswitcher.js")
-	// OPENLAYERS LAYERSWITCHER CSS
-	script(src="/javascripts/openlayers/style.js")
-	script(src="/javascripts/openlayers/proj.js")
-	script(src="/javascripts/openlayers/capas.js")
-	script(src="/javascripts/openlayers/oleditar.js")
-	// JS CONFIG MAPA
 	script(src="/javascripts/uploadUpdate.js")
 	// JS CONFIG SUBIR IMÁGENES
 	script(type="text/javascript").
-		$(function(){
-			
-			$('textarea').sceditor('instance').val("!{denuncia.descripcion}");
-			// AÑADIMOS LA DESCRIPCIÓN DE LA DENUNCIA AL EDITOR
-			
-			$("#files").load("/app/getImagenesDenuncia?id=#{denuncia.gid}");
-			// OBTENEMOS LAS IMÁGENES DE LA DENUNCIA
-			
-			//AÑADIMOS LOS TAGS DE LA DENUNCIA
-		    "#{denuncia.tags}".split(',').forEach(function(tag){
-				console.log(tag);
-				$('#field1').val(tag);
-				$(".add-more").trigger('click');
-			});
-		    //////////////////////////////////////////////////
-			
-			// ALANTE/ATRAS DATOS DENUNCIA TAB		
-		    $('.btn-submit').on('click', function(e) {
-		        var formname = $(this).attr('name'); 
-		        var tabname = $(this).attr('href');
-		        e.preventDefault();
-		        if ($('#' + formname)[0].checkValidity()) { /* Only works in Firefox/Chrome need polyfill for IE9, Safari. http://afarkas.github.io/webshim/demos/ */
-		            $('ul.nav li a[href="' + tabname + '"]').parent().removeClass('disabled');
-		            $('ul.nav li a[href="' + tabname + '"]').trigger('click');
-		            if(tabname=='#mapa')
-		            	setTimeout(showMap, 500);
-		        }
-		
-		    });
-		    
-		});
+		// TAGS
+		var denuncia_id = '#{denuncia.gid}';
 
-block content
-	div.page-header
-		h1 Nueva denuncia 
-			small(style={float:'right'}) formulario para añadir nueva denuncia
-	br
-	p En este apartado podrás añadir una nueva denuncia. Es importante que tengas en
-		| cuenta los siguientes puntos: 
-	ol
-		li Explica con claridad el motivo de tu denuncia. 
-		li Trata de proporcionar la mayor información posible.
-		li Porporciona la localización correcta.
-		li Añade TAGS que identifiquen el tipo de denuncia.
-		li Añade información visual.
-	.board
-		.board-inner
-			ul#myTab.nav.nav-tabs
-				.liner
-				li.active
-					a(href='#general', data-toggle='tab', data-content='Título y Descripción', title='Información Básica')
-						span.round-tabs.one
-							i.glyphicon.glyphicon-pencil
-				li
-					a(href='#mapa', data-toggle='tab', data-content='Geometría de la denuncia', title='Información Geográfica')
-						span.round-tabs.two
-							i.glyphicon.glyphicon-globe
-				li
-					a(href='#etiquetas', data-toggle='tab', data-content='Tags informativos', title='Etiquetas')
-						span.round-tabs.three
-							i.glyphicon.glyphicon-tags
-				li
-					a(href='#fotos', data-toggle='tab', data-content='Imágenes', title='Inormación Visual')
-						span.round-tabs.four
-							i.glyphicon.glyphicon-picture
-				li
-					a(href='#confirmar', data-toggle='tab', data-content='Confirma tu denuncia', title='Confirmar')
-						span.round-tabs.five
-							i.glyphicon.glyphicon-ok
-		.tab-content(style={'min-height':'500px', 'background':'#f7f7f7', 'padding':'15px'})
-			#general.tab-pane.fade.in.active
-				h3.narrow.text-center Información Básica
-				p.narrow.text-center Debes explicar con claridad la información de tu denuncia.
-				form#home_form.form-horizontal.text-center
-					fieldset
-						button.btn-submit.btn.btn-success.btn-outline-rounded.green(type='submit', href='#mapa' name='home_form') Continuar
-							span.glyphicon.glyphicon-check(style='margin-left:10px;')
-				form#basico
-					div.input-group
-						span.input-group-addon Título
-						input#inTitulo(type="text", name="titulo" placeholder="Añade un título" value='#{denuncia.titulo}').form-control
-					br
-					div(style={'border-radius':'0px'}).well
-						h4 Añade una descripción
-						form
-							.form-group
-								textarea#txtEditor(name="descripcion" rows='3' style={'height':'300px'}).form-control
-			#mapa.tab-pane.fade
-				h3.narrow.text-center Información Geográfica
-				p.narrow.text-center Debes seleccionar con exactitud la posición de la denuncia.
-				form#home_form.form-horizontal.text-center(name='home_form', role='form')
-					fieldset
-						button.btn-submit.btn.btn-success.btn-outline-rounded.green(type='submit', href='#etiquetas', name='home_form') Continuar
-							span.glyphicon.glyphicon-check(style='margin-left:10px;')
-				div#map(style={'height':'450px'})
-					div#menuControl(style={width:'40%','position':'absolute', bottom:'10px', left:'0',right:'0',margin:'0 auto', 'z-index':'2'})
-						div.btn-group(display:'inline-block','data-toggle'='buttons' style={width:'100%',left:'0',right:'0',margin:'0 auto'}).box-shadow--6dp
-							label#pan.btn.btn-warning(style={width:'16.66%',margin:'0 auto'})
-								input(type="radio")
-								span.fa.fa-map(style={'font-size':'16px', color:'#000'})
-							label#editar.btn.btn-warning(style={width:'16.6666666%',margin:'0 auto'})
-								input(type="radio")
-								span.fa.fa-edit(style={'font-size':'16px', color:'#000'})
-							label#eliminar.btn.btn-warning(style={width:'16.6666666%',margin:'0 auto'})
-								input(type="radio")
-								span.fa.fa-trash(style={'font-size':'16px', color:'#000'})
-							label#punto.btn.btn-warning(style={width:'16.6666666%',margin:'0 auto'})
-								input(type="radio") 
-								div(style={background:'url("https://cdn1.iconfinder.com/data/icons/mirrored-twins-icon-set-hollow/512/PixelKit_point_marker_icon.png")','background-size':'contain', 'background-repeat':'no-repeat',height:'20px', 'background-position':'center'})
-							label#linea.btn.btn-warning(style={width:'16.6666666%',margin:'0 auto'})
-								input(type="radio")
-								div(style={background:'url("http://icons.iconarchive.com/icons/icons8/android/512/Maps-Polyline-icon.png")','background-size':'contain', 'background-repeat':'no-repeat',height:'20px', 'background-position':'center'})
-							label#poligono.btn.btn-warning(style={width:'16.6666666%',margin:'0 auto'})
-								input(type="radio") 
-								div(style={background:'url("http://icons.iconarchive.com/icons/icons8/android/512/Maps-Polygon-icon.png")','background-size':'contain', 'background-repeat':'no-repeat',height:'20px', 'background-position':'center'})
-			#etiquetas.tab-pane.fade
-				h3.narrow.text-center Etiquetas
-				p.narrow.text-center Añade etiquetas que identifiquen la denuncia.
-				form#home_form.form-horizontal.text-center(name='home_form', role='form')
-					fieldset
-						button.btn-submit.btn.btn-success.btn-outline-rounded.green(type='submit', href='#fotos', name='home_form') Continuar
-							span.glyphicon.glyphicon-check(style='margin-left:10px;')
-				form#et.form-horizontal.text-center
-					div#ig1.input-group
-						span#b1.btn.btn-success.input-group-addon.add-more +
-						input(autocomplete="off" class="form-control" id="field1" name="prof1" type="text" placeholder="Añade una etiquesta (5 - 15 caracteres)" data-items="8").form-control
-			#fotos.tab-pane.fade
-				h3.narrow.text-center Información Visual
-				p.narrow.text-center Este apartado es opcional, aunque recomendable.
-				form#home_form.form-horizontal.text-center(name='home_form', role='form').text-center
-					fieldset
-						button.btn-submit.btn.btn-success.btn-outline-rounded.green(type='submit', href='#confirmar', name='home_form') Continuar
-							span.glyphicon.glyphicon-check(style='margin-left:10px;')
-				h4 Selecciona imágenes y súbelas
-				form(id="file-dropzone" style={background:'#ffbb00', border:'1px dashed'})
-					.dz-message.text-center(style={color:'#00bbff'}) Arrastra imágenes o haz click aquí. 
-			#confirmar.tab-pane.fade
-				form#submitDenuncia.form-horizontal.text-center(name='submit', role='form' action="/" method= "POST")
-					fieldset
-						button#idbuttonSubmit.btn.btn-success.btn-outline-rounded.green(type='submit', name='submit') Finalizar
-							span.glyphicon.glyphicon-send(style='margin-left:10px;')
-		hr
+		var json = {type: JSON.parse('!{denuncia.geometria}').type, coordinates: JSON.parse('!{denuncia.geometria}').coordinates};
+
+		$('#titulo').val('#{denuncia.titulo}');
+		
+		function iniciarTags(){
+			$('#tags').tagsinput({
+				maxTags: 5,
+				maxChars: 8,
+				trimValue: true,
+				onTagExists: function(item, $tag) {
+					$tag.hide().fadeIn();
+					alert('Tag repetido');
+				}
+			});
+			
+			'#{denuncia.tags}'.split(',').forEach(function(tag){
+				$('#tags').tagsinput('add', tag);
+			});
+			
+		}
+		
+		function iniciarEditor(){
+			tinymce.init({
+				selector: 'textarea',
+				plugins: ['advlist autolink link lists charmap print preview hr anchor pagebreak',
+				'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking',
+				'save table contextmenu directionality emoticons template paste textcolor'],
+				theme: 'modern',
+				language_url: '/langs/es.js',
+				min_width: 300,
+				resize: false
+			});
+			$('#contenido').val('!{denuncia.descripcion}')
+		}
+		var aux = 0;
+		//open the lateral panel
+		$('.cd-btn').on('click', function(event){
+			$('.btn-map').css('z-index', '0');
+			$('.cd-panel-container').css('z-index','6');
+			$('.cd-panel-header').css('display', 'block');
+			$('.cd-panel-header').css('z-index','7');
+			$('.cd-panel').addClass('is-visible');
+			
+			if ($('header').css('display') == 'block'){
+				$('header').css('display', 'none');
+				$('#show_menu').removeClass('btn-danger');
+				$('#show_menu').addClass('btn-default');
+				$('#show_menu').empty();
+				$('#show_menu').append('<i class="fa fa-navicon" style="color: #fff"></i>');
+				$('header').addClass('fadeOutLeft');
+			}
+
+			if (aux == 0) {
+				iniciarEditor();
+				iniciarTags();
+				aux++;
+			}
+			
+		});
+		//clode the lateral panel
+		$('.cd-panel').on('click', function(event){
+			if( $(event.target).is('.cd-panel') || $(event.target).is('.cd-panel-close') ) { 
+				//$('.cd-panel-header').hide();
+				
+				$('.cd-panel').removeClass('is-visible');
+				$('.cd-panel-container').css('z-index','0');
+				$('.cd-panel-header').css('z-index','0');
+				$('.btn-map').css('z-index', '2');
+				event.preventDefault();
+			}
+		});
+		
+		// Mostrar menú dibujar geometría
+		$('#editar, #eliminar, #punto, #linea, #poligono').slideUp();
+		$('#dibujar').click(function(event){
+			if($('#editar').is(':visible') == false){
+				$('#editar, #eliminar, #punto, #linea, #poligono').slideDown();
+			}
+			else $('#editar, #eliminar, #punto, #linea, #poligono').slideUp();
+		});
+	// INTERACCIONES MAPA DIBUJAR ...
+	script(src="/javascripts/openlayers/oleditar.js")

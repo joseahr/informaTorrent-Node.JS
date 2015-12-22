@@ -70,11 +70,11 @@ html, body {
 
 .cd-panel {
   position: fixed;
+  visibility: hidden;
   top: 0px;
   left: 0;
   height: 100%;
   width: 100%;
-  visibility: hidden;
   -webkit-transition: visibility 0s 0.6s;
   -moz-transition: visibility 0s 0.6s;
   transition: visibility 0s 0.6s;
@@ -181,15 +181,12 @@ html, body {
 }
 .cd-panel-header {
   position: fixed;
+  top: 0px;
   width: 90%;
   height: 50px;
   line-height: 50px;
   background: rgba(255, 255, 255, 0.96);
-  z-index: 2;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
-  -webkit-transition: top 0.3s 0s;
-  -moz-transition: top 0.3s 0s;
-  transition: top 0.3s 0s;
 }
 .cd-panel-header h1 {
   font-weight: bold;

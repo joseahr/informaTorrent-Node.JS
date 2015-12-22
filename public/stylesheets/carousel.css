@@ -1,117 +1,69 @@
-<style>
-
-
-.carousel-caption h2 {
-
-	color: #fff;
-	padding: 5px;
-	background: rgba(200,50,0,0.5);
-	font-size: 1.5em;
-	border-radius: 15px;
+#thumbnail-preview-indicators {
+  position: relative;
+  overflow: hidden;
 }
-
-.carousel,
-.item,
-.active {
-    height: 100%;
+#thumbnail-preview-indicators .slides .slide-1, 
+#thumbnail-preview-indicators .slides .slide-2,
+#thumbnail-preview-indicators .slides .slide-3 {
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
 }
-
-.carousel {
-	height: 50%;
+    #thumbnail-preview-indicators,
+    #thumbnail-preview-indicators .slides,
+    #thumbnail-preview-indicators .slides .slide-1, 
+    #thumbnail-preview-indicators .slides .slide-2,
+    #thumbnail-preview-indicators .slides .slide-3 {
+      height: 480px;
+    }
+#thumbnail-preview-indicators .slides .slide-1 {
+  background-image: url(https://s3.amazonaws.com/ooomf-com-files/wdXqHcTwSTmLuKOGz92L_Landscape.jpg); 
 }
-
-.carousel-inner {
-    height: 100%;
+#thumbnail-preview-indicators .slides .slide-2 {
+  background-image: url(https://s3.amazonaws.com/ooomf-com-files/tU3ptNgGSP6U2fE67Gvy_SYDNEY-162.jpg);
 }
-
-/* Background images are set within the HTML using inline CSS, not here */
-
-.fill {
-    width: 100%;
-    height: 100%;
-    background-position: center;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    background-size: cover;
-    -o-background-size: cover;
+#thumbnail-preview-indicators .slides .slide-3 {
+  background-image: url(https://s3.amazonaws.com/ooomf-com-files/mtNrf7oxS4uSxTzMBWfQ_DSC_0043.jpg);
 }
-
-
-	.centerRow {
-		display: flex;
-    	flex-flow: row;
-    	justify-content: center;
-    	align-content: center;
-    	align-items: center;
-	}
-	.centerCol {
-		display: flex;
-    	flex-flow: column;
-    	justify-content: space-around;
-    	align-content: center;
-    	align-items: center;
-	}
-	
-	.center-item {
-		align-self: auto;
-	}
-	
-    .grid-block-container {
-    	height: auto;
-        background: url('https://photosbybishop.files.wordpress.com/2013/06/jbd_4266.jpg');
-    	background-size: cover;
-    	filter: grayscale(70%);
-    	
-
+#thumbnail-preview-indicators .carousel-inner .item .carousel-caption {
+  top: 20%;
+  bottom: inherit;
+}
+#thumbnail-preview-indicators .carousel-indicators li,
+#thumbnail-preview-indicators .carousel-indicators li.active {
+  position: relative;
+  width: 100px;
+  height: 8px;  
+}
+#thumbnail-preview-indicators .carousel-indicators li > .thumbnail {
+  position: absolute;
+  top: 0;
+  width: 100px;
+  display: none;
+  opacity: 0;
+  left: 50%;
+  margin-top: -80px;
+  margin-left: -50px;
+}
+#thumbnail-preview-indicators .carousel-indicators li:hover > .thumbnail,
+#thumbnail-preview-indicators .carousel-indicators li.active > .thumbnail {
+  display: block;
+  opacity: .8;
+}
+#thumbnail-preview-indicators .carousel-indicators li.active > .thumbnail:hover{
+  opacity: 1;
+}
+@media screen and (max-width : 480px) {    
+    #thumbnail-preview-indicators .carousel-indicators li,
+    #thumbnail-preview-indicators .carousel-indicators li.active {
+      width: 50px;
+      height: 8px;
+      position: relative;
     }
-    .grid-block {
-    	height: 300px;
-    	margin: 0 auto;
-    	text-align:center;
-    	display: flex;
-    	flex-flow: row;
-    	justify-content: center;
-    	align-content: center;
-    	align-items: center;
-    	padding: 5px;
+    #thumbnail-preview-indicators .carousel-indicators li > .thumbnail {
+       width: 50px;
+       left: 50%;
+       margin-top: -50px;
+       margin-left: -25px;
     }
-     
-    .caption {
-    	display: none;
-    	position: absolute;
-    	z-index: 1000;
-    	top: 0;
-    	left: 0;
-    	background: rgba(200, 50, 0, 0.5);
-    	width: 100%;
-    	height: 100%;
-    	border-radius: 50px;
-    	
-    }
-    .caption h3, .caption p {
-    	margin: 20px;
-    }
-    .caption h3 {
-    	font-weight: bold;
-    	color: #00bbff;
-    	margin: 20px 20px 10px;
-    }
-    .caption p {
-    	color: #fff;
-    	font-size: 1.5em;
-    	line-height: 1.0em;
-    	margin: 0 20px 15px;
-    }
-    .caption a.learn-more {
-    	padding: 5px 10px;
-    	background: #08c;
-    	color: #fff;
-    	border-radius: 2px;
-    	-moz-border-radius: 2px;
-    	font-weight: bold;
-    	text-decoration: none;
-    }
-    .caption a.learn-more:hover {
-    	background: #fff;
-    	color: #08c;
-    }
+}

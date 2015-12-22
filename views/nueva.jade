@@ -2,7 +2,7 @@ extends map-layout
 // block link
 block link
 	link(rel="stylesheet" href='//cdnjs.cloudflare.com/ajax/libs/dropzone/3.8.4/css/dropzone.css')
-	link(rel="stylesheet" href="https://raw.githubusercontent.com/maxwells/bootstrap-tags/master/dist/css/bootstrap-tags.css")
+	link(rel="stylesheet" href="/javascripts/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.css")
 	style.
 		.bootstrap-tagsinput {
 		    width: 100%;
@@ -17,21 +17,20 @@ block botonesmapa
 		i.fa.fa-pencil
 	button#rellenar.btn.btn-small.btn-info.btn-map.cd-btn(type='button', style='position: absolute; right: 0.5em; bottom: 50%; min-width: 1.375em')
 		i.fa.fa-list-alt
-	#menu-dibujar
-		button#eliminar.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 50%; min-width: 1.375em')
-			i.fa.fa-trash
-		button#editar.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 40%; min-width: 1.375em')
-			i.fa.fa-pencil-square-o
-		button#punto.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 30%; min-width: 1.375em')
-			img.img-responsive(src="http://www.fontsaddict.com/images/icons/png/15253.png" style="max-width: 1.375em; min-width: 1.375em; max-height: 1em")
-		button#linea.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 20%; min-width: 1.375em')
-			img.img-responsive(src="http://www.clker.com/cliparts/3/d/6/b/11949947211019452702polyline.svg.hi.png" style="max-width: 1.375em; min-width: 1.375em; max-height: 1em")
-		button#poligono.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 10%; min-width: 1.375em')
-			img.img-responsive(src="http://uxrepo.com/static/icon-sets/windows/svg/vector-polygon.svg" style="max-width: 1.375em; min-width: 1.375em; max-height: 1em")
+	button#eliminar.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 50%; min-width: 1.375em')
+		i.fa.fa-trash
+	button#editar.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 40%; min-width: 1.375em')
+		i.fa.fa-pencil-square-o
+	button#punto.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 30%; min-width: 1.375em')
+		img.img-responsive(src="http://www.fontsaddict.com/images/icons/png/15253.png" style="max-width: 1.375em; min-width: 1.375em; max-height: 1em")
+	button#linea.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 20%; min-width: 1.375em')
+		img.img-responsive(src="http://www.clker.com/cliparts/3/d/6/b/11949947211019452702polyline.svg.hi.png" style="max-width: 1.375em; min-width: 1.375em; max-height: 1em")
+	button#poligono.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 10%; min-width: 1.375em')
+		img.img-responsive(src="http://uxrepo.com/static/icon-sets/windows/svg/vector-polygon.svg" style="max-width: 1.375em; min-width: 1.375em; max-height: 1em")
 // Panel lateral - rellenar denuncia
 block panel-lateral
 	.cd-panel.from-right
-		header.cd-panel-header
+		.cd-panel-header
 			h1(style="margin-top: 2%; color: #55ACEE !important; font-size: 20px;") NUEVA DENUNCIA
 			a.cd-panel-close(href='#0') Close
 		.cd-panel-container
@@ -49,19 +48,15 @@ block panel-lateral
 						.dz-message.text-center(style={color:'#fff'}) Arrastra imágenes o haz click aquí.
 					.space
 					h4 Tags
-					.col-lg-12.form-control.btn-default(id="tags" type="text" name="tags" placeholder="Introduce tags" data-role="tagsinput")
-					.space
-					.col-lg-12
-						.input-group(style={'margin-top':'5px', 'margin-bottom':'15px'})
-							span.input-group-addon
-								i.fa.fa-send.fa-fw
-							input#submitDenuncia.form-control.btn-success(type="button", value="Denunciar")
+					input.col-lg-12(id="tags" type="text" name="tags" placeholder="Introduce tags")
+					.col-lg-12.input-group.space(style={'margin-top':'5px', 'margin-bottom':'15px'})
+						span.input-group-addon
+							i.fa.fa-send.fa-fw
+						input#submitDenuncia.form-control.btn-success(type="button", value="Denunciar")
 // block script
 block script
-	script.
-		var tagElement;
 	// TAGS
-	script(src="https://raw.githubusercontent.com/maxwells/bootstrap-tags/master/dist/js/bootstrap-tags.min.js")
+	script(src="/javascripts/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.js")
 	// TinyMCE Editor
 	script(src="//cdn.tinymce.com/4/tinymce.min.js")
 	script(src='http://cdnjs.cloudflare.com/ajax/libs/dropzone/3.8.4/dropzone.min.js')
@@ -71,13 +66,20 @@ block script
 	script(src="/javascripts/openlayers/olnueva.js")
 	// JS CONFIG SUBIR IMÁGENES
 	script(type="text/javascript").
-		$(function(){
-			// TAGS
-			tagElement = $('#tags').tags({
-		        suggestions:["basura", "malOlor"],
-		        excludeList:[" ", "#", "words"]
-		    });
-			// Inicio del plugin wyswyg tinymce Editor
+		// TAGS
+		function iniciarTags(){
+			$('#tags').tagsinput({
+				maxTags: 5,
+				maxChars: 8,
+				trimValue: true,
+				onTagExists: function(item, $tag) {
+					$tag.hide().fadeIn();
+					alert('Tag repetido');
+				}
+			});
+		}
+		
+		function iniciarEditor(){
 			tinymce.init({
 				selector: 'textarea',
 				plugins: ['advlist autolink link lists charmap print preview hr anchor pagebreak',
@@ -87,18 +89,51 @@ block script
 				language_url: '/langs/es.js',
 				min_width: 300,
 				resize: false
-			});
+			});		
+		}
+		var aux = 0;
+		//open the lateral panel
+		$('.cd-btn').on('click', function(event){
+			$('.btn-map').css('z-index', '0');
+			$('.cd-panel-container').css('z-index','6');
+			$('.cd-panel-header').css('display', 'block');
+			$('.cd-panel-header').css('z-index','7');
+			$('.cd-panel').addClass('is-visible');
 			
-			// Mostrar menú rellenar denuncia al iniciar
-			$('.cd-btn').trigger('click');
+			if ($('header').css('display') == 'block'){
+				$('header').css('display', 'none');
+				$('#show_menu').removeClass('btn-danger');
+				$('#show_menu').addClass('btn-default');
+				$('#show_menu').empty();
+				$('#show_menu').append('<i class="fa fa-navicon" style="color: #fff"></i>');
+				$('header').addClass('fadeOutLeft');
+			}
+
+			if (aux == 0) {
+				iniciarEditor();
+				iniciarTags();
+				aux++;
+			}
 			
-			// Mostrar menú dibujar geometría
-			$('#menu-dibujar').slideUp();
-			$('#dibujar').click(function(event){
-				if($('#menu-dibujar').css('display') != 'none'){
-					$('#menu-dibujar').slideUp();
-				}
-				else $('#menu-dibujar').slideDown();
-			});
+		});
+		//clode the lateral panel
+		$('.cd-panel').on('click', function(event){
+			if( $(event.target).is('.cd-panel') || $(event.target).is('.cd-panel-close') ) { 
+				//$('.cd-panel-header').hide();
+				
+				$('.cd-panel').removeClass('is-visible');
+				$('.cd-panel-container').css('z-index','0');
+				$('.cd-panel-header').css('z-index','0');
+				$('.btn-map').css('z-index', '2');
+				event.preventDefault();
+			}
+		});
 		
+		// Mostrar menú dibujar geometría
+		$('#editar, #eliminar, #punto, #linea, #poligono').slideUp();
+		$('#dibujar').click(function(event){
+			if($('#editar').is(':visible') == false){
+				$('#editar, #eliminar, #punto, #linea, #poligono').slideDown();
+			}
+			else $('#editar, #eliminar, #punto, #linea, #poligono').slideUp();
 		});
