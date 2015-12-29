@@ -34,12 +34,7 @@ html
   body.no-trans
     // header start
     // ================
-    - var nuevas = 0;
-    if user
-      each noti in misNotificaciones
-        if noti.vista == false
-          - nuevas ++;
-    header.header.fixed.clearfix.navbar.navbar-fixed-top
+    header.header.clearfix.navbar.navbar-fixed-top(style='margin-bottom: 0px !important;', data-animation-effect='fadeOutLeft')
       .container
         .row
           .col-md-4
@@ -51,12 +46,12 @@ html
                 a(href='#banner')
                   span.fa-stack.fa-lg
                     i.fa.fa-circle.fa-stack-2x
-                    i.fa.fa-bullhorn.fa-stack-1x.fa-inverse
+                    i.fa.fa-location-arrow.fa-stack-1x.fa-inverse
               // name-and-slogan
               .site-name-and-slogan.smooth-scroll
                 .site-name
-                  a(href='/') Informa Torrent
-                .site-slogan Tu portal de denuncias
+                  a(href='/') Geoportal de Torrent
+                .site-slogan Tu portal de información Geográfica
             // header-left end
           .col-md-8
             // header-right start
@@ -78,32 +73,17 @@ html
                         span.icon-bar
                     // Collect the nav links, forms, and other content for toggling
                     #navbar-collapse-1.collapse.navbar-collapse.scrollspy.smooth-scroll
-                      ul.nav.navbar-nav.navbar-right(style="height: 100%;")
-                        li(style="height: 100%")
-                          a(href='/app/#banner' style="height: 100%") Inicio
-                        if(!user)
-                          li(style="height: 100%")
-                            a(href="/app/#iniciar" style="height: 100%") Iniciar Sesión
-                          li(style="height: 100%")
-                            a(href='/app/#registrarse' style="height: 100%") Registrarse
-                          li(style="height: 100%")
-                            a(href='/app/#olvidaste' style="height: 100%") ¿Olvidaste contraseña?
-                        else
-                          li(style="height: 100%")
-                            a(href='/app/visor' style="height: 100%") Visor Tiempo Real
-                          li(style="height: 100%")
-                            a(href='/app/denuncias?page=1' style="height: 100%") Denuncias
-                          li(style="height: 100%")
-                            a(href='#' style="height: 100%" data-toggle="dropdown") #{user.profile.username}
-                              img.img-responsive-img-thumbnail.img-circle.pull-left(src="#{user.profile.picture}" style="max-height: 40px; margin: -10 5 0 0px;")
-                              span.caret
-                              ul.dropdown-menu.dropdown(style="width: 100%; background: #E7E7E7")
-                                li
-                                  a(href="/app/profile#headingOne")
-                                    | Notificaciones
-                                    span(style="float: right; margin-top: -20px;").badge #{nuevas}
-                                li
-                                  a Cerrar Sesión
+                      ul.nav.navbar-nav.navbar-right
+                        li.active
+                          a(href='/') Inicio
+                        li
+                          a(href='/#servicios') Servicios
+                        li
+                          a(href='/visor') Visor
+                        li
+                          a(href='#descargas') Descargas
+                        li
+                          a(href='#buscador') Buscador
                 // navbar end
               // main-navigation end
     // header-right end
@@ -116,13 +96,10 @@ html
       #popup.ol-popup(style='min-width: 400px;')
         a#popup-closer.ol-popup-closer(href='#')
         #popup-content
-      #numdenun.ol-unselectable.ol-control(data-toggle="left" title="Denuncias" data-content="Denuncias totales" style="position: fixed; bottom: 11.125em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;z-index: 1;")
+      #numdenun(style="position: fixed; bottom: 11.125em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;z-index: 2;")
         i.fa.fa-bullhorn(style="margin-right: 5px;")
         | #{numdenun}
-      #numdenunhoy.ol-unselectable.ol-control(data-toggle="left" title="Denuncias" data-content="Denuncias diarias" style="position: fixed; bottom: 14em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;z-index: 1;")
-        i.fa.fa-bullhorn(style="margin-right: 5px;")
-        | #{numdenunhoy}
-      #numusu.ol-unselectable.ol-control(data-toggle="left" title="Usuarios" data-content="Usuarios conectados" style="position: fixed; bottom: 16.875em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px; z-index:1;")
+      #numusu(style="position: fixed; bottom: 14em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px; z-index:2;")
         i.fa.fa-user(style="margin-right: 5px;")
     // section end
     block panel-lateral
@@ -130,6 +107,7 @@ html
     // Plugins Javascript situados al final de la página, así el contenido carga antes
     // JQuery y Bootstrap
     script(src='http://code.jquery.com/jquery-1.11.1.min.js')
+    script(src='http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js')
     script(src='//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js')
     // Modernizr
     script(type='text/javascript', src='/javascripts/plugins/modernizr.js')
@@ -286,17 +264,13 @@ html
       $(function(){
         $('.dropdown-toggle').dropdown();
         $('[data-toggle="left"]').popover({
-          trigger: 'hover',
+          trigger: 'click',
           placement: 'left'
         });
       
         $('[data-toggle="right"]').popover({
-          trigger: 'hover',
+          trigger: 'click',
           placement: 'right'
         });
-      });   
-      $('#map').click(function(e){
-        //alert('hideee');
-        $('[data-toggle="right"], [data-toggle="left"]').popover('hide');
       });
        

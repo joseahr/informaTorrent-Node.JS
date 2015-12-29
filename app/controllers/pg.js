@@ -224,6 +224,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 								response.type = 'success';
 								response.msg = 'Denuncia Guardada Correctamente';
 								response.denuncia = denuncia_io;
+								//s_i_o.emit('new_denuncia_added', denuncia_io);
 								res.send(response);
 							}
 							else
@@ -246,6 +247,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 									response.type = 'success';
 									response.msg = 'Denuncia Guardada Correctamente';
 									response.denuncia = denuncia_io;
+									//s_i_o.emit('new_denuncia_added', denuncia_io);
 									res.send(response);
 											
 								}); // insert into imagenes
@@ -262,33 +264,26 @@ ContPg.prototype.saveDenuncia = function(req, res){
 ContPg.prototype.getProfile = function(req, res) {
 	// En cualquier otro caso renderizamos
 	console.log('mi PErfil');
-	var misDenuncias;
+
 	client = new pg.Client(connectionString);
 	client.connect(function(err){
-		  if(err) {
-		    return console.error('error fetching client from pool', err);
-		  }
+
+		if(err) {
+			return console.error('error fetching client from pool', err);
+		}
 		  
-		  client.query(queries.getUserDenuncias(req.user._id),function(err1, misDenuncias){
-			  //client.end();
-			  console.log('Er');
-			  if(err1) {
-				  client.end();
-				  return console.error('errrrrrrror', err1);
-			  }
-			  else {
-				  // Obtener notificaciones
-				  client.query(queries.getUserNotifications(req.user._id), function(err2, noti){
-					  client.end();
-					  if(err2) return console.error('error consultando notificaciones', err2);
-					  
-					  res.render('profile', {user : req.user, 
-						  misDenuncias: misDenuncias.rows,
-						  misNotificaciones: noti.rows
-					  });
-				  });
-			  }
-		  });
+		client.query(queries.getUserDenuncias(req.user._id),function(err1, misDenuncias){
+			//client.end();
+			console.log('Er');
+			if(err1) {
+				client.end();
+				return console.error('errrrrrrror', err1);
+			}
+			res.render('profile', {user : req.user, 
+				misDenuncias: misDenuncias.rows,
+			});
+			
+		});
 	});
 
 };
@@ -377,6 +372,7 @@ ContPg.prototype.getDenunciaPage = function(req,res){
 			  //client.end();
 			  //console.log(denuncia);
 			  denuncia.geometria = JSON.stringify(denuncia.geometria);
+			  denuncia.descripcion = denuncia.descripcion.replace(/\n?\r\n/g, '<br />' );
 			  res.render('denuncia', {denuncia: denuncia, user: req.user});	  
 			  
 		  });
@@ -690,6 +686,7 @@ ContPg.prototype.updateDenuncia = function(req, res){
 		var titulo = req.body.titulo.replace(/["' # $ % & + ` -]/g, " ");
 		var contenido = req.body.contenido.replace(/["' # $ % & + ` -]/g, " ");
 		var wkt = req.body.wkt;
+		var denuncia_id = req.body.denuncia_id;
 		
 		var user_id = validator.escape(req.user._id); // id_usuario
 		var tempDirID = req.body.tempDir; // nombre del directorio temporal donde se guardan las imágenes
@@ -829,7 +826,7 @@ ContPg.prototype.updateDenuncia = function(req, res){
 				  
 						// Si no ejecutamos la consulta para obtener las denuncias
 				  
-						client.query(queries.updateDenuncia(user_id, titulo, contenido, wkt, tags), 
+						client.query(queries.updateDenuncia(denuncia_id, titulo, contenido, wkt, tags), 
 						function(err, result){
 							//console.log(result.rows);
 							
@@ -839,7 +836,7 @@ ContPg.prototype.updateDenuncia = function(req, res){
 							}
 							// ID de la denuncia introducida, lo obtenemos ya que lo hemos devuelto 
 							// en la consulta de INSERT --> returning gid;
-							var id_denuncia = result.rows[0].gid;
+							var id_denuncia = denuncia_id;
 							
 							denuncia_io.id = id_denuncia;
 							

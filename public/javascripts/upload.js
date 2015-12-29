@@ -18,7 +18,7 @@ socket.on('connect', function() {
 	// Configuración del dropzone
 	$("#file-dropzone").dropzone({ 
 	    url: "/app/fileUpload/" + random,
-	    maxFilesize: 2,
+	    maxFilesize: 4,
 	    maxFiles: 10,
 	    paramName: "uploadfile",
 	    maxThumbnailFilesize: 30,
@@ -108,7 +108,7 @@ $(function(){
 			else
 			{
 				num_denuncias_io.emit('new_denuncia_added', res.denuncia);
-				console.log(res.denuncia);
+				//console.log(res.denuncia);
 				// Ha habido éxito subiendo la denuncia
 				BootstrapDialog.show({
 					type: BootstrapDialog.TYPE_SUCCESS,

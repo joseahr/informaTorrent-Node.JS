@@ -4,19 +4,6 @@ block meta
 	meta(property='og:type' content='website')
 	meta(property='og:title' content='Your Website Title')
 	meta(property='og:description' content='Your description')
-block script
-	script(src="/javascripts/panel-lateral.js")
-	// TinyMCE Editor
-	script(src="//cdn.tinymce.com/4/tinymce.min.js")
-	script.
-		var denuncia = {
-			titulo: '#{denuncia.titulo}',
-			gid: '#{denuncia.gid}',
-			id_usuario: '#{denuncia.id_usuario}'
-		};
-		var geojsonDenuncia = !{denuncia.geometria}; // geometría del servidor
-		// solo podemos acceder a ella desde este tipo de scripts que tienen un punto al final
-	script(src="/javascripts/openlayers/olvisor.js")
 block link
 	link(rel="stylesheet" href="/stylesheets/carousel.css")
 block botonesmapa
@@ -34,6 +21,10 @@ block panel-lateral
 		.cd-panel-container
 			.cd-panel-content
 				h2 #{denuncia.titulo}
+				h4 denunciado por 
+					span
+						a(href="/app/usuarios/#{denuncia.id_usuario}")
+							| #{denuncia.usuario[0].profile.username}
 				div(style="word-wrap: break-word;") !{denuncia.descripcion}
 	#comentarios.cd-panel.from-right
 		header.cd-panel-header
@@ -99,4 +90,25 @@ block panel-lateral
 											div(class="slide-#{aux + 1}" style="height: 100%;background: url('#{imagen.path}'); background-size: 100% 100%;")
 									- aux++;
 				else
-					p Esta denuncia no contiene imágenes			
+					p Esta denuncia no contiene imágenes
+block script
+	script(src="/javascripts/panel-lateral.js")
+	// TinyMCE Editor
+	script(src="//cdn.tinymce.com/4/tinymce.min.js")
+	script.
+		var denuncia = {
+			titulo: '#{denuncia.titulo}',
+			gid: '#{denuncia.gid}',
+			id_usuario: '#{denuncia.id_usuario}'
+		};
+		$('#form_add_comentario').submit(function(){
+			alert('click');
+			num_denuncias_io.emit('new_comentario_added', {denuncia: denuncia});
+			return true;
+		});
+		var geojsonDenuncia = !{denuncia.geometria}; // geometría del servidor
+		// solo podemos acceder a ella desde este tipo de scripts que tienen un punto al final
+		map.addControl(new app.InfoDenuncia());
+		map.addControl(new app.ImagenesDenuncia());
+		map.addControl(new app.ComentariosDenuncia());
+	script(src="/javascripts/openlayers/olvisor.js")

@@ -19,6 +19,9 @@ ol.control.LayerSwitcher = function(opt_options) {
     this.shownClassName = this.hiddenClassName + ' shown';
 
     var element = document.createElement('div');
+    element.setAttribute('data-toggle', 'left');
+    element.setAttribute('title', 'Capas y Leyenda');
+    element.setAttribute('data-content', 'Activar/Desactivar capas y ver leyenda');
     element.className = this.hiddenClassName;
 
     var button = document.createElement('button');

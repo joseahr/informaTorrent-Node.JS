@@ -11,22 +11,6 @@ block link
 		    line-height: 2 !important;
 		}
 	// CSS DROPZONE
-// Botones mapa
-block botonesmapa
-	button#dibujar.btn.btn-small.btn-info.btn-map(type='button', style='position: absolute; right: 0.5em; bottom: 40%; min-width: 1.375em')
-		i.fa.fa-pencil
-	button#rellenar.btn.btn-small.btn-info.btn-map.cd-btn(type='button', style='position: absolute; right: 0.5em; bottom: 50%; min-width: 1.375em')
-		i.fa.fa-list-alt
-	button#eliminar.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 50%; min-width: 1.375em')
-		i.fa.fa-trash
-	button#editar.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 40%; min-width: 1.375em')
-		i.fa.fa-pencil-square-o
-	button#punto.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 30%; min-width: 1.375em')
-		img.img-responsive(src="http://www.fontsaddict.com/images/icons/png/15253.png" style="max-width: 1.375em; min-width: 1.375em; max-height: 1em")
-	button#linea.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 20%; min-width: 1.375em')
-		img.img-responsive(src="http://www.clker.com/cliparts/3/d/6/b/11949947211019452702polyline.svg.hi.png" style="max-width: 1.375em; min-width: 1.375em; max-height: 1em")
-	button#poligono.btn.btn-small.btn-warning.btn-map(type='button', style='position: absolute; right: 4.3em; bottom: 10%; min-width: 1.375em')
-		img.img-responsive(src="http://uxrepo.com/static/icon-sets/windows/svg/vector-polygon.svg" style="max-width: 1.375em; min-width: 1.375em; max-height: 1em")
 // Panel lateral - rellenar denuncia
 block panel-lateral
 	.cd-panel.from-right
@@ -41,7 +25,7 @@ block panel-lateral
 						input#titulo.form-control.btn-default(type='text', name="titulo", placeholder='Añade un título')
 					.space
 					h4 Añade una descripción
-					textarea#contenido(name="contenido" rows='3' style={'height':'300px'}).form-control
+					textarea#contenido(name="contenido" rows='3' style={'height':'300px'}).form-control !{denuncia.descripcion}
 					.space
 					h4 Imágenes
 					div(id="file-dropzone" style={background:'#55ACEE', border:'1px dashed'})
@@ -55,6 +39,9 @@ block panel-lateral
 						input#submitDenuncia.form-control.btn-success(type="button", value="Guardar Cambios")
 // block script
 block script
+	script.
+		var denuncia_id = '#{denuncia.gid}';
+		var json = {type: JSON.parse('!{denuncia.geometria}').type, coordinates: JSON.parse('!{denuncia.geometria}').coordinates};
 	// TAGS
 	script(src="/javascripts/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.js")
 	// TinyMCE Editor
@@ -63,12 +50,8 @@ block script
 	// JS DROPZONE
 	script(src="/javascripts/uploadUpdate.js")
 	// JS CONFIG SUBIR IMÁGENES
-	script(type="text/javascript").
-		// TAGS
-		var denuncia_id = '#{denuncia.gid}';
-
-		var json = {type: JSON.parse('!{denuncia.geometria}').type, coordinates: JSON.parse('!{denuncia.geometria}').coordinates};
-
+	script(src="/javascripts/openlayers/oleditar.js")
+	script(type='text/javascript').
 		$('#titulo').val('#{denuncia.titulo}');
 		
 		function iniciarTags(){
@@ -99,33 +82,8 @@ block script
 				min_width: 300,
 				resize: false
 			});
-			$('#contenido').val('!{denuncia.descripcion}')
 		}
-		var aux = 0;
-		//open the lateral panel
-		$('.cd-btn').on('click', function(event){
-			$('.btn-map').css('z-index', '0');
-			$('.cd-panel-container').css('z-index','6');
-			$('.cd-panel-header').css('display', 'block');
-			$('.cd-panel-header').css('z-index','7');
-			$('.cd-panel').addClass('is-visible');
-			
-			if ($('header').css('display') == 'block'){
-				$('header').css('display', 'none');
-				$('#show_menu').removeClass('btn-danger');
-				$('#show_menu').addClass('btn-default');
-				$('#show_menu').empty();
-				$('#show_menu').append('<i class="fa fa-navicon" style="color: #fff"></i>');
-				$('header').addClass('fadeOutLeft');
-			}
-
-			if (aux == 0) {
-				iniciarEditor();
-				iniciarTags();
-				aux++;
-			}
-			
-		});
+				
 		//clode the lateral panel
 		$('.cd-panel').on('click', function(event){
 			if( $(event.target).is('.cd-panel') || $(event.target).is('.cd-panel-close') ) { 
@@ -139,13 +97,7 @@ block script
 			}
 		});
 		
-		// Mostrar menú dibujar geometría
-		$('#editar, #eliminar, #punto, #linea, #poligono').slideUp();
-		$('#dibujar').click(function(event){
-			if($('#editar').is(':visible') == false){
-				$('#editar, #eliminar, #punto, #linea, #poligono').slideDown();
-			}
-			else $('#editar, #eliminar, #punto, #linea, #poligono').slideUp();
-		});
-	// INTERACCIONES MAPA DIBUJAR ...
-	script(src="/javascripts/openlayers/oleditar.js")
+		map.addControl(new app.Lateral());
+		map.addControl(new app.Draw_());
+		
+		

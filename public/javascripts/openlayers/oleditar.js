@@ -1,6 +1,3 @@
-
-var isDrawInteractionActive  = false;
-
 var resolutions = new Array(22),
 	matrixIds = new Array(22),
 	resInicial = 0.703125,
@@ -10,6 +7,7 @@ var resolutions = new Array(22),
 	vectorLayer = new ol.layer.Vector({
 		source: vectorSource
 	}),
+	isDrawInteractionActive  = false,
 	draw; // Control de dibujar
 
 for (var i=0; i < 22; i++){
@@ -251,58 +249,6 @@ var modify = new ol.interaction.Modify({
 	  deleteCondition: function(event) {
 	    return ol.events.condition.shiftKeyOnly(event) && ol.events.condition.singleClick(event);
 	  }
-});
-
-
-/**
- * Handlers
- */
-$('#punto').click(function(e){
-	if(draw) map.removeInteraction(draw);
-	map.removeInteraction(modify);
-	addInteraction('Point');
-	info = false;
-	isDrawInteractionActive = true;
-});
-
-$('#linea').click(function(e){
-	if(draw) map.removeInteraction(draw);
-	map.removeInteraction(modify);
-	addInteraction('LineString');
-	info = false;
-	isDrawInteractionActive = true;
-});
-
-$('#poligono').click(function(e){
-	if(draw) map.removeInteraction(draw);
-	map.removeInteraction(modify);
-	addInteraction('Polygon');
-	info = false;
-	isDrawInteractionActive = true;
-});
-
-$('#mover').click(function(e){
-	if(draw) map.removeInteraction(draw);
-	map.removeInteraction(modify);
-	info = false;
-	isDrawInteractionActive = false;
-	//toWKT();
-});
-
-$('#editar').click(function(e){
-	if(draw) map.removeInteraction(draw);
-	map.addInteraction(modify);
-	info = false;
-	isDrawInteractionActive = false;
-});
-
-$('#eliminar').click(function(e){
-	//if(draw) map.removeInteraction(draw);
-	map.removeInteraction(modify);
-	vectorSource.clear();
-	map.removeOverlay(lastTooltip);
-	info = false;
-	isDrawInteractionActive = false;
 });
 
 var geom = feature.getGeometry().getExtent();

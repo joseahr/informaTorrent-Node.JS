@@ -10,6 +10,8 @@ var mkdirp;
 var io='';
 var exec;
 
+var formidable = require('formidable');
+
 function UploadFoto(sio, crypto_, fs_, path_,exec_,mkdirp_, config_) {
 	io = sio;
 	crypto = crypto_;
@@ -27,8 +29,10 @@ function UploadFoto(sio, crypto_, fs_, path_,exec_,mkdirp_, config_) {
  */
 var formatsAllowed = 'png|jpg|jpeg|gif'; // Podríamos poner más
 
-UploadFoto.prototype.postPicture = function(req, res) {  
+UploadFoto.prototype.postPicture = function(req, res) {
+		
 	var sms = {}; //JSON DE INFO QUE ENVIAREMOS
+	
 	
 	var file = req.files.uploadfile || req.files.file;
 	console.log(req.files);
@@ -41,7 +45,7 @@ UploadFoto.prototype.postPicture = function(req, res) {
         return res.send(sms);
 	}
 	console.log(file.size );
-	if (file.size > (2048*1024)){
+	if (file.size > (4096*1024)){
         var msg = "Error subiendo tu archivo. Imagen demasiado grande. ";
         var type="error";
         sms.type = type;

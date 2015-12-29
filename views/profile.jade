@@ -38,14 +38,14 @@ block content
 													i.fa.fa-inbox
 													|  Notificaciones
 												div(style="position: absolute;top: 30%;left:1%;")
-													span.badge(style="background:#5BC0DE;float:left") 100
-													span.badge(style="background:#D9534F;float:right") 3
+													span.badge(style="background:#5BC0DE;float:left").noti_tot #{misNotificaciones.length}
+													span.badge(style="background:#D9534F;float:right").noti_up #{nuevas}
 									#notificaciones.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingOne')
 										.panel-body(style='text-align: center;height: 60%;overflow-y:scroll;')
 											each noti in misNotificaciones
-												.row(style={margin: '0 5 10 5px', background: 'rgba(0,50,187,0.1)', padding: '5%'})
+												.row(style={margin: '0 5 10 5px', background: 'rgba(0,50,187,0.1)', padding: '5%'} id_noti="#{noti.id_noti}" vista="#{noti.vista}").noti
 													if (noti.vista == false)
-														.col-lg-12.btn.btn-danger(style="margin-bottom: 10px") NUEVA
+														.col-lg-12.btn.btn-danger(style="margin-bottom: 10px" id_noti_panel="#{noti.id_noti}") NUEVA
 													.col-xs-2
 														a(target="_blank" href="/app/usuarios/#{noti.id_usuario_from}")
 															img.img-responsive.img-thumbnail.img-circle(src="#{noti.profile_from.picture}" style={'min-width':'50px'})
@@ -62,12 +62,12 @@ block content
 															p.lead #{noti.fecha}
 														p.lead 
 															span 
-																a(target="_blank" href="/app/usuarios/#{noti.id_usuario_from}") #{noti.profile_from.nombre} #{noti.profile_from.apellidos}
+																a(target="_blank" href="/app/usuarios/#{noti.id_usuario_from}") #{noti.profile_from.username}
 															if(noti.tipo == 'DENUNCIA_CERCA')
 																|  ha publicado una 
 																span 
 																	a(href="/app/denuncia/#{noti.id_denuncia}") denuncia
-																|  " titulo denuncia " cerca de tu ubicación
+																| cerca de tu ubicación
 															else
 																|  ha comentado una 
 																span
@@ -115,7 +115,7 @@ block content
 																			else 
 																				| &nbsp 0 &nbsp
 																		i.fa.fa-tags
-																			if denuncia.tags.length > 0
+																			if denuncia.tags
 																				| &nbsp #{denuncia.tags.length} &nbsp
 																			else 
 																				| &nbsp 0 &nbsp																		

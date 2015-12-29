@@ -23,6 +23,11 @@ html
   body.no-trans
     // header start
     // ================
+    - var nuevas = 0;
+    if user
+      each noti in misNotificaciones
+        if noti.vista == false
+          - nuevas ++;
     header.header.fixed.clearfix.navbar.navbar-fixed-top
       .container
         .row
@@ -62,22 +67,41 @@ html
                         span.icon-bar
                     // Collect the nav links, forms, and other content for toggling
                     #navbar-collapse-1.collapse.navbar-collapse.scrollspy.smooth-scroll
-                      ul.nav.navbar-nav.navbar-right
-                        li.active
-                          a(href='/app/#banner') Inicio
+                      ul.nav.navbar-nav.navbar-right(style="height: 100%;")
+                        li(style="height: 100%")
+                          a(href='/app/#banner' style="height: 100%") Inicio
                         if(!user)
-                          li
-                            a(href="/app/#iniciar") Iniciar Sesión
-                          li
-                            a(href='/app/#registrarse') Registrarse
-                          li
-                            a(href='/app/#olvidaste') ¿Olvidaste contraseña?
+                          li(style="height: 100%")
+                            a(href="/app/#iniciar" style="height: 100%") Iniciar Sesión
+                          li(style="height: 100%")
+                            a(href='/app/#registrarse' style="height: 100%") Registrarse
+                          li(style="height: 100%")
+                            a(href='/app/#olvidaste' style="height: 100%") ¿Olvidaste contraseña?
+                        else
+                          li(style="height: 100%")
+                            a(href='/app/visor' style="height: 100%") Visor Tiempo Real
+                          li(style="height: 100%")
+                            a(href='/app/denuncias?page=1' style="height: 100%") Denuncias
+                          li(style="height: 100%")
+                            a(href='#' style="height: 70px;" data-toggle="dropdown").media
+                              div.pull-left
+                                img.img-responsive-img-thumbnail.img-circle.media-object(src="#{user.profile.picture}" style="max-height: 40px; margin: -10 5 0 0px;")                                       
+                                span.badge.badge-success.danger.pull-right.noti_up #{nuevas}
+                              div.media-body.pull-left
+                                | #{user.profile.username}
+                                span.caret
+                            ul.dropdown-menu(style="width: 100%; background: #E7E7E7")
+                              li.dropdown
+                                a(href="/app/profile#headingOne") Notificaciones
+                                  span(style="float: right; margin-top: -20px;").badge.noti_up #{nuevas}
+                              li.dropdown
+                                a Cerrar Sesión
                 // navbar end
               // main-navigation end
             // header-right end
     // header end
     // banner start
-    // ================
+    // ================ 
     #banner.banner(style="background: url('https://images.unsplash.com/photo-1445964047600-cdbdb873673d?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&w=1800&fit=max&s=e590407728cc89ef57f248ebec481dd5'); background-size: cover; background-position: center center; background-repeat: no-repeat")
       .banner-image
       .banner-caption
@@ -88,14 +112,23 @@ html
                 | Informa 
                 span Torrent
               p.lead.text-center
-                | ......
+                | La app con la que podrás contribuir a la mejora de Torrent
     // banner end
 
     // Contenido
     // ================
     block content
+    #numdenun(style="position: absolute; bottom: 0.5em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;")
+      i.fa.fa-bullhorn(style="margin-right: 5px;")
+      | #{numdenun}
+    #numdenunhoy(style="position: absolute; bottom: 2.875em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;")
+      i.fa.fa-bullhorn(style="margin-right: 5px;")
+      | #{numdenunhoy}
+    #numusu(style="position: absolute; bottom: 0.5em; left: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;")
+      i.fa.fa-user(style="margin-right: 5px;")
     script.
       var ip = '#{ip}';
+      var id_usuario = '#{id_usuario}';
       var message = {};
       if ('#{message.error}' != '') {
         message.type = 'type-error';
@@ -133,11 +166,5 @@ html
     script(type="text/javascripts" src='/javascripts/mensajes_servidor.js')
     // SOCKET.IO
     script(src="https://cdn.socket.io/socket.io-1.3.7.js")
-    script.
-      var ip = '#{ip}';
-      var id_usuario = '#{id_usuario}';
     // FUNCIONALIDADES SOCKET.IO
     script(src="/javascripts/client-sockets.js")
-    // 
-    script.
-      $('.dropdown-toggle').dropdown();

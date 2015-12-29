@@ -2,7 +2,7 @@
  * SOCKET.IO
  */
 
-var clients = {}; // Un cliente puede tener varios sockets abiertos
+global.clients = {}; // Un cliente puede tener varios sockets abiertos
 
 module.exports = function(io, pg, path, mkdirp, exec, config){
 	
@@ -12,6 +12,30 @@ module.exports = function(io, pg, path, mkdirp, exec, config){
 			// Lo emite un cliente loggeado o no para obtener el número de usuarios conectados
 			// Emitimos el evento
 			socket.emit('num_usuarios_conectados', {num_usuarios: Object.keys(clients).length});
+		});
+		
+		socket.on('noti_vista', function(data){
+			// data --> id de la notificación
+			var client = new pg.Client('postgres://jose:jose@localhost/denuncias');
+			
+			client.connect(function(error){
+				if(error) return console.error('error conectando', error);
+				
+				client.query("update notificaciones set vista=true where id_noti='" + data + "'", function(e, r){
+					client.end();
+					if(e) return console.error('error consultando', e);
+					
+					for(var socketId in clients[socket.id_usuario]){
+						console.log(socketId);
+						console.log('El usuario ' + socket.id_usuario + ' ha visto una notificación');
+						clients[socket.id_usuario][socketId].emit('noti_vista_cb', data);
+					}
+					
+					
+				});
+				
+			});
+			
 		});
 		
 		socket.on('get_id_usuario', function(data){
@@ -51,7 +75,7 @@ module.exports = function(io, pg, path, mkdirp, exec, config){
 		socket.on('new_denuncia_added', function(data){
 			// Recibimos el evento que emite el cliente 
 			// que añade una nueva denuncia
-			console.log(data);
+			console.log(data + ' new denuncia addedd');
 			socket.broadcast.emit('new_denuncia', {denuncia: data});
 			// Emitimos la información a todos los 'sockets' conectados
 			// excepto al que emite el mensaje (Información de la denuncia-->>titulo, contenido, wkt...)
@@ -83,32 +107,40 @@ module.exports = function(io, pg, path, mkdirp, exec, config){
 							result.rows.forEach(function(id_usuario, index){
 								console.log('id usuario afectado denuncia cerca ' + id_usuario._id);
 								if(index != result.rows.length -1)
-									values += "('"+ data.id +"','"+ id_usuario_from +"','" + id_usuario._id + "','DENUNCIA_CERCA'),";
+									values = "('"+ data.id +"','"+ id_usuario_from +"','" + id_usuario._id + "','DENUNCIA_CERCA')";
 								else
-									values += "('"+ data.id +"','"+ id_usuario_from +"','" + id_usuario._id + "','DENUNCIA_CERCA')";
+									values = "('"+ data.id +"','"+ id_usuario_from +"','" + id_usuario._id + "','DENUNCIA_CERCA')";
 								if(clients[id_usuario._id] && id_usuario._id != id_usuario_from){
 									// Si el usuario está conectado y es distinto al usuario que emite la
 									// denuncia emitimos esa notificación a el usuario
 									
 									client.query("select * from usuarios where _id='" + id_usuario_from +"'"
 									, function(_e, _result){
-										client.end();
+										//client.end();
 										if(_e) return console.error(_e);
-										for(var socketId in clients[id_usuario._id]){
-											console.log(socketId);
-											console.log('El usuario ' + data.id_usuario + ' ha publicado una denuncia carca de la ubicación del usuario ' + id_usuario);
-											clients[id_usuario._id][socketId].emit('denuncia_cerca', {denuncia: data, from: _result.rows[0]});	
-										}
+										
+										client.query("insert into notificaciones(id_denuncia, id_usuario_from, id_usuario_to, tipo) " +
+												"values " + values + " returning *", function(e_, result_){
+													
+											client.end();
+											
+											if(e_) {
+												return console.error('Error consultando',e_);
+											}
+											
+											for(var socketId in clients[id_usuario._id]){
+												console.log(socketId);
+												console.log('El usuario ' + data.id_usuario + ' ha publicado una denuncia carca de la ubicación del usuario ' + id_usuario);
+												clients[id_usuario._id][socketId].emit('denuncia_cerca', {denuncia: data, from: _result.rows[0], noti: result_.rows[0]});	
+											}
+													
+										});
+										
 									});
 									
 								}
 							});
-							if(values.length > 0)
-								client.query("insert into notificaciones(id_denuncia, id_usuario_from, id_usuario_to, tipo) " +
-								"values " + values, function(e_, result_){
-									client.end();
-									if(e_) console.error('Error consultando',e_);
-								});
+
 						} // Si hay usuarios afectados
 						
 					});
@@ -137,7 +169,7 @@ module.exports = function(io, pg, path, mkdirp, exec, config){
 				values = "('"+ denuncia.gid +"','"+ id_usuario_from +"','"+ denuncia.id_usuario +"','COMENTARIO_DENUNCIA')";
 				
 				client.query("insert into notificaciones(id_denuncia, id_usuario_from, id_usuario_to, tipo) " +
-				"values " + values, function(e_, result_){
+				"values " + values + " returning *", function(e_, result_){
 					
 					if(e_) {
 						client.end();
@@ -150,7 +182,7 @@ module.exports = function(io, pg, path, mkdirp, exec, config){
 							client.end();
 							if(_e) return console.error(_e);
 							for(var socketId in clients[denuncia.id_usuario]){
-								clients[denuncia.id_usuario][socketId].emit('denuncia_comentada', {denuncia: denuncia, from: _result.rows[0]});
+								clients[denuncia.id_usuario][socketId].emit('denuncia_comentada', {denuncia: denuncia, from: _result.rows[0], noti: result_.rows[0]});
 							}
 						});
 					}

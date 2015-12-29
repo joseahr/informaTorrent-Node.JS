@@ -17,7 +17,6 @@ var fs = require('fs');
 var path = require('path');
 
 var cookieParser = require('cookie-parser');
-var bodyParser   = require('body-parser');
 var session      = require('express-session');
 var configDB = require('./config/database.js');
 
@@ -36,8 +35,8 @@ require('./config/config_passport_pg')(passport); // pass passport for configura
 // Express
 app.use(morgan('dev')); // Log cada request en la consola
 app.use(cookieParser()); // Leer Coockies
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded());
+app.use(express.json());
+app.use(express.urlencoded());
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'jade'); // Jade
 app.set('port', process.env.PORT || 3000);
@@ -68,11 +67,15 @@ app.use(function(req, res, next){
 	client.connect(function(error){
 		if (error) console.error('error conectando bdd', error);
 		else {
-			client.query('select count(*) as count from denuncias', function(e, result){
-				client.end();
+			client.query("select t1.cnt as numdenun,t2.cnt as numdenunhoy " + 
+					"from (select count(*) as cnt from denuncias) as t1 " + 
+					"cross join (select count(*) as cnt from denuncias " +
+					"where fecha >= to_char(current_timestamp, 'YYYY-MM-DD')::date) as t2"
+			, function(e, result){
 				if (e) console.error('error consultando', e);
 				else {
-					res.locals({numdenun: result.rows[0].count});
+					res.locals({numdenun: result.rows[0].numdenun});
+					res.locals({numdenunhoy: result.rows[0].numdenunhoy});
 					
 					res.locals({message: {
 						error: req.flash('error'),
@@ -84,12 +87,23 @@ app.use(function(req, res, next){
 					});
 					
 					if(req.user){
-						console.log(req.user);
-						res.locals({id_usuario: req.user._id});
+					  var getUserNotifications = "select n.*, to_char(n.fecha::timestamp,'DD TMMonth YYYY HH24:MI:SS') as fecha, u.profile as profile_from from notificaciones n, usuarios u where n.id_usuario_to='" + req.user._id + "' and n.id_usuario_from=u._id order by n.fecha desc";
+					  // Obtener notificaciones
+					  client.query(getUserNotifications, function(err2, noti){
+						  client.end();
+						  if(err2) return console.error('error consultando notificaciones', err2);
+						  
+						  res.locals({misNotificaciones: noti.rows});
+						  res.locals({id_usuario: req.user._id});
+						  res.locals({user: req.user});
+						  next();
+						  
+					  });
 					}
-					else
+					else {
 						res.locals({id_usuario: 'undefined'});
-					next();
+						next();
+					}
 				}
 			});
 		}

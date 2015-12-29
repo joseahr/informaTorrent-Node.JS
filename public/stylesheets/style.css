@@ -1,3 +1,11 @@
+
+
+.media img+span.badge {
+    position: relative;
+    top: -8px;
+    left: 8px;
+}
+
 /* Botones RS
 ----------------------------------------------------------------------------- */
 .facebook-button {

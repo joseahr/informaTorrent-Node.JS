@@ -14,7 +14,7 @@ socket.on('connect', function() {
 	
 	$("#file-dropzone").dropzone({ 
 	    url: "/app/fileUpload/" + random,
-	    maxFilesize: 2,
+	    maxFilesize: 4,
 	    maxFiles: 10,
 	    paramName: "uploadfile",
 	    maxThumbnailFilesize: 30,
@@ -74,11 +74,10 @@ socket.on('connect', function() {
 	    }
 	 }); // CONFIG DROPZONE
 	
-}); // CONECTAMOS  A COCKET.IO
+}); // CONECTAMOS  A SOCKET.IO
 
 $(function() {
 	// Click en botón submitDenuncia
-	$(function(){
 		$('#submitDenuncia').click( function(event){
 					
 			toWKT(); //llamamos a la función para generar el WKT (openlayers.js)
@@ -91,6 +90,7 @@ $(function() {
 			json.contenido = contenido;
 			json.tempDir = random;
 			json.wkt = wkt;
+			json.denuncia_id = denuncia_id;
 			
 			// Añadimos los tags a la lista
 			var tags = $('#tags').tagsinput('items');
@@ -107,7 +107,7 @@ $(function() {
 			var xhr = new XMLHttpRequest(); // Petición XMLHttpRequest
 			
 			
-			xhr.open('POST', '/app/denuncias/nueva/save/' , true); // Método POST
+			xhr.open('POST', '/app/denuncias/editar?id=' + denuncia_id , true); // Método POST
 			
 			xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); // Especificamos cabecera
 
@@ -151,6 +151,5 @@ $(function() {
 			};
 			event.preventDefault();  // preventDefault
 		});	//Submit denuncia
-	});
 
 }); // $(function)

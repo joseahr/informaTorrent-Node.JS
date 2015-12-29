@@ -1,5 +1,46 @@
-.btn-map {
-	z-index: 3;
+.imagenes_denuncia {
+  	bottom: 5.375em;
+	right: 6.25em;	
+}
+
+.comentarios_denuncia {
+	bottom: 2.5em;
+	right: 6.25em;	
+}
+
+.info_denuncia {
+	bottom: 8.25em;
+	right: 6.25em;
+}
+
+.draw {
+  bottom: 5.375em;
+  right: 3.375em;		
+}
+
+.close_header {
+  bottom: 8.25em;
+  right: .5em;
+}
+
+.lateral {
+  bottom: 8.25em;
+  right: 3.375em;		
+}
+
+.move{
+  bottom: 5.375em;
+  right: .5em;		
+}
+
+.get_feature_info{
+  bottom: 2.5em;
+  right: .5em;	
+}
+
+.show_position {
+  bottom: 2.5em;
+  right: 3.375em;		
 }
 
 .ol-popup { 
