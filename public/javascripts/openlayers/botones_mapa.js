@@ -226,8 +226,10 @@ ol.inherits(app.CloseHeader, ol.control.Control);
 /**
  * Control Creado para dibujar, eliminar, editar puntos lineas y polígonos
  */
-app.Draw_ = function(opt_options) {
-
+app.Draw_ = function(opt_options, aux) {
+  
+	
+	
   var options = opt_options || {};
 
   var button = document.createElement('button');
@@ -237,16 +239,27 @@ app.Draw_ = function(opt_options) {
   var this_ = this;
   
   function draw_ (){
+	  
+	  var message;
+	  
+	  if(aux) message = '<select id="dibujar" data-style="btn-default">' + 
+		'<option value="nada">Nada</option>' +
+			'<option value="punto">Punto</option>' +
+			'<option value="editar">Editar</option>' +
+			'<option value="eliminar">Eliminar</option>' +
+		'</select>';
+	  else message = '<select id="dibujar" data-style="btn-default">' + 
+		'<option value="nada">Nada</option>' +
+			'<option value="punto">Punto</option>' +
+			'<option value="linea">Línea</option>' +
+			'<option value="poligono">Polígono</option>' +
+			'<option value="editar">Editar</option>' +
+			'<option value="eliminar">Eliminar</option>' +
+		'</select>';
+	  
 	  BootstrapDialog.show({
 		  title: 'Dibujar denuncia',
-		  message: '<select id="dibujar" data-style="btn-default">' + 
-		  				'<option value="nada">Nada</option>' +
-		  				'<option value="punto">Punto</option>' +
-		  				'<option value="linea">Línea</option>' +
-		  				'<option value="poligono">Polígono</option>' +
-		  				'<option value="editar">Editar</option>' +
-		  				'<option value="eliminar">Eliminar</option>' +
-		  			'</select>',
+		  message: message,
 		  buttons: [{label: 'Cerrar', action: function(dialog){dialog.close();}}],
 		  onshown: function(dialog){
 			  $('#dibujar').selectpicker({

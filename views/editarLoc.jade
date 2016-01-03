@@ -1,0 +1,17 @@
+extends map-layout
+
+// block script
+block script
+	script(src="/javascripts/openlayers/ol_loc_pref.js")
+	script.
+		//alert(!{loc_pref}.coordinates);
+		
+		
+		feature = new ol.Feature({
+			geometry: new ol.geom.Point(!{loc_pref}.coordinates),
+			name: 'Ubicación Preferida'
+		});
+		
+		vectorSource.addFeature(feature);
+	
+		map.addControl(new app.Draw_(false, true));

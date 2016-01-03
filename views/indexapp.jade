@@ -11,6 +11,8 @@ block content
             .space
             .row
               form(action="/app/login" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', margin: '0 auto',  width: '80%'}).form-horizontal
+                .col-md-12.text-center
+                  i.fa.fa-user(style="font-size: 100px;color: #00bbff")
                 .col-md-6
                   .input-group(style={'margin-top':'5px'})
                     span.input-group-addon
@@ -54,6 +56,8 @@ block content
             .row
               form.form-horizontal.container-fluid(action="/app/signup" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', float: 'none', width: '80%'})
                 // Correo Electrónico
+                .col-md-12.text-center
+                  i.fa.fa-sign-in(style="font-size: 100px;color: #00bbff")
                 .col-md-4
                   .input-group(style={'margin-top':'5px'})
                     span.input-group-addon
@@ -105,6 +109,8 @@ block content
             .space
             .row
               form(action="/app/forgot" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', margin: '0 auto',  width: '80%'}).form-horizontal
+                .col-md-12.text-center
+                  i.fa.fa-send(style="font-size: 100px;color: #00bbff")
                 .col-md-12
                   .input-group(style={'margin-top':'5px'})
                     span.input-group-addon

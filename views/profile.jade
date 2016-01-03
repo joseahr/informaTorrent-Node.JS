@@ -15,13 +15,13 @@ block content
 				.col-md-4
 					.row(style="margin:0 5 0 5px;")
 						div(style={background: 'rgba(0,50,187, 0.1)', width: '100%', padding:'10 5 10 5px'}).form-horizontal.text-center
-							img.img-circle.img-responsive.img-thumbnail(src="#{user.profile.picture}" style={'margin': '0 auto', 'max-width':'200'})
+							img.img-circle.img-responsive.img-thumbnail(src="#{user.profile.picture}" style={'margin': '0 auto', 'width':'200px','height':'200px'})
 							.space
 							a.btn.btn-default(href="/app/denuncias/nueva" style={'min-width': '250px'}) Nueva Denuncia
 							.space
-							a.btn.btn-default(style={'min-width': '250px'}) Editar Perfil
+							a.btn.btn-default(href="/app/perfil/editar" style={'min-width': '250px'}) Editar Perfil
 							.space
-							a.btn.btn-default(style={'width': '250px'}) Editar/Eliminar Denuncia
+							a.btn.btn-default(style={'width': '250px'} href="/app/perfil/editar_loc") Editar localización
 							.space
 							a.btn.btn-danger(href="/app/logout" style={'width': '250px'}) Cerrar Sesión
 				// Columna Central
@@ -48,7 +48,7 @@ block content
 														.col-lg-12.btn.btn-danger(style="margin-bottom: 10px" id_noti_panel="#{noti.id_noti}") NUEVA
 													.col-xs-2
 														a(target="_blank" href="/app/usuarios/#{noti.id_usuario_from}")
-															img.img-responsive.img-thumbnail.img-circle(src="#{noti.profile_from.picture}" style={'min-width':'50px'})
+															img.img-responsive.img-thumbnail.img-circle(src="#{noti.profile_from.picture}" style={'width':'50px', 'height':'50px'})
 														if(noti.tipo == 'DENUNCIA_CERCA')
 															span.fa-stack.fa-lg
 																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
@@ -67,11 +67,11 @@ block content
 																|  ha publicado una 
 																span 
 																	a(href="/app/denuncia/#{noti.id_denuncia}") denuncia
-																| cerca de tu ubicación
+																|  cerca de tu ubicación
 															else
 																|  ha comentado una 
 																span
-																	a(href="/app/denuncia/#{noti.id_denuncia}") denuncia tuya
+																	a(href="/app/denuncia/#{noti.id_denuncia}")  denuncia tuya
 								.panel.panel-default
 									// Notificaciones
 									#headingTwo.panel-heading(role='tab')
@@ -139,6 +139,49 @@ block content
 																		i.fa.fa-trash
 																	button.form-control.btn-danger(onclick="eliminar('#{denuncia.gid}')" style={'border-top-right-radius': '5px', 'border-bottom-right-radius': '5px'}) ELIMINAR
 												- count++;
+								.panel.panel-default
+									// Notificaciones
+									#headingThree.panel-heading(role='tab')
+										h4.panel-title
+											a(data-toggle='collapse', data-parent='#accordion', href='#acciones', aria-expanded='true', aria-controls='acciones')
+												i.fa.fa-files-o
+												| Mis Acciones
+									#acciones.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingThree')
+										.panel-body(style='text-align: center;height: 60%;overflow-y:scroll;')
+											p.lead ¡Has realizado 
+												span#has_realizado.lead #{misAcciones.length} 
+												| acciones!
+											each noti in misAcciones
+												.row(style={margin: '0 5 10 5px', background: 'rgba(0,50,187,0.1)', padding: '5%'})
+													.col-xs-2
+														a(target="_blank" href="/app/usuarios/#{noti.id_usuario_from}")
+															img.img-responsive.img-thumbnail.img-circle(src="#{noti.profile_to.picture}" style={'width':'50px', 'height':'50px'})
+														if(noti.tipo == 'DENUNCIA_CERCA')
+															span.fa-stack.fa-lg
+																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
+																i.fa.fa-map-marker.fa-stack-1x.fa-inverse
+														else
+															span.fa-stack.fa-lg
+																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
+																i.fa.fa-comments.fa-stack-1x.fa-inverse															
+													.col-xs-10
+														.col-lg-12
+															p.lead #{noti.fecha}
+														p.lead 
+															if(noti.tipo == 'DENUNCIA_CERCA')
+																|  Has publicado una 
+																span
+																	a(href="/app/denuncia/#{noti.id_denuncia}") denuncia
+																|  cerca de 
+																span 
+																	a(href="/app/usuarios/#{noti.id_usuario_to}")  #{noti.profile_to.username}
+															else
+																|  Has comentado una 
+																span
+																	a(href="/app/denuncia/#{noti.id_denuncia}") denuncia
+																	|  del usuario 
+																	span
+																		a(href="/app/usuarios/#{noti.id_usuario_to}")  #{noti.profile_to.username}
 block script
 	script.
 		function eliminar(id){

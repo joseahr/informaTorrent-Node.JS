@@ -20,6 +20,7 @@ html
     link(rel='stylesheet', href='/javascripts/plugins/bootstrap-select/dist/css/bootstrap-select.css')
     // Prefix free
     script(src='https://raw.githubusercontent.com/LeaVerou/prefixfree/gh-pages/prefixfree.min.js')
+    block link
   body.no-trans
     // header start
     // ================
@@ -85,7 +86,7 @@ html
                           li(style="height: 100%")
                             a(href='#' style="height: 70px;" data-toggle="dropdown").media
                               div.pull-left
-                                img.img-responsive-img-thumbnail.img-circle.media-object(src="#{user.profile.picture}" style="max-height: 40px; margin: -10 5 0 0px;")                                       
+                                img.img-responsive.img-circle.media-object(src="#{user.profile.picture}" style="height: 40px; width: 40px; margin: -10 5 0 0px;")                                       
                                 span.badge.badge-success.danger.pull-right.noti_up #{nuevas}
                               div.media-body.pull-left
                                 | #{user.profile.username}
@@ -95,7 +96,11 @@ html
                                 a(href="/app/profile#headingOne") Notificaciones
                                   span(style="float: right; margin-top: -20px;").badge.noti_up #{nuevas}
                               li.dropdown
-                                a Cerrar Sesión
+                                a(href="/app/profile") Mi perfil
+                              li.dropdown
+                                a(href="/app/denuncias/nueva") Nueva denuncia
+                              li.dropdown
+                                a(href="/app/logout") Cerrar Sesión
                 // navbar end
               // main-navigation end
             // header-right end

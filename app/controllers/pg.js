@@ -882,5 +882,275 @@ ContPg.prototype.updateDenuncia = function(req, res){
 	});
 }; // Fin saveDenuncia
 
+
+ContPg.prototype.getUpdateProfilePage = function(req, res){
+	res.render('editarPerfil.jade', {user: req.user});
+}
+
+ContPg.prototype.updateProfile = function(req, res){
+	
+	var user = req.user;
+	
+	var nombre_usuario = req.body.username;
+	var nombre = req.body.nombre;
+	var apellidos = req.body.apellidos;
+	
+	var nueva_password = req.body.password;
+	var nueva_password_rep = req.body.repassword;
+	
+	var changedPassword = false;
+	var changedProfile = false;
+	
+	// Validar
+	if(nueva_password && !validator.isLength(nueva_password,5,20)){
+		return res.send({error: true, msg: 'La contraseña debe tener entre 5 y 20 caracteres'});
+	}
+	
+	if(nueva_password && nueva_password != nueva_password_rep){
+		return res.send({error: true, msg: 'Las contraseñas deben coincidir'});	
+	}
+	else if(nueva_password){
+		user.local.password = User.generateHash(nueva_password);
+		changedPassword = true;
+	}
+	
+	if(nombre && !validator.isLength(nombre, 2, 10)){
+		return res.send({error: true, msg: 'El nombre debe tener entre 2 y 10 caracteres'});
+	}
+	else if(nombre){
+		user.profile.nombre = nombre;
+		changedProfile = true;
+	}
+	
+	if(apellidos && !validator.isLength(apellidos, 3, 15)){
+		return res.send({error: true, msg: 'Los apellidos deben tener entre 3 y 15 caracteres'});
+
+	}
+	else if(apellidos){
+		user.profile.apellidos = apellidos;
+		changedProfile = true;
+	}
+	
+	if(nombre_usuario && !validator.isLength(nombre_usuario, 5, 15)){
+		return res.send({error: true, msg: 'El nombre de usuario debe tener entre 5 y 10 caracteres'});
+
+	}
+	
+	
+	
+	var client = new pg.Client(connectionString);
+	
+	client.connect(function(error){
+		if(error) return console.error('Error conectando', error);
+		
+		var aux = nombre_usuario || '1';
+		client.query("select * from usuarios where profile ->> 'username' ='" + aux + "'", 
+		function(e, r){
+			
+			if(e) {
+				client.end();
+				console.error('Error consultando', e);
+			}
+			
+			if(r.rows.length > 0){
+				client.end();
+				return res.send({error: true, msg: 'Nombre de usuario ya elegido por otro usuario, elige otro'});
+			}
+			else {
+				if(nombre_usuario) user.profile.username = nombre_usuario;
+				
+				client.query("update usuarios set (local, profile) = ('" + JSON.stringify(user.local) + "','" + JSON.stringify(user.profile) + "') where _id='" + user._id + "'" , 
+				function(e_, r_){
+					client.end();
+					if(e_) return console.error('Error consultando ', e_);
+					
+					return res.send({error: false, msg: 'Actualizado correctamente'})
+					
+				});
+				
+			}
+			
+			
+		});
+		
+		
+	});
+	
+}
+
+
+
+var formatsAllowed = 'png|jpg|jpeg|gif'; // Podríamos poner más
+
+ContPg.prototype.changeProfilePicture = function(req, res) {
+		
+	var sms = {}; //JSON DE INFO QUE ENVIAREMOS
+	
+	
+	var file = req.files.file;
+	console.log(req.files);
+	var extname = path.extname(file.path);
+	if (!extname.match(formatsAllowed)){
+        var msg = "Error subiendo tu archivo. Formato no válido. ";
+        var type="error";
+        sms.type = type;
+        sms.msg = msg;
+        return res.send(sms);
+	}
+	console.log(file.size );
+	if (file.size > (4096*1024)){
+        var msg = "Error subiendo tu archivo. Imagen demasiado grande. ";
+        var type="error";
+        sms.type = type;
+        sms.msg = msg;
+        return res.send(sms);
+	}
+	var from = file.path; // Ruta origen
+	var to = path.join('./public/files/usuarios', req.user._id + '_-_-_-_' + file.name); // Destino temporal
+	
+	fs.rename(from, to, function(err) {
+		     if(err) { 
+		        var msg = "Error subiendo tu archivo "+err;
+		        var type="error";
+		        sms.type = type;
+		        sms.msg = msg;
+		     } 
+		     else {
+		        var fileSize = file.size/1024;
+		        var msg = "Archivo subido correctamente a "+to+" ("+(fileSize.toFixed(2)) +" kb)";
+		        var type="success";
+		        sms.type = type;
+		        sms.msg = msg;
+		        sms.path = path.join('/files/usuarios', req.user._id + '_-_-_-_' + file.name);
+		        
+		        var client = new pg.Client(connectionString);
+		        
+		        client.connect(function(error){
+		        	if(error) return console.error('Error conectando ', error);
+		        	var user = req.user;
+		        	
+		        	user.profile.picture = path.join('/files/usuarios', req.user._id + '_-_-_-_' + file.name);
+		        	client.query("update usuarios set profile='" + JSON.stringify(user.profile) + "' where _id='" + user._id + "'", 
+		        	function(e, r){
+		        		client.end();
+		        		if(e) return console.error('Error consultando ', e);
+		        		
+		        		return res.send(sms);
+		        		
+		        	});
+		        	
+		        });
+		        
+		     }
+		     
+		     return res.send(sms);
+	  });
+};
+
+
+ContPg.prototype.getEditLoc = function(req,res){
+	
+	var client = new pg.Client(connectionString);
+	
+	client.connect(function(error){
+		
+		if(error) return console.error('Error conectando', error);
+		
+		client.query("select st_asgeojson(location_pref) as loc_pref from usuarios where _id='" + req.user._id + "'", 
+		function(e, r){
+			
+			client.end();
+			if(e) return console.error('Error consultando', e);
+			
+			res.render('editarLoc.jade', {loc_pref: r.rows[0].loc_pref});
+			
+			
+		});
+		
+		
+	});
+	
+}
+
+ContPg.prototype.postChangeLoc= function(req, res){
+	
+	var wkt = req.body.wkt;
+	
+	console.log(wkt + " WKTTTTTTTTTTTTT");
+	
+	var clientCarto = new pg.Client(connectionStringCarto);
+	clientCarto.connect(function(errCartoConnect){
+		if(errCartoConnect) {
+			return console.error('error fetching client from pool', errCartoConnect);
+		}
+		console.log(wkt);
+		// Consulta para saber si el punto está dentro 
+		clientCarto.query(queries.torrentContainsGeom(wkt),
+		function(errorCartoIn, estaDentro){
+			// error al realizar la consulta
+			clientCarto.end();
+			if(errorCartoIn) return console.error('error en la consulta espacial', errorCartoIn);
+			
+			console.log(estaDentro.rows[0].st_contains);
+			
+			// Si la denuncia no está dentro...
+			if (estaDentro.rows[0].st_contains == false){
+				
+				return res.send({error: true, msg: 'El punto no está en torrent'});
+				
+			}
+			
+			client = new pg.Client(connectionString);
+			
+			client.connect(function(error){
+				
+				if(error) return console.error('Error conectndo', error);
+				
+				client.query("update usuarios set (location_pref, distancia_aviso) = (st_geomfromtext('" + wkt + "', 4258),"+  + req.body.distancia + ") where _id='" + req.user._id + "'",
+				function(e, r){
+					
+					client.end();
+					
+					if(e) return console.error('Error conectando', e);
+					
+					return res.send({error: false, msg: 'Ubicación preferida cambiada correctamente'});
+					
+				});
+				
+			});
+			
+			
+		});
+	});
+	
+}
+
+ContPg.prototype.changeImageGravatar = function(req, res){
+	
+	var user = req.user;
+	
+	user.profile.picture = req.body.gravatar;
+	
+	var client = new pg.Client(connectionString);
+	
+	client.connect(function(error){
+		if(error) return console.error('Error conectando', error);
+		//console.log('gravatarrrr  ' + req.body.gravatar);
+		client.query("update usuarios set profile='" + JSON.stringify(user.profile) + "' where _id='" + user._id + "'", 
+		function(e, r){
+			client.end();
+			
+			if(e) return console.error('Error consultando', e);
+			
+			return res.send({msg: 'Imagen de perfil actualizada correctamente', path: req.body.gravatar});
+			
+		});
+		
+		
+	});
+	
+}
+
+
 module.exports = ContPg;
 

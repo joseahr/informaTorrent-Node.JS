@@ -25,6 +25,7 @@ block panel-lateral
 					span
 						a(href="/app/usuarios/#{denuncia.id_usuario}")
 							| #{denuncia.usuario[0].profile.username}
+					img.img.img-responsive.img-circle(style="width: 80px; height: 80px;" src="#{user.profile.picture}")
 				div(style="word-wrap: break-word;") !{denuncia.descripcion}
 	#comentarios.cd-panel.from-right
 		header.cd-panel-header
@@ -47,7 +48,7 @@ block panel-lateral
 							.row(style={background: 'rgba(0,50,187, 0.1)', padding:'10 5 10 5px'}).form-horizontal.text-center
 								.col-lg-4
 									a(href="/app/usuarios/#{comentario.id_usuario}")
-										img.img-responsive.img-thumbnail.img-circle(src="#{comentario.profile.picture}" style="max-width: 80px;")
+										img.img-responsive.img-thumbnail.img-circle(src="#{comentario.profile.picture}" style="width: 80px; height: 80px;")
 									p.space
 										a(href="/app/usuarios/#{comentario.id_usuario}") #{comentario.profile.username}
 								.col-lg-8

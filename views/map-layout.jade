@@ -95,15 +95,19 @@ html
                             a(href='/app/denuncias?page=1' style="height: 100%") Denuncias
                           li(style="height: 100%")
                             a(href='#' style="height: 100%" data-toggle="dropdown") #{user.profile.username}
-                              img.img-responsive-img-thumbnail.img-circle.pull-left(src="#{user.profile.picture}" style="max-height: 40px; margin: -10 5 0 0px;")
+                              img.img-responsive-img-thumbnail.img-circle.pull-left(src="#{user.profile.picture}" style="height: 40px; width: 40px; margin: -10 5 0 0px;")
                               span.caret
                               ul.dropdown-menu.dropdown(style="width: 100%; background: #E7E7E7")
                                 li
                                   a(href="/app/profile#headingOne")
                                     | Notificaciones
                                     span(style="float: right; margin-top: -20px;").badge #{nuevas}
+                                li.dropdown
+                                  a(href="/app/profile") Mi perfil
+                                li.dropdown
+                                  a(href="/app/denuncias/nueva") Nueva denuncia
                                 li
-                                  a Cerrar Sesión
+                                  a(href="/app/logout") Cerrar Sesión
                 // navbar end
               // main-navigation end
     // header-right end
