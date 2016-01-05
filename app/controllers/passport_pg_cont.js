@@ -69,7 +69,7 @@ Passport.prototype.postChangePass = function(req, res){
 						else {
 							var user = result.rows[0];
 							
-							if(!User.validPassword(password_original, user.local.password)){ 
+							if(!User.validPassword(password_original, user.password)){ 
 								client.end();
 				    			req.flash('error', 'Contraseña errónea');
 				    			done(new Error());
@@ -147,12 +147,12 @@ Passport.prototype.postResetToken = function(req, res) {
 	  	    				        done(Error);
 	    				        }
 	    				        
-	    				        user.local.password = User.generateHash(req.body.password);
+	    				        user.password = User.generateHash(req.body.password);
 	    				        user.resetPasswordToken = undefined;
 	    				        user.resetPasswordExpires = undefined;
 	    				        
-	    				        client.query("UPDATE usuarios SET (local,resetPasswordToken,resetPasswordExpires) " +
-	    				        "= ('" + JSON.stringify(user.local) + "', NULL, NULL) " +
+	    				        client.query("UPDATE usuarios SET (password,resetPasswordToken,resetPasswordExpires) " +
+	    				        "= ('" + User.generateHash(req.body.password) + "', NULL, NULL) " +
 	    				        "WHERE _id = '" + user._id +"'",
 	    				        function(error, result1){
 				        			client.end();
@@ -493,7 +493,8 @@ Passport.prototype.getUserProfile = function(req, res){
     					res.send(404);
     				else {
     					var user = result.rows[0];
-    					res.send(user);
+    					
+    					res.render('perfil_otro.jade', {user_otro: result.rows[0]});
     				}
     			}
     		});

@@ -14,7 +14,7 @@ block content
 				// Columna Izquierda
 				.col-md-4
 					.row(style="margin:0 5 0 5px;")
-						div(style={background: 'rgba(0,50,187, 0.1)', width: '100%', padding:'10 5 10 5px'}).form-horizontal.text-center
+						div(style={background: 'rgba(0,50,187, 0.1)', width: '100%', padding:'40 5 40 5px'}).form-horizontal.text-center
 							img.img-circle.img-responsive.img-thumbnail(src="#{user.profile.picture}" style={'margin': '0 auto', 'width':'200px','height':'200px'})
 							.space
 							a.btn.btn-default(href="/app/denuncias/nueva" style={'min-width': '250px'}) Nueva Denuncia
@@ -67,7 +67,7 @@ block content
 																|  ha publicado una 
 																span 
 																	a(href="/app/denuncia/#{noti.id_denuncia}") denuncia
-																|  cerca de tu ubicación
+																|  cerca de tu ubicación (#{noti.distancia} metros)
 															else
 																|  ha comentado una 
 																span

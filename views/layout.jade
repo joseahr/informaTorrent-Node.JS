@@ -134,25 +134,10 @@ html
     script.
       var ip = '#{ip}';
       var id_usuario = '#{id_usuario}';
-      var message = {};
-      if ('#{message.error}' != '') {
-        message.type = 'type-error';
-        message.msg = '#{message.error}';
-      }
-      else if ('#{message.success}' != '') {
-        message.type = 'type-success';
-        message.msg = '#{message.success}';
-      }
-      else if ('#{message.info}' != '') {
-        message.type = 'type-info';
-        message.msg = '#{message.info}';
-      }
-      else message.type = 'undefined';
     // Plugins Javascript situados al final de la página, así el contenido carga antes
     // JQuery y Bootstrap
     script(type='text/javascript', src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js')
     script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js', integrity='sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS', crossorigin='anonymous')
-    block script
     // Modernizr
     script(type='text/javascript', src='/javascripts/plugins/modernizr.js')
     // Jquery appear
@@ -173,3 +158,29 @@ html
     script(src="https://cdn.socket.io/socket.io-1.3.7.js")
     // FUNCIONALIDADES SOCKET.IO
     script(src="/javascripts/client-sockets.js")
+    script.
+      var sms = {};
+      if ('#{message.error}' != '') {
+        sms.type = 'type-error';
+        sms.msg = '#{message.error}';
+      }
+      else if ('#{message.success}' != '') {
+        sms.type = 'type-success';
+        sms.msg = '#{message.success}';
+      }
+      else if ('#{message.info}' != '') {
+        sms.type = 'type-info';
+        sms.msg = '#{message.info}';
+      }
+      
+      if(sms.type)      
+        BootstrapDialog.show({
+            type: sms.type,
+            title: 'INFO',
+            message: sms.msg,
+            buttons: [{
+                label: 'Cerrar',
+                action: function(dialog){dialog.close()}
+            }]
+        });
+    block script

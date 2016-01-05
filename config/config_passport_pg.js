@@ -79,7 +79,7 @@ module.exports = function(passport) {
         				else {
         					var user = result.rows[0]; // usuario
         					
-        	                if (!User.validPassword(password, user.local.password)) {
+        	                if (!User.validPassword(password, user.password)) {
         	                    return done(null, false, req.flash('error', 'Contraseña erronea.'));
         	                }
         	                //Usuario no confirmado su correo
@@ -159,7 +159,7 @@ module.exports = function(passport) {
         		            			newUser.profile = {};
         		            			
         		                        newUser.local.email    = email;
-        		                        newUser.local.password = User.generateHash(password);
+        		                        newUser.password = User.generateHash(password);
         		                        newUser.local.valid    = false;
         		                        newUser.profile.nombre = name;
         		                        newUser.profile.apellidos = surname;
@@ -171,8 +171,8 @@ module.exports = function(passport) {
         		                        // Enviamos email de confirmación de cuenta
         		                        
         		                        // Finalmente guardamos el usuario en la bdd
-        		                        client.query("insert into usuarios(local, profile) " +
-        		                        "VALUES ('" + JSON.stringify(newUser.local) + "','" + JSON.stringify(newUser.profile) + "') " +
+        		                        client.query("insert into usuarios(password, local, profile) " +
+        		                        "VALUES ('" + newUser.password + "','" + JSON.stringify(newUser.local) + "','" + JSON.stringify(newUser.profile) + "') " +
         		                        		"returning *",
         		                        function(err_, rresult){
         		                        	client.end();

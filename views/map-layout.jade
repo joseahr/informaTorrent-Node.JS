@@ -117,9 +117,13 @@ html
     
     #map.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
       // Popup Info
-      #popup.ol-popup(style='min-width: 400px;')
+      #popup.ol-popup
         a#popup-closer.ol-popup-closer(href='#')
         #popup-content
+      // Popup info denuncias
+      #popup-visor.ol-popup(style="z-index: 3; height: 350px; width: 350px;")
+        a#popup-visor-closer.ol-popup-closer(href='#')
+        #popup-visor-content(style="width: 100%; max-height: 300px; overflow-x: hidden; overflow-y: scroll; word-wrap: break-word;")
       #numdenun.ol-unselectable.ol-control(data-toggle="left" title="Denuncias" data-content="Denuncias totales" style="position: fixed; bottom: 11.125em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;z-index: 1;")
         i.fa.fa-bullhorn(style="margin-right: 5px;")
         | #{numdenun}
@@ -263,7 +267,7 @@ html
       map.addLayer(groupCartoTorrentWMS); // Añadimos grupo de Capas 2
       
       // Añadimos Control OverviewMap
-      map.addControl(new ol.control.OverviewMap({
+      map.addControl(new ol.control.OverviewMap({ 
         layers: [new ol.layer.Tile(ignBase.getProperties())],
         view: new ol.View({ // Importante añadir la View con nuestra proyección
           projection: proj

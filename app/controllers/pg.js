@@ -671,7 +671,24 @@ var queries = {
 		},
 		getUserNotifications : function(id){
 			return "select n.*, to_char(n.fecha::timestamp,'DD TMMonth YYYY HH24:MI:SS') as fecha, u.profile as profile_from from notificaciones n, usuarios u where n.id_usuario_to='" + id + "' and n.id_usuario_from=u._id order by n.fecha desc";
-		}
+		},
+		denuncias_visor: function(){
+			return "SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha," +
+	  		"ST_AsGeoJSON(the_geom) as geometria FROM denuncias " +
+	  		"LEFT   JOIN LATERAL (" +
+	  		"SELECT json_agg(com) AS comentarios " +
+	  		"FROM  (SELECT c.id_usuario, c.contenido, to_char(c.fecha::timestamp,'TMDay, DD TMMonth YYYY a las HH24:MI:SS') as fecha, u.* FROM comentarios c, usuarios u WHERE c.id_usuario = u._id and c.id_denuncia = denuncias.gid ORDER BY fecha DESC) com" +
+	  		") comentarios ON true " +
+	  		"LEFT   JOIN LATERAL (" +
+	  		"SELECT json_agg(img) AS imagenes " +
+	  		"FROM  (SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY') as fecha  FROM imagenes WHERE id_denuncia = denuncias.gid) img" +
+	  		") imagenes ON true " +
+	  		"LEFT   JOIN LATERAL (" +
+	  		"SELECT json_agg(usuarios) AS usuario " +
+	  		"FROM  (SELECT * FROM usuarios WHERE _id = denuncias.id_usuario) usuarios" +
+	  		") usuarios ON true " +
+	  		"WHERE denuncias.fecha > current_timestamp - interval '1 DAY' order by denuncias.fecha DESC"
+		},
 };
 
 /*
@@ -910,7 +927,7 @@ ContPg.prototype.updateProfile = function(req, res){
 		return res.send({error: true, msg: 'Las contraseñas deben coincidir'});	
 	}
 	else if(nueva_password){
-		user.local.password = User.generateHash(nueva_password);
+		user.password = User.generateHash(nueva_password);
 		changedPassword = true;
 	}
 	
@@ -959,7 +976,7 @@ ContPg.prototype.updateProfile = function(req, res){
 			else {
 				if(nombre_usuario) user.profile.username = nombre_usuario;
 				
-				client.query("update usuarios set (local, profile) = ('" + JSON.stringify(user.local) + "','" + JSON.stringify(user.profile) + "') where _id='" + user._id + "'" , 
+				client.query("update usuarios set (password, profile) = ('" + user.password + "','" + JSON.stringify(user.profile) + "') where _id='" + user._id + "'" , 
 				function(e_, r_){
 					client.end();
 					if(e_) return console.error('Error consultando ', e_);
@@ -1151,6 +1168,59 @@ ContPg.prototype.changeImageGravatar = function(req, res){
 	
 }
 
+
+ContPg.prototype.getVisorPage = function(req, res){
+	client = new pg.Client(connectionString);
+	
+	client.connect(function(error){
+		if (error) console.error('error conectando a la bdd', error);
+		else {
+			client.query(queries.denuncias_visor(), function(e, result){
+				client.end();
+				if (e) console.error(e);
+				else {
+					console.log(result.rows);
+					res.render('visor.jade', {denuncias: JSON.stringify(result.rows)});
+				}
+			});
+		}
+	});
+	
+}
+
+ContPg.prototype.api = function(req, res){
+	
+	var where = 'where ';
+	
+	var titulo_ = req.query.titulo;
+	var tags_ = req.query.tags;
+	var buffer_centro_ = req.query.buffer_centro;
+	var buffer_radio_ = req.query.buffer_radio;
+	var usuario_nombre_ = req.query.usuario_nombre;
+	var fecha = req.query.fecha;
+	
+	if(titulo_) query += "titulo like '%" + titulo.replace(' ', '_') +  "%' ";
+	
+	if(titulo_ && tags_) query += "and tags_ = ANY('{" + tags_ + "}'::text[]) ";
+	else if(tags_) query += "tags_ = ANY('{" + tags_ + "}'::text[]) ";
+	
+	if(buffer_centro_ && buffer_radio_){
+		var lonlat = buffer_centro_.split(',');
+		if(titulo_ || tags_) query += "and st_distance(st_transform(the_geom, 25830), st_transform(st_geomfromtext('POINT(" + lonlat[0] +' ' + lonlat[1] + ")'), 25830)) < " + buffer_radio_ + " ";
+		else query += "st_distance(st_transform(the_geom, 25830), st_transform(st_geomfromtext('POINT(" + lonlat[0] +' ' + lonlat[1] + ")'), 25830)) < " + buffer_radio_ + " ";
+	}
+	else return res.send({error: true, msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros.'});
+	
+	if(usuario_nombre_){
+		if(tags_ || titulo || buffer_centro_) query += "and id_usuario = (select _id from usuarios where profile -> 'username' like '%" + usuario_nombre_ + "%') ";
+		else query += "and id_usuario = (select _id from usuarios where profile -> 'username' like '%" + usuario_nombre_ + "%') ";
+	}
+	
+	if(fecha){
+		if(tags_ || titulo || buffer_centro_ || usuario_nombre_) query += 'and fecha ....'
+	}
+	
+}
 
 module.exports = ContPg;
 

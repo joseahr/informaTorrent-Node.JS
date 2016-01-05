@@ -62,7 +62,7 @@ num_denuncias_io.on('denuncia_cerca', function(data){
 				'<div class="col-lg-12"><p class="lead">'+ new Date().getDate() + '/' + (new Date().getMonth() + 1) + '/' + new Date().getFullYear() + ' ' + new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds() + '</p></div>' +
 				'<p class="lead"><span><a target="_blank" href="/app/usuarios/' + data.from._id + '">' + 
 				data.from.profile.username + '</a>'
-				+ '</span> ha publicado una <span><a href="/app/denuncia/'+ data.denuncia.gid +'">denuncia </a></span> cerca de tu ubicación</p>'
+				+ '</span> ha publicado una <span><a href="/app/denuncia/'+ data.denuncia.gid +'">denuncia </a></span> cerca de tu ubicación (' + data.noti.distancia + ' metros)</p>'
 				'</div>' +
 		'</div>';
 	$('#notificaciones > .panel-body').prepend($(html));

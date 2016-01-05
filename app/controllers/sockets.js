@@ -89,8 +89,8 @@ module.exports = function(io, pg, path, mkdirp, exec, config){
 			client.connect(function(error){
 				if(error) console.error('Error conectando a la bdd', error);
 				else {
-					client.query("select _id from usuarios where " +
-					"st_distance(st_transform(location_pref, 25830), st_transform(st_geomfromtext('" + data.wkt + "', 4258), 25830)) < 20 "+
+					client.query("select _id, st_distance(st_transform(location_pref, 25830), st_transform(st_geomfromtext('" + data.wkt + "', 4258), 25830)) as distancia from usuarios where " +
+					"st_distance(st_transform(location_pref, 25830), st_transform(st_geomfromtext('" + data.wkt + "', 4258), 25830)) < distancia_aviso "+
 					"and _id <> '" + id_usuario_from + "'",
 					function(e, result){
 						//client.end(); // Habrá que quitarlo
@@ -99,17 +99,19 @@ module.exports = function(io, pg, path, mkdirp, exec, config){
 							client.end();
 							console.error('Error consultando usuarios cerca ', e);
 						}
-						
+					
 						else if(result.rows.length > 0){
+							
 							console.log('resultroooows' + result.rows);
 							// Hay usuarios afectados
 							var values = '';
 							result.rows.forEach(function(id_usuario, index){
+								var distancia = id_usuario.distancia;
 								console.log('id usuario afectado denuncia cerca ' + id_usuario._id);
 								if(index != result.rows.length -1)
-									values = "('"+ data.id +"','"+ id_usuario_from +"','" + id_usuario._id + "','DENUNCIA_CERCA')";
+									values = "('"+ data.id +"','"+ id_usuario_from +"','" + id_usuario._id + "','DENUNCIA_CERCA'," + distancia + ")";
 								else
-									values = "('"+ data.id +"','"+ id_usuario_from +"','" + id_usuario._id + "','DENUNCIA_CERCA')";
+									values = "('"+ data.id +"','"+ id_usuario_from +"','" + id_usuario._id + "','DENUNCIA_CERCA', " + distancia + ")";
 								if(clients[id_usuario._id] && id_usuario._id != id_usuario_from){
 									// Si el usuario está conectado y es distinto al usuario que emite la
 									// denuncia emitimos esa notificación a el usuario
@@ -119,7 +121,7 @@ module.exports = function(io, pg, path, mkdirp, exec, config){
 										//client.end();
 										if(_e) return console.error(_e);
 										
-										client.query("insert into notificaciones(id_denuncia, id_usuario_from, id_usuario_to, tipo) " +
+										client.query("insert into notificaciones(id_denuncia, id_usuario_from, id_usuario_to, tipo, distancia) " +
 												"values " + values + " returning *", function(e_, result_){
 													
 											client.end();

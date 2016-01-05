@@ -138,26 +138,6 @@ console.log('The magic happens on port ' + port);
 //socket io
 var io = require('socket.io').listen(server);
 
-// Ruta /app/visor
-app.get('/app/visor', function(req, res){
-	var client = new pg.Client('postgres://jose:jose@localhost/denuncias');
-	
-	client.connect(function(error){
-		if (error) console.error('error conectando a la bdd', error);
-		else {
-			client.query("select *, st_asgeojson(the_geom) as geom from denuncias where fecha > current_timestamp - interval '1 DAY' order by fecha DESC", function(e, result){
-				client.end();
-				if (e) console.error(e);
-				else {
-					console.log(result.rows);
-					res.render('visor.jade', {denuncias: JSON.stringify(result.rows)});
-				}
-			});
-		}
-	});
-	
-});
-
 // Requires para controladores
 var dir = require('node-dir'),
 	exec = require( 'child_process' ).exec,
@@ -306,15 +286,17 @@ app.post('/app/perfil/editar_loc', isLoggedIn, contPg.postChangeLoc);
 
 app.post('/app/perfil/gravatar', isLoggedIn, contPg.changeImageGravatar);
 
+app.get('/app/visor', contPg.getVisorPage);
+
 /*
  * Middlewares de Error y ruta *
  */
 
-//app.get('*', function(req, res, next) {
-//	console.log('ruta no encontrada');
-//	req.flash('error', 'Ruta no encontrada');
-//	res.redirect('/app');
-//});
+app.get('*', function(req, res, next) {
+	console.log('ruta no encontrada');
+	req.flash('error', 'Ruta no encontrada');
+	res.redirect('/app');
+});
 
 function isLoggedIn(req, res, next) {
     if (req.isAuthenticated()){
@@ -332,21 +314,3 @@ function isLoggedIn(req, res, next) {
     	res.redirect('/app/login');
     }
 }
-
-//app.use(function(err, req, res, next) {
-//	 console.log('midle error');
-//	 if(!err){
-//		 err = new Error('No encontrado');
-//		 err.status(404);
-//	 }
-//
-//	 //res.status(err.status);
-//	 res.locals.message = {error : err.message};
-//	 req.flash('error', err.message);
-//	 return res.redirect('/app');
-//	
-//});
-
-
-
-

@@ -1,0 +1,24 @@
+extends layout
+block content
+	.section.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
+		// Header Inicio Perfil +  Nombre Usuario
+		.container
+			.row
+				.col-md-12
+					h1#iniciar.title
+						i.fa.fa-user(style={'margin-left':'5px', 'margin-right': '5px'})
+						| Perfil de 
+						span #{user_otro.profile.username}
+		// Contenedor del contenido del perfil
+		.container
+			.row
+				// Columna Izquierda
+				.col-md-4
+					.row(style="margin:0 5 0 5px;")
+						div(style={background: 'rgba(0,50,187, 0.1)', width: '100%', padding:'40 5 40 5px'}).form-horizontal.text-center
+							img.img-circle.img-responsive.img-thumbnail(src="#{user_otro.profile.picture}" style={'margin': '0 auto', 'width':'200px','height':'200px'})
+							.space
+				// Columna Central
+				.col-md-8
+					.row(style="margin:0 5 0 5px;")
+						div(style={background: 'rgba(0,50,187, 0)', width: 'auto; margin: 0 auto;'}).form-horizontal.text-center

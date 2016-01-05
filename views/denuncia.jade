@@ -20,13 +20,23 @@ block panel-lateral
 			a.cd-panel-close(href='#0') Close
 		.cd-panel-container
 			.cd-panel-content
+				div(style="background: rgba(0,0,0,0.2); padding: 15 0 0 0px").row
+					.col-lg-4
+						img.img.img-responsive.img-circle(style="width: 80px; height: 80px;" src="#{denuncia.usuario[0].profile.picture}")
+					.col-lg-8
+						h4 denunciado por 
+							span
+								a(href="/app/usuarios/#{denuncia.id_usuario}")
+									| #{denuncia.usuario[0].profile.username}
+					div(style="margin-top: 5px;  clear: both;" class="btn-info text-center") #{denuncia.fecha}
 				h2 #{denuncia.titulo}
-				h4 denunciado por 
-					span
-						a(href="/app/usuarios/#{denuncia.id_usuario}")
-							| #{denuncia.usuario[0].profile.username}
-					img.img.img-responsive.img-circle(style="width: 80px; height: 80px;" src="#{user.profile.picture}")
-				div(style="word-wrap: break-word;") !{denuncia.descripcion}
+				h4
+					i.fa.fa-tags
+					each tag in denuncia.tags
+						| ##{tag}  
+				div(style="clear: both; margin-top: 20px;") 
+					h4(style="margin-top: 10px") Descripción
+					div(style="word-wrap: break-word;") !{denuncia.descripcion}
 	#comentarios.cd-panel.from-right
 		header.cd-panel-header
 			h1(style="margin-top: 0px; color: #55ACEE !important; font-size: 20px;") Comentarios
