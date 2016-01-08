@@ -12,18 +12,19 @@ block content
 		.container
 			.row
 				// Columna Izquierda
-				.col-md-4
+				.col-md-4(style="margin-bottom: 10px;")
 					.row(style="margin:0 5 0 5px;")
-						div(style={background: 'rgba(0,50,187, 0.1)', width: '100%', padding:'40 5 40 5px'}).form-horizontal.text-center
-							img.img-circle.img-responsive.img-thumbnail(src="#{user.profile.picture}" style={'margin': '0 auto', 'width':'200px','height':'200px'})
-							.space
-							a.btn.btn-default(href="/app/denuncias/nueva" style={'min-width': '250px'}) Nueva Denuncia
-							.space
-							a.btn.btn-default(href="/app/perfil/editar" style={'min-width': '250px'}) Editar Perfil
-							.space
-							a.btn.btn-default(style={'width': '250px'} href="/app/perfil/editar_loc") Editar localización
-							.space
-							a.btn.btn-danger(href="/app/logout" style={'width': '250px'}) Cerrar Sesión
+						div(style={'background-color': 'rgba(0,50,200,0.3)', 'border-top-left-radius': '10px' , 'border-top-right-radius': '10px'})
+							div(style={'border-top-left-radius': '10px' , 'border-top-right-radius': '10px', background: 'url(http://www.lovevalencia.com/wp-content/uploads/2011/07/torrent-e1311319357479.jpg)', 'background-size':'100% 35%','background-repeat':'no-repeat', width: '100%', padding:'40 5 40 5px'}).form-horizontal.text-center
+								img.img-circle.img-responsive.img-thumbnail(src="#{user.profile.picture}" style={'margin': '0 auto', 'width':'200px','height':'200px'})
+								.space
+								a.btn.btn-default(href="/app/denuncias/nueva" style={'min-width': '250px'}) Nueva Denuncia
+								.space
+								a.btn.btn-default(href="/app/perfil/editar" style={'min-width': '250px'}) Editar Perfil
+								.space
+								a.btn.btn-default(style={'width': '250px'} href="/app/perfil/editar_loc") Editar localización
+								.space
+								a.btn.btn-danger(href="/app/logout" style={'width': '250px'}) Cerrar Sesión
 				// Columna Central
 				.col-md-8
 					.row(style="margin:0 5 0 5px;")
@@ -46,9 +47,9 @@ block content
 												.row(style={margin: '0 5 10 5px', background: 'rgba(0,50,187,0.1)', padding: '5%'} id_noti="#{noti.id_noti}" vista="#{noti.vista}").noti
 													if (noti.vista == false)
 														.col-lg-12.btn.btn-danger(style="margin-bottom: 10px" id_noti_panel="#{noti.id_noti}") NUEVA
-													.col-xs-2
+													.col-xs-3
 														a(target="_blank" href="/app/usuarios/#{noti.id_usuario_from}")
-															img.img-responsive.img-thumbnail.img-circle(src="#{noti.profile_from.picture}" style={'width':'50px', 'height':'50px'})
+															img.img-responsive.img-thumbnail.img-circle(src="#{noti.profile_from.picture}" style={'width':'50px !important', 'height':'50px'})
 														if(noti.tipo == 'DENUNCIA_CERCA')
 															span.fa-stack.fa-lg
 																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
@@ -57,7 +58,7 @@ block content
 															span.fa-stack.fa-lg
 																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
 																i.fa.fa-comments.fa-stack-1x.fa-inverse															
-													.col-xs-10
+													.col-xs-9
 														.col-lg-12
 															p.lead #{noti.fecha}
 														p.lead 
@@ -115,8 +116,8 @@ block content
 																			else 
 																				| &nbsp 0 &nbsp
 																		i.fa.fa-tags
-																			if denuncia.tags
-																				| &nbsp #{denuncia.tags.length} &nbsp
+																			if denuncia.tags_
+																				| &nbsp #{denuncia.tags_.length} &nbsp
 																			else 
 																				| &nbsp 0 &nbsp																		
 														.col-md-8(style={'padding':'0px'})
@@ -153,7 +154,7 @@ block content
 												| acciones!
 											each noti in misAcciones
 												.row(style={margin: '0 5 10 5px', background: 'rgba(0,50,187,0.1)', padding: '5%'})
-													.col-xs-2
+													.col-xs-3
 														a(target="_blank" href="/app/usuarios/#{noti.id_usuario_from}")
 															img.img-responsive.img-thumbnail.img-circle(src="#{noti.profile_to.picture}" style={'width':'50px', 'height':'50px'})
 														if(noti.tipo == 'DENUNCIA_CERCA')
@@ -164,7 +165,7 @@ block content
 															span.fa-stack.fa-lg
 																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
 																i.fa.fa-comments.fa-stack-1x.fa-inverse															
-													.col-xs-10
+													.col-xs-9
 														.col-lg-12
 															p.lead #{noti.fecha}
 														p.lead 

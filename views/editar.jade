@@ -1,5 +1,6 @@
 extends map-layout
 // block link
+- var tags__ = '!{denuncia.tags_}'
 block link
 	link(rel="stylesheet" href='//cdnjs.cloudflare.com/ajax/libs/dropzone/3.8.4/css/dropzone.css')
 	link(rel="stylesheet" href="/javascripts/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.css")
@@ -64,10 +65,22 @@ block script
 					alert('Tag repetido');
 				}
 			});
+			var tags = [];
+			try {
+				var data = JSON.parse('!{JSON.stringify(denuncia.tags_)}');
+				data.forEach(function(tag){
+					$('#tags').tagsinput('add', tag.tag);
+				});
+			}
+			catch (e) {
+				alert(e);
+			}
 			
-			'#{denuncia.tags}'.split(',').forEach(function(tag){
+			tags.forEach(function(tag){
+				alert(tag);
 				$('#tags').tagsinput('add', tag);
 			});
+			
 			
 		}
 		
@@ -99,5 +112,3 @@ block script
 		
 		map.addControl(new app.Lateral());
 		map.addControl(new app.Draw_());
-		
-		

@@ -69,7 +69,7 @@ select.on('select', function(e){
 	if(! e.selected[0]) return;
 	e.target.getFeatures().forEach(function(f){
 		
-		var tags = f.attributes.denuncia.tags || [];
+		var tags = f.attributes.denuncia.tags_ || [];
 		
 		var numImages = f.attributes.denuncia.imagenes ? f.attributes.denuncia.imagenes.length : 0;
 		
@@ -78,14 +78,14 @@ select.on('select', function(e){
 		var stringTags = '';
 		
 		tags.forEach(function(tag){
-			stringTags += '#' + tag + '  ';
+			stringTags += '#' + tag.tag + '  ';
 		});
 		
 		content.innerHTML = '<div class="row text-center" style="padding-bottom: 0px !important;background: rgba(0,0,0,0.2); padding: 5px;"><div class="col-lg-4 text-center"><img class="img img-thumbnail img-responsive img-circle" src="' + f.attributes.denuncia.usuario[0].profile.picture + '" style="height: 60px; width: 60px; float: left; margin: 0 auto;"></img></div>' + 
 							'<div class="col-lg-8 text-center" style="padding: 5px;"><p> denunciado por <span><a href="/app/usuarios/' + f.attributes.denuncia.usuario[0]._id + '">' + f.attributes.denuncia.usuario[0].profile.username + '</a></span></p></div>'+
 							'<div class="col-lg-12 btn-info text-center" style="padding: 5px;">' + f.attributes.denuncia.fecha + '</div>' +
 							'<div class="col-lg-12" style="clear: both; margin-top: 5px;"><i class="fa fa-tags"></i> ' + stringTags + '</div>' + 
-							'<div class="col-lg-12" style="clear: both;"><i class="fa fa-image"></i> ' + numImages + '  <i class="fa fa-comments"> ' + numComments + '</i></div>' + 
+							'<div class="col-lg-12" style="clear: both;"><i class="fa fa-image"></i> ' + numImages + '  <i class="fa fa-comments"></i> ' + numComments + '</div>' + 
 							'</div>' + 
 							'<h4>' + f.attributes.denuncia.titulo + '</h4>' +
 							'<div class="space" style="clear: both;"></div>' + 

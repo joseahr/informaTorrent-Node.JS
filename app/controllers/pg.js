@@ -76,40 +76,6 @@ ContPg.prototype.saveDenuncia = function(req, res){
 		if(!validator.isLength(contenido, 50, 10000)) errormsg += '· El contenido debe tener entre 50 y 10000 caracteres.\n';
 		if(wkt == undefined) errormsg += '· Debe agregar un punto, línea o polígono\n';	
 		
-		//  Formateamos los tags para introducirlos como ARRAY(TEXT) en pgsql
-		if(tags_){
-			var tags = '{'; // hay que convertirlo en {'tag1', 'tag2', ...} para introducirlo en pgsql
-			tags_.forEach(function(tag, index, that){
-				
-				tag = tag.replace(/["' # $ % & + ` - \s]/g, "");
-				if (!validator.isLength(tags, 1, 10)){
-					response.type = 'error';
-					response.msg += 'El tag "' + tag + '" no debe tener más de 10 caracteres\n'
-				}
-				if(index == that.length - 1)
-				{
-					if (tag == '')
-						tags = tags + '}';
-					else
-						tags = tags + ',' + tag + '}';
-				}
-				else if(index == 0)
-				{
-					if (tag != '')
-						tags = tags + tag;
-				}
-				else
-				{
-					if (tag != '')
-						tags = tags + ',' + tag;
-						
-				}
-			});
-		}
-		else {
-			var tags = '{}';
-
-		}
 		// Si hay algún error en los datos devolvemos la denuncia
 		if(errormsg.length > 0){
 			console.log('error_mensaje --> ' + errormsg);
@@ -200,7 +166,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 				  
 						// Si no ejecutamos la consulta para obtener las denuncias
 				  
-						client.query(queries.insertDenuncia(user_id, titulo, contenido, wkt, tags), 
+						client.query(queries.insertDenuncia(user_id, titulo, contenido, wkt), 
 						function(err, result){
 							//console.log(result.rows);
 							
@@ -217,17 +183,17 @@ ContPg.prototype.saveDenuncia = function(req, res){
 							// Añadir las imágenes
 							var values = '';
 							
-							if(imagenes.length == 0){
+							if(imagenes.length == 0 && tags_.lenght == 0){
 								client.end();
 								// Si no hay imágenes... Denuncia guardada correctamente
-								console.log('guardada - no imgs');
+								console.log('guardada - no imgs - notags');
 								response.type = 'success';
 								response.msg = 'Denuncia Guardada Correctamente';
 								response.denuncia = denuncia_io;
 								//s_i_o.emit('new_denuncia_added', denuncia_io);
 								res.send(response);
 							}
-							else
+							if(imagenes.length > 0)
 							{
 								// values para la consulta SQL
 								imagenes.forEach(function(img, index, that){		
@@ -242,16 +208,42 @@ ContPg.prototype.saveDenuncia = function(req, res){
 								function(err1, result1){
 									client.end();
 									if (err1)
-										return console.error('error en la consulta', err1);
-									console.log('guardada');
-									response.type = 'success';
-									response.msg = 'Denuncia Guardada Correctamente';
-									response.denuncia = denuncia_io;
-									//s_i_o.emit('new_denuncia_added', denuncia_io);
-									res.send(response);
+										return console.error('error en la consulta', err);							
 											
 								}); // insert into imagenes
-							}}); // cliet.query(insert into denuncias)
+							}
+							if(tags_){
+								client.end();
+								client = new pg.Client(connectionString);
+								client.connect(function(_e_){
+									if(_e_) return console.error('Error consultando ', _e_);
+									var tags = '';
+									tags_.forEach(function(tag, index, that){
+										if (index == that.length - 1)
+											tags += "('" + id_denuncia + "','" + tag + "')";
+										else
+											tags += "('" + id_denuncia + "','" + tag + "'),";
+									});
+									console.log('tags consulta ' + 'insert into tags(id_denuncia, tag) values ' + tags);
+									client.query('insert into tags(id_denuncia, tag) values ' + tags, 
+									function(_e__, _r__){
+										client.end();
+										if(_e__) return console.error('Error consultando tags', _e__);
+										
+										
+									});
+									
+								});
+							}
+							
+							console.log('guardada');
+							response.type = 'success';
+							response.msg = 'Denuncia Guardada Correctamente';
+							response.denuncia = denuncia_io;
+							res.send(response);
+							
+						}); // cliet.query(insert into denuncias)
+							
 					}); // Pg connect
 				}});	// Geom está dentro de Torrente, function(err, estaDentro));
 		}); // Pg connect Carto
@@ -480,6 +472,7 @@ ContPg.prototype.getEdit = function(req, res, next){
 						}
 						else{
 							console.log('editaaaaaaaaar');
+							denuncia.tags_ = JSON.stringify(denuncia.tags_);
 							res.render('editar.jade', {denuncia: denuncia.rows[0]});
 						}
 						
@@ -590,11 +583,15 @@ var queries = {
 	  		"SELECT json_agg(usuario) AS usuario " +
 	  		"FROM  (SELECT * FROM usuarios WHERE _id = denuncias.id_usuario) usuario" +
 	  		") usuarios ON true " +
+	  		"LEFT   JOIN LATERAL (" +
+	  		"SELECT json_agg(t_) AS tags_ " +
+	  		"FROM  (SELECT * FROM tags WHERE id_denuncia = denuncias.gid) t_" +
+	  		") tags ON true " +
 	  		"WHERE  gid='" + id_denuncia + "' ORDER BY denuncias.fecha DESC";
 		},
-		updateDenuncia: function(id_denuncia, titulo, contenido, wkt, tags){
-			return "UPDATE denuncias SET (titulo, descripcion, the_geom, tags) = ("
-			+ "'" + titulo + "','" + contenido + "', st_geomfromtext('" + wkt + "',4258),'" + tags + "')" +
+		updateDenuncia: function(id_denuncia, titulo, contenido, wkt){
+			return "UPDATE denuncias SET (titulo, descripcion, the_geom) = ("
+			+ "'" + titulo + "','" + contenido + "', st_geomfromtext('" + wkt + "',4258))" +
 					" WHERE gid='" + id_denuncia + "'";
 		},
 		denuncias: function(page){
@@ -612,6 +609,10 @@ var queries = {
 	  		"SELECT json_agg(usuarios) AS usuario " +
 	  		"FROM  (SELECT * FROM usuarios WHERE _id = denuncias.id_usuario) usuarios" +
 	  		") usuarios ON true " +
+	  		"LEFT   JOIN LATERAL (" +
+	  		"SELECT json_agg(t_) AS tags_ " +
+	  		"FROM  (SELECT * FROM tags WHERE id_denuncia = denuncias.gid) t_" +
+	  		") tags ON true " +
 	  		"ORDER BY denuncias.fecha DESC limit 10 offset " 
 	  		+ (page - 1)*10;
 		},
@@ -629,6 +630,10 @@ var queries = {
 	  		"SELECT json_agg(img) AS imagenes " +
 	  		"FROM  (SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY') as fecha  FROM imagenes WHERE id_denuncia = denuncias.gid) img" +
 	  		") imagenes ON true " +
+	  		"LEFT   JOIN LATERAL (" +
+	  		"SELECT json_agg(t_) AS tags_ " +
+	  		"FROM  (SELECT * FROM tags WHERE id_denuncia = denuncias.gid) t_" +
+	  		") tags ON true " +
 	  		"WHERE  id_usuario='" + id_usuario + "' ORDER BY denuncias.fecha DESC";
 		},
 		insertImagenes: function(values){
@@ -636,11 +641,11 @@ var queries = {
 			"VALUES" + values;
 		},
 		insertDenuncia: function(user_id, titulo, contenido, wkt, tags){
-			return "insert into denuncias(titulo, descripcion, the_geom, id_usuario, tags) VALUES('" + 
+			return "insert into denuncias(titulo, descripcion, the_geom, id_usuario) VALUES('" + 
 			titulo + "', '" +  
 			contenido + "'," + 
 			"ST_GeomFromText('" + wkt + "',4258),'" 
-			+ user_id + "','" + tags + "') returning gid";
+			+ user_id + "') returning gid";
 		},
 		torrentContainsGeom : function(wkt){
 			if (wkt.match(/POINT/g))
@@ -687,6 +692,10 @@ var queries = {
 	  		"SELECT json_agg(usuarios) AS usuario " +
 	  		"FROM  (SELECT * FROM usuarios WHERE _id = denuncias.id_usuario) usuarios" +
 	  		") usuarios ON true " +
+	  		"LEFT   JOIN LATERAL (" +
+	  		"SELECT json_agg(t_) AS tags_ " +
+	  		"FROM  (SELECT * FROM tags WHERE id_denuncia = denuncias.gid) t_" +
+	  		") tags ON true " +
 	  		"WHERE denuncias.fecha > current_timestamp - interval '1 DAY' order by denuncias.fecha DESC"
 		},
 };
@@ -718,41 +727,7 @@ ContPg.prototype.updateDenuncia = function(req, res){
 		if(!validator.isLength(titulo, 5, 50)) errormsg += '· El título debe tener entre 5 y 50 caracteres.\n';
 		if(!validator.isLength(contenido, 50, 10000)) errormsg += '· El contenido debe tener entre 50 y 10000 caracteres.\n';
 		if(wkt == undefined) errormsg += '· Debe agregar un punto, línea o polígono\n';	
-		
-		//  Formateamos los tags para introducirlos como ARRAY(TEXT) en pgsql
-		if(tags_){
-			var tags = '{'; // hay que convertirlo en {'tag1', 'tag2', ...} para introducirlo en pgsql
-			tags_.forEach(function(tag, index, that){
-				
-				tag = tag.replace(/["' # $ % & + ` - \s]/g, "");
-				if (!validator.isLength(tags, 1, 10)){
-					response.type = 'error';
-					response.msg += 'El tag "' + tag + '" no debe tener más de 10 caracteres\n'
-				}
-				if(index == that.length - 1)
-				{
-					if (tag == '')
-						tags = tags + '}';
-					else
-						tags = tags + ',' + tag + '}';
-				}
-				else if(index == 0)
-				{
-					if (tag != '')
-						tags = tags + tag;
-				}
-				else
-				{
-					if (tag != '')
-						tags = tags + ',' + tag;
-						
-				}
-			});
-		}
-		else {
-			var tags = '{}';
 
-		}
 		// Si hay algún error en los datos devolvemos la denuncia
 		if(errormsg.length > 0){
 			console.log('error_mensaje --> ' + errormsg);
@@ -843,7 +818,7 @@ ContPg.prototype.updateDenuncia = function(req, res){
 				  
 						// Si no ejecutamos la consulta para obtener las denuncias
 				  
-						client.query(queries.updateDenuncia(denuncia_id, titulo, contenido, wkt, tags), 
+						client.query(queries.updateDenuncia(denuncia_id, titulo, contenido, wkt), 
 						function(err, result){
 							//console.log(result.rows);
 							
@@ -860,16 +835,17 @@ ContPg.prototype.updateDenuncia = function(req, res){
 							// Añadir las imágenes
 							var values = '';
 							
-							if(imagenes.length == 0){
+							if(imagenes.length == 0 && tags_.lenght == 0){
 								client.end();
 								// Si no hay imágenes... Denuncia guardada correctamente
-								console.log('guardada - no imgs');
+								console.log('guardada - no imgs - notags');
 								response.type = 'success';
 								response.msg = 'Denuncia Guardada Correctamente';
 								response.denuncia = denuncia_io;
+								//s_i_o.emit('new_denuncia_added', denuncia_io);
 								res.send(response);
 							}
-							else
+							if(imagenes.length > 0)
 							{
 								// values para la consulta SQL
 								imagenes.forEach(function(img, index, that){		
@@ -884,15 +860,40 @@ ContPg.prototype.updateDenuncia = function(req, res){
 								function(err1, result1){
 									client.end();
 									if (err1)
-										return console.error('error en la consulta', err1);
-									console.log('guardada');
-									response.type = 'success';
-									response.msg = 'Denuncia Guardada Correctamente';
-									response.denuncia = denuncia_io;
-									res.send(response);
+										return console.error('error en la consulta', err);							
 											
 								}); // insert into imagenes
-							}}); // cliet.query(insert into denuncias)
+							}
+							if(tags_){
+								client.end();
+								client = new pg.Client(connectionString);
+								client.connect(function(_e_){
+									if(_e_) return console.error('Error consultando ', _e_);
+									var tags = '';
+									tags_.forEach(function(tag, index, that){
+										if (index == that.length - 1)
+											tags += "('" + id_denuncia + "','" + tag + "')";
+										else
+											tags += "('" + id_denuncia + "','" + tag + "'),";
+									});
+									console.log('tags consulta ' + 'insert into tags(id_denuncia, tag) values ' + tags);
+									client.query('insert into tags(id_denuncia, tag) values ' + tags, 
+									function(_e__, _r__){
+										client.end();
+										if(_e__) return console.error('Error consultando tags', _e__);
+										
+										
+									});
+									
+								});
+							}
+							
+							console.log('guardada');
+							response.type = 'success';
+							response.msg = 'Denuncia Guardada Correctamente';
+							response.denuncia = denuncia_io;
+							res.send(response);
+						}); // cliet.query(insert into denuncias)
 					}); // Pg connect
 				}});	// Geom está dentro de Torrente, function(err, estaDentro));
 		}); // Pg connect Carto
@@ -1185,40 +1186,6 @@ ContPg.prototype.getVisorPage = function(req, res){
 			});
 		}
 	});
-	
-}
-
-ContPg.prototype.api = function(req, res){
-	
-	var where = 'where ';
-	
-	var titulo_ = req.query.titulo;
-	var tags_ = req.query.tags;
-	var buffer_centro_ = req.query.buffer_centro;
-	var buffer_radio_ = req.query.buffer_radio;
-	var usuario_nombre_ = req.query.usuario_nombre;
-	var fecha = req.query.fecha;
-	
-	if(titulo_) query += "titulo like '%" + titulo.replace(' ', '_') +  "%' ";
-	
-	if(titulo_ && tags_) query += "and tags_ = ANY('{" + tags_ + "}'::text[]) ";
-	else if(tags_) query += "tags_ = ANY('{" + tags_ + "}'::text[]) ";
-	
-	if(buffer_centro_ && buffer_radio_){
-		var lonlat = buffer_centro_.split(',');
-		if(titulo_ || tags_) query += "and st_distance(st_transform(the_geom, 25830), st_transform(st_geomfromtext('POINT(" + lonlat[0] +' ' + lonlat[1] + ")'), 25830)) < " + buffer_radio_ + " ";
-		else query += "st_distance(st_transform(the_geom, 25830), st_transform(st_geomfromtext('POINT(" + lonlat[0] +' ' + lonlat[1] + ")'), 25830)) < " + buffer_radio_ + " ";
-	}
-	else return res.send({error: true, msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros.'});
-	
-	if(usuario_nombre_){
-		if(tags_ || titulo || buffer_centro_) query += "and id_usuario = (select _id from usuarios where profile -> 'username' like '%" + usuario_nombre_ + "%') ";
-		else query += "and id_usuario = (select _id from usuarios where profile -> 'username' like '%" + usuario_nombre_ + "%') ";
-	}
-	
-	if(fecha){
-		if(tags_ || titulo || buffer_centro_ || usuario_nombre_) query += 'and fecha ....'
-	}
 	
 }
 

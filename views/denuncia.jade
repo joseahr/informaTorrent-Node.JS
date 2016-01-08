@@ -32,8 +32,8 @@ block panel-lateral
 				h2 #{denuncia.titulo}
 				h4
 					i.fa.fa-tags
-					each tag in denuncia.tags
-						| ##{tag}  
+					each tag in denuncia.tags_
+						| ##{tag.tag}  
 				div(style="clear: both; margin-top: 20px;") 
 					h4(style="margin-top: 10px") Descripción
 					div(style="word-wrap: break-word;") !{denuncia.descripcion}
@@ -122,4 +122,8 @@ block script
 		map.addControl(new app.InfoDenuncia());
 		map.addControl(new app.ImagenesDenuncia());
 		map.addControl(new app.ComentariosDenuncia());
+		
+		
+		num_denuncias_io.emit('alguien_vio_una_denuncia', {id_denuncia: '#{denuncia.gid}'});
+		
 	script(src="/javascripts/openlayers/olvisor.js")

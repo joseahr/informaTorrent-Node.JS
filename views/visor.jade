@@ -1,15 +1,82 @@
 extends map-layout
 block script
-	script(src="https://cdn.socket.io/socket.io-1.3.7.js")
+	script(src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.1/js/bootstrap-datepicker.js")
+	script(src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.1/locales/bootstrap-datepicker.es.min.js")
+	//script(src="https://cdn.socket.io/socket.io-1.3.7.js")
 	script.
+		var dialog_;
 		var denuncias = !{denuncias};
 	
-		var wktFormat = new ol.format.WKT();
-	
+		var wktFormat = new ol.format.WKT({dataProjection: 'EPSG:4258'});
+		
+		map.addControl(new app.QueryDenuncias());
+		
+		num_denuncias_io.on('error_query', function(data){
+			BootstrapDialog.show({ 
+				title: 'Error consultando', 
+				message: data.msg, 
+				closable: true, 
+				onshown: function(dialog){setTimeout(function(){dialog.close()}, 2000);}
+			});
+		});
+		
 		num_denuncias_io.on('new_denuncia', function(data){
 			var denuncia = data.denuncia;
 			console.log('denuncia añadida socket.io');
 		
 			vector.getSource().addFeature(wktFormat.readFeature(denuncia.wkt));
+			
 		});
+		
+		num_denuncias_io.on('api', function(data){
+			// data --> info que genera la consulta del usuario
+			//alert(typeof(data));
+			BootstrapDialog.alert({
+				message: '¡' + data.query.length + ' denuncias encontradas de acuerdo a tus criterios de búsqueda!',
+				title: 'Resultado de tu búsqueda',
+				type: BootstrapDialog.TYPE_WARNING
+			});
+			
+			$.each(BootstrapDialog.dialogs, function(id, dialog){
+				setTimeout(function(){
+					dialog.close();
+				}, 2000);
+			});
+			vector.getSource().clear();
+			var geojson = new ol.format.GeoJSON();
+			data.query.forEach(function(denuncia){
+			
+				//alert(JSON.stringify(denuncia));
+				var feature, type = JSON.parse(denuncia.geom).type;
+				//alert('tipo ' + type);
+				if(type == 'Point'){
+			    	feature = new ol.Feature({
+			    		  geometry: new ol.geom.Point(JSON.parse(denuncia.geom).coordinates),
+			    		  name: 'Denuncia - Punto'
+			    	});
+			    	
+			    }
+			    else if(type == 'LineString'){
+			    	feature = new ol.Feature({
+			    		geometry: new ol.geom.LineString(JSON.parse(denuncia.geom).coordinates),
+			    		name: 'Denuncia - Polígono'
+			    	});
+			    }
+			    else if(type == 'Polygon'){
+			    	feature = new ol.Feature({
+			    		geometry: new ol.geom.Polygon(JSON.parse(denuncia.geom).coordinates),
+			    		name: 'Denuncia - Polígono'
+			    	});
+			    }
+			    
+				feature.attributes = {
+					denuncia: denuncia
+				};
+				
+				vector.getSource().addFeature(feature);			
+				
+			});
+			
+		});
+		
 	script(src="/javascripts/openlayers/olvisorapp.js")

@@ -4,7 +4,7 @@
 
 global.clients = {}; // Un cliente puede tener varios sockets abiertos
 
-module.exports = function(io, pg, path, mkdirp, exec, config){
+module.exports = function(io, pg, path, mkdirp, exec, config, validator){
 	
 	io.of('/app/visor').on('connection', function(socket){
 		
@@ -189,6 +189,159 @@ module.exports = function(io, pg, path, mkdirp, exec, config){
 						});
 					}
 					
+				});
+				
+			});
+			
+		});
+		
+		socket.on('query', function(data){
+			// Consultas que se hagan de la api de denuncias
+			console.log('querry llegaa ');
+			var cuantas = 0;
+			
+			var titulo_ = data.titulo == '' ? undefined : data.titulo;
+			var tags_ = data.tags == '' ? '' : data.tags.split(',');
+			var lon_centro = data.lon == '' ? undefined : data.lon;
+			var lat_centro = data.lat == '' ? undefined : data.lat;
+			var buffer_centro_ = data.lat && data.lon ? data.lat + ';;' + data-lon : undefined;
+			var buffer_radio_ = data.buffer_radio;
+			var usuario_nombre_ = data.username == '' ? undefined : data.username;
+			var fecha_desde = data.fecha_desde == '' ? undefined : data.fecha_desde.split('/');
+			var fecha_hasta = data.fecha_hasta == '' ? undefined : data.fecha_hasta.split('/');		
+			
+			var query = "SELECT *, to_char(denuncias.fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha," +
+	  		"ST_AsGeoJSON(the_geom) as geom FROM denuncias " +
+	  		"LEFT   JOIN LATERAL (" +
+	  		"SELECT json_agg(com) AS comentarios " +
+	  		"FROM  (SELECT c.id_usuario, c.contenido, to_char(c.fecha::timestamp,'TMDay, DD TMMonth YYYY a las HH24:MI:SS') as fecha, u.* FROM comentarios c, usuarios u WHERE c.id_usuario = u._id and c.id_denuncia = denuncias.gid ORDER BY fecha DESC) com" +
+	  		") comentarios ON true " +
+	  		"LEFT   JOIN LATERAL (" +
+	  		"SELECT json_agg(img) AS imagenes " +
+	  		"FROM  (SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY') as fecha  FROM imagenes WHERE id_denuncia = denuncias.gid) img" +
+	  		") imagenes ON true " +
+	  		"LEFT   JOIN LATERAL (" +
+	  		"SELECT json_agg(usuarios) AS usuario " +
+	  		"FROM  (SELECT * FROM usuarios WHERE _id = denuncias.id_usuario) usuarios" +
+	  		") usuarios ON true " +
+	  		"LEFT   JOIN LATERAL (" +
+	  		"SELECT json_agg(t_) AS tags_ " +
+	  		"FROM  (SELECT tag FROM tags WHERE id_denuncia = denuncias.gid) t_ " +
+	  		") t ON true " +
+	  		"WHERE "
+			
+			//console.log(titulo_.replace(' ', '_'));
+			
+			if(titulo_) {
+				cuantas ++;
+				query += "titulo like '%" + titulo_.replace(' ', '_') +  "%' ";
+			}
+			
+			if(tags_ && cuantas > 0) {
+				var query2 = 'like ';
+				tags_.forEach(function(tag, index, that){
+					if (index == 0) query2 += "'%" + tag.replace(' ', '') + "%' ";
+					else query2 += "or tag like '%" + tag.replace(' ', '') + "%' ";
+					console.log(tag);
+				});
+				query += "and gid in (select id_denuncia from tags where tag " + query2 + ")";
+				cuantas++;
+			}
+			else if(tags_) {
+				var query2 = 'like ';
+				tags_.forEach(function(tag, index, that){
+					if (index == 0) query2 += "'%" + tag.replace(' ', '') + "%'";
+					else query2 += "or tag like '%" + tag.replace(' ', '') + "%'";
+					console.log(tag);
+				});
+				query += " gid in (select id_denuncia from tags where tag " + query2 + ")";
+				cuantas++;
+			}
+			console.log(buffer_centro_ + ' buffer centroooo ');
+			if(buffer_centro_ && buffer_radio_){
+				if(!validator.isDecimal(lon_centro.replace(',', '.')) && !validator.isNumeric(lon_centro))
+					return socket.emit('error_query', {msg: 'La longitud del centro del buffer debe ser numérica'});
+
+				if(!validator.isDecimal(lat_centro.replace(',', '.')) && !validator.isNumeric(lat_centro))
+					return socket.emit('error_query', {msg: 'La latitud del centro del buffer debe ser numérica'});
+				
+				if(!validator.isDecimal(buffer_radio_) && !validator.isNumeric(buffer_radio_))
+					return socket.emit('error_query', {msg: 'El radio del centro del buffer debe ser numérico'});
+				
+				var lonlat = buffer_centro_;
+				console.log(lonlat);
+				if(cuantas > 0) {
+					cuantas++;
+					query += "and st_distance(st_transform(the_geom, 25830), st_transform(st_geomfromtext('POINT(" + lon_centro.replace(',', '.') +' ' + lat_centro.replace(',', '.') + ")', 4258), 25830)) < " + buffer_radio_ + " ";
+				}
+				else {
+					cuantas++;
+					query += "st_distance(st_transform(the_geom, 25830), st_transform(st_geomfromtext('POINT(" + lon_centro.replace(',', '.') +' ' + lat_centro.replace(',', '.') + ")', 4258), 25830)) < " + buffer_radio_ + " ";
+				}
+			}
+			else if(buffer_centro_ && !buffer_radio_) return socket.emit('error_query', {msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros.'});
+			else if(!buffer_centro_ && buffer_radio_) return socket.emit('error_query', {msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros.'});
+
+			if(usuario_nombre_){
+				if(cuantas > 0) {
+					query += "and id_usuario = (select _id from usuarios where profile ->> 'username' like '%" + usuario_nombre_ + "%') ";
+					cuantas ++;
+				}
+				else {
+					cuantas++;
+					query += "id_usuario = (select _id from usuarios where profile ->> 'username' like '%" + usuario_nombre_ + "%') ";
+				}
+			}
+			
+			if(fecha_desde){
+				if(cuantas> 0) {
+					query += "and fecha > date '" + fecha_desde[2] +"-" + fecha_desde[1] + "-" + + fecha_desde[0] + "'";
+					cuantas++;
+				}
+				else {
+					cuantas++;
+					query += "fecha > date '" + fecha_desde[2] +"-" + fecha_desde[1] + "-" + + fecha_desde[0] + "'";
+				}
+			}
+
+			if(fecha_hasta){
+				if(cuantas> 0) {
+					query += "and fecha < date '" + fecha_hasta[2] +"-" + fecha_hasta[1] + "-" + + fecha_hasta[0] + "'";
+					cuantas++;
+				}
+				else {
+					cuantas++;
+					query += "fecha < date '" + fecha_hasta[2] +"-" + fecha_hasta[1] + "-" + + fecha_hasta[0] + "'";
+				}
+			}
+			
+			client = new pg.Client('postgres://jose:jose@localhost/denuncias');
+			
+			client.connect(function(error){
+				if (error) return console.error('Error conectando ', error);
+				console.log(query);
+				client.query(query, function(e, r){
+					client.end();
+					if(e) return socket.emit('error_query', {msg: 'Hubo un error consultando: ' + e});
+					console.log('rooows ' +  r.rows);
+					socket.emit('api', {query: r.rows});
+					
+				});
+			});
+		
+		});
+		
+		socket.on('alguien_vio_una_denuncia', function(data){
+			client = new pg.Client('postgres://jose:jose@localhost/denuncias');
+			
+			client.connect(function(error){
+				if(error) return console.log('Error conectando', error);
+				
+				client.query("update denuncias set veces_vista = veces_vista + 1 where gid='" + data.id_denuncia + "'", 
+				function(e, r){
+					client.end();
+					if(e) return console.error('Error consultando', e);
+					console.log('incrementado veces_vista');
 				});
 				
 			});

@@ -150,7 +150,7 @@ var dir = require('node-dir'),
 	validator = require('validator'),
 	nodemailer = require('nodemailer');
 
-require('./app/controllers/sockets.js')(io, pg, path, mkdirp, exec, configUploadImagenes); // SOCKET.IO LADO DEL SERVIDOR
+require('./app/controllers/sockets.js')(io, pg, path, mkdirp, exec, configUploadImagenes, validator); // SOCKET.IO LADO DEL SERVIDOR
 
 var contHome = require('./app/controllers/home.js'); // Página principal, manejo de mensajes
 var contPass_ = require('./app/controllers/passport_pg_cont.js'); // Iniciar sesión registrar...
