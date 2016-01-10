@@ -204,7 +204,7 @@ module.exports = function(io, pg, path, mkdirp, exec, config, validator){
 			var tags_ = data.tags == '' ? '' : data.tags.split(',');
 			var lon_centro = data.lon == '' ? undefined : data.lon;
 			var lat_centro = data.lat == '' ? undefined : data.lat;
-			var buffer_centro_ = data.lat && data.lon ? data.lat + ';;' + data-lon : undefined;
+			var buffer_centro_ = lon_centro && lat_centro ? lon_centro + ';;' + lat_centro : undefined;
 			var buffer_radio_ = data.buffer_radio;
 			var usuario_nombre_ = data.username == '' ? undefined : data.username;
 			var fecha_desde = data.fecha_desde == '' ? undefined : data.fecha_desde.split('/');
@@ -347,6 +347,136 @@ module.exports = function(io, pg, path, mkdirp, exec, config, validator){
 			});
 			
 		});
+		
+		
+		socket.on('te_pregunto_que_si_me_gusta_esta_puta_mierda_de_denuncia?', function(data){
+			console.log(data);
+			if(data.usuario_id == '') 
+				return socket.emit('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?', 
+					{error: true});
+
+			
+			client = new pg.Client('postgres://jose:jose@localhost/denuncias');
+			
+			client.connect(function(error){
+				if(error) return console.error('Error conectando ', error);
+				
+				client.query("select * from likes where id_usuario = '" + data.usuario_id + "' and id_denuncia ='" + data.denuncia.gid + "'",
+				function(e, r){
+					client.end();
+					if(e) return console.error('Error consultando ', e);
+					
+					socket.emit('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?',
+					{error: false, like: (r.rows.length != 0) });
+					
+				});
+				
+			});
+			
+		});
+		
+		socket.on('le_he_dao_al_boton_de_me_gusta_haz_lo_que_tengas_que_hacer', function(data){
+			console.log(data);
+			if(data.usuario_id == '') 
+				return socket.emit('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?', 
+					{error: true});
+
+			
+			client = new pg.Client('postgres://jose:jose@localhost/denuncias');
+			
+			client.connect(function(error){
+				if(error) return console.error('Error conectando ', error);
+				
+				client.query("select * from likes where id_usuario = '" + data.usuario_id + "' and id_denuncia ='" + data.denuncia.gid + "'",
+				function(e, r){
+					//client.end();
+					if(e) {
+						client.end();
+						return console.error('Error consultando ', e);
+					}
+					
+					if(r.rows.length == 0){
+						console.log('aun no le gusta pero le va a gustar en cuanto se actualize la bdd')
+						// Al usuario aún no le gusta la denuncia y ha indicado que le gusta
+						client.query("insert into likes(id_usuario, id_denuncia) values ('" + data.usuario_id + "','" + data.denuncia.gid + "')", 
+						function(e_, r_){
+							//client.end();
+							if(e_) {
+								client.end()
+								return console.error('Error consultando ', e_);
+							}
+							
+							client.query("insert into notificaciones(id_denuncia, id_usuario_from, id_usuario_to, tipo) " +
+							"values ('" + data.denuncia.gid + "','" + data.usuario_id + "','" + data.denuncia.id_usuario + "','LIKE_DENUNCIA') returning *",
+							function(e__, r__){
+								//client.end();
+								if(e__) {
+									client.end();
+									return console.error('Error consultando', e__);
+								}
+								
+								socket.emit('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?',
+										{error: false, like: true });
+								
+								if(clients[data.denuncia.id_usuario]){
+									client.query("select * from usuarios where _id='" + data.usuario_id +"'"
+									, function(_e, _result){
+										client.end();
+										if(_e) return console.error(_e);
+										for(var socketId in clients[data.denuncia.id_usuario]){
+											clients[data.denuncia.id_usuario][socketId].emit('denuncia_likeada', {denuncia: data.denuncia, from: _result.rows[0], noti: r__.rows[0]});
+										}
+									});
+								}
+								
+							});
+							
+						});
+					}
+					else {
+						console.log('le gusta pero le va a dejar de gustar');
+
+						client.query("delete from likes where id_usuario = '" + data.usuario_id + "' and id_denuncia = '" + data.denuncia.gid + "'", 
+						function(e_, r_){
+							//client.end();
+							if(e_) {
+								client.end()
+								return console.error('Error consultando ', e_);
+							}
+							
+							client.query("insert into notificaciones(id_denuncia, id_usuario_from, id_usuario_to, tipo) " +
+							"values ('" + data.denuncia.gid + "','" + data.usuario_id + "','" + data.denuncia.id_usuario + "','NO_LIKE_DENUNCIA') returning *",
+							function(e__, r__){
+								//client.end();
+								if(e__) {
+									client.end();
+									return console.error('Error consultando', e__);
+								}
+								
+								socket.emit('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?',
+										{error: false, like: false });
+								
+								if(clients[data.denuncia.id_usuario]){
+									client.query("select * from usuarios where _id='" + data.usuario_id +"'"
+									, function(_e, _result){
+										client.end();
+										if(_e) return console.error(_e);
+										for(var socketId in clients[data.denuncia.id_usuario]){
+											clients[data.denuncia.id_usuario][socketId].emit('denuncia_no_likeada', {denuncia: data.denuncia, from: _result.rows[0], noti: r__.rows[0]});
+										}
+									});
+								}
+								
+							});
+									
+						});
+					}
+					
+				});
+				
+			});
+		});
+		
 		
 	});
 

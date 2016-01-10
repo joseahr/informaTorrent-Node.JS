@@ -6,13 +6,6 @@ block meta
 	meta(property='og:description' content='Your description')
 block link
 	link(rel="stylesheet" href="/stylesheets/carousel.css")
-block botonesmapa
-	button.btn.btn-small.btn-info.btn-map.cd-btn(panel-open="contenido" type='button', style='position: absolute; right: 0.5em; bottom: 40%; min-width: 1.375em')
-		i.fa.fa-file-text-o
-	button.btn.btn-small.btn-warning.btn-map.cd-btn(panel-open="comentarios" type='button', style='position: absolute; right: 0.5em; bottom: 50%; min-width: 1.375em')
-		i.fa.fa-comments
-	button.btn.btn-small.btn-warning.btn-map.cd-btn(panel-open="imagenes" type='button', style='position: absolute; right: 0.5em; bottom: 60%; min-width: 1.375em')
-		i.fa.fa-image
 block panel-lateral
 	#contenido.cd-panel.from-right
 		header.cd-panel-header
@@ -32,8 +25,12 @@ block panel-lateral
 				h2 #{denuncia.titulo}
 				h4
 					i.fa.fa-tags
-					each tag in denuncia.tags_
-						| ##{tag.tag}  
+					if denuncia.tags_
+						each tag in denuncia.tags_
+							| ##{tag.tag}  
+					i 
+					i.fa.fa-eye
+						|  #{denuncia.veces_vista}
 				div(style="clear: both; margin-top: 20px;") 
 					h4(style="margin-top: 10px") Descripción
 					div(style="word-wrap: break-word;") !{denuncia.descripcion}
@@ -92,14 +89,15 @@ block panel-lateral
 									- aux++;
 							.carousel-inner(style="height: 100%;")
 								- var aux = 0
-								each imagen in denuncia.imagenes
-									if aux == 0
-										.item.slides.active(style="height: 100%;")
-											.slide(class="slide-#{aux + 1}" style="height: 100%;background: url('#{imagen.path}'); background-size: 100% 100%;")
-									else
-										.item.slides(style="height: 100%;")
-											div(class="slide-#{aux + 1}" style="height: 100%;background: url('#{imagen.path}'); background-size: 100% 100%;")
-									- aux++;
+								if denuncia.imagenes
+									each imagen in denuncia.imagenes
+										if aux == 0
+											.item.slides.active(style="height: 100%;")
+												.slide(class="slide-#{aux + 1}" style="height: 100%;background: url('#{imagen.path}'); background-size: 100% 100%;")
+										else
+											.item.slides(style="height: 100%;")
+												div(class="slide-#{aux + 1}" style="height: 100%;background: url('#{imagen.path}'); background-size: 100% 100%;")
+										- aux++;
 				else
 					p Esta denuncia no contiene imágenes
 block script
@@ -122,7 +120,7 @@ block script
 		map.addControl(new app.InfoDenuncia());
 		map.addControl(new app.ImagenesDenuncia());
 		map.addControl(new app.ComentariosDenuncia());
-		
+		map.addControl(new app.LikeDenuncia());
 		
 		num_denuncias_io.emit('alguien_vio_una_denuncia', {id_denuncia: '#{denuncia.gid}'});
 		

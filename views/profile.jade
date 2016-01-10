@@ -54,25 +54,45 @@ block content
 															span.fa-stack.fa-lg
 																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
 																i.fa.fa-map-marker.fa-stack-1x.fa-inverse
-														else
+														else if(noti.tipo == 'COMENTARIO_DENUNCIA')
 															span.fa-stack.fa-lg
 																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
-																i.fa.fa-comments.fa-stack-1x.fa-inverse															
+																i.fa.fa-comments.fa-stack-1x.fa-inverse
+														else if(noti.tipo == 'LIKE_DENUNCIA')
+															span.fa-stack.fa-lg
+																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
+																i.fa.fa-thumbs-o-up.fa-stack-1x.fa-inverse
+														else if(noti.tipo === 'NO_LIKE_DENUNCIA')	
+															span.fa-stack.fa-lg
+																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
+																i.fa.fa-thumbs-o-up.fa-stack-1x.fa-inverse
+																i.fa.fa-ban.fa-stack-2x.text-danger
+																											
 													.col-xs-9
 														.col-lg-12
 															p.lead #{noti.fecha}
 														p.lead 
 															span 
+																if (noti.tipo == 'LIKE_DENUNCIA' || noti.tipo == 'NO_LIKE_DENUNCIA')
+																	| A 
 																a(target="_blank" href="/app/usuarios/#{noti.id_usuario_from}") #{noti.profile_from.username}
 															if(noti.tipo == 'DENUNCIA_CERCA')
 																|  ha publicado una 
 																span 
 																	a(href="/app/denuncia/#{noti.id_denuncia}") denuncia
 																|  cerca de tu ubicación (#{noti.distancia} metros)
-															else
+															else if(noti.tipo == 'COMENTARIO_DENUNCIA')
 																|  ha comentado una 
 																span
 																	a(href="/app/denuncia/#{noti.id_denuncia}")  denuncia tuya
+															else if (noti.tipo == 'LIKE_DENUNCIA')
+																|  le gusta tu 
+																span
+																	a(href="/app/denuncia/#{noti.id_denuncia}")  denuncia
+															else if (noti.tipo == 'NO_LIKE_DENUNCIA')
+																|  ya no le gusta tu 
+																span
+																	a(href="/app/denuncia/#{noti.id_denuncia}")  denuncia
 								.panel.panel-default
 									// Notificaciones
 									#headingTwo.panel-heading(role='tab')
@@ -119,7 +139,9 @@ block content
 																			if denuncia.tags_
 																				| &nbsp #{denuncia.tags_.length} &nbsp
 																			else 
-																				| &nbsp 0 &nbsp																		
+																				| &nbsp 0 &nbsp
+																		i.fa.fa-eye
+																			| &nbsp #{denuncia.veces_vista}														
 														.col-md-8(style={'padding':'0px'})
 															.col-lg-12(style={overflow: 'hidden', 'height': '23%', padding: '5px', 'white-space':'normal', 'text-overflow':'ellipsis', 'word-break':'break-all'}) !{denuncia.descripcion}														
 															.col-md-4(style={'padding':'10 0 0 0px'})
@@ -155,16 +177,25 @@ block content
 											each noti in misAcciones
 												.row(style={margin: '0 5 10 5px', background: 'rgba(0,50,187,0.1)', padding: '5%'})
 													.col-xs-3
-														a(target="_blank" href="/app/usuarios/#{noti.id_usuario_from}")
+														a(target="_blank" href="/app/usuarios/#{noti.id_usuario_to}")
 															img.img-responsive.img-thumbnail.img-circle(src="#{noti.profile_to.picture}" style={'width':'50px', 'height':'50px'})
 														if(noti.tipo == 'DENUNCIA_CERCA')
 															span.fa-stack.fa-lg
 																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
 																i.fa.fa-map-marker.fa-stack-1x.fa-inverse
-														else
+														else if(noti.tipo == 'COMENTARIO_DENUNCIA')
 															span.fa-stack.fa-lg
 																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
-																i.fa.fa-comments.fa-stack-1x.fa-inverse															
+																i.fa.fa-comments.fa-stack-1x.fa-inverse
+														else if(noti.tipo == 'LIKE_DENUNCIA')
+															span.fa-stack.fa-lg
+																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
+																i.fa.fa-thumbs-o-up.fa-stack-1x.fa-inverse
+														else if(noti.tipo === 'NO_LIKE_DENUNCIA')	
+															span.fa-stack.fa-lg
+																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
+																i.fa.fa-thumbs-o-up.fa-stack-1x.fa-inverse
+																i.fa.fa-ban.fa-stack-2x.text-danger												
 													.col-xs-9
 														.col-lg-12
 															p.lead #{noti.fecha}
@@ -176,10 +207,24 @@ block content
 																|  cerca de 
 																span 
 																	a(href="/app/usuarios/#{noti.id_usuario_to}")  #{noti.profile_to.username}
-															else
+															else if(noti.tipo == 'COMENTARIO_DENUNCIA')
 																|  Has comentado una 
 																span
 																	a(href="/app/denuncia/#{noti.id_denuncia}") denuncia
+																	|  del usuario 
+																	span
+																		a(href="/app/usuarios/#{noti.id_usuario_to}")  #{noti.profile_to.username}
+															else if (noti.tipo == 'LIKE_DENUNCIA')
+																| Te gusta la  
+																span
+																	a(href="/app/denuncia/#{noti.id_denuncia}")  denuncia
+																	|  del usuario 
+																	span
+																		a(href="/app/usuarios/#{noti.id_usuario_to}")  #{noti.profile_to.username}
+															else if (noti.tipo == 'NO_LIKE_DENUNCIA')
+																| Ya no te gusta la  
+																span
+																	a(href="/app/denuncia/#{noti.id_denuncia}")  denuncia
 																	|  del usuario 
 																	span
 																		a(href="/app/usuarios/#{noti.id_usuario_to}")  #{noti.profile_to.username}

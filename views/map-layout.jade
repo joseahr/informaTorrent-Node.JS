@@ -137,6 +137,13 @@ html
     // section end
     block panel-lateral
     
+    script.
+        var denuncia = {
+            titulo: '#{denuncia ? denuncia.titulo : undefined}',
+            gid: '#{denuncia ? denuncia.gid : undefined}',
+            id_usuario: '#{denuncia ? denuncia.id_usuario : undefined}'
+        };
+        var usuario_id = '#{user ? user._id : undefined}'; 
     // Plugins Javascript situados al final de la página, así el contenido carga antes
     // JQuery y Bootstrap
     script(src='http://code.jquery.com/jquery-1.11.1.min.js')

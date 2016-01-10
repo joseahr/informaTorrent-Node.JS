@@ -37,6 +37,93 @@ num_denuncias_io.on('num_usuarios_conectados', function(data){
 	//alert('usuarios connectados ' + data.num_usuarios);
 });
 
+num_denuncias_io.on('denuncia_no_likeada', function(data){
+	alert('data denuncia: ' + JSON.stringify(data.denuncia) + 
+			  'from: ' + JSON.stringify(data.from) + ' noti: ' + JSON.stringify(data.noti));
+	var nuevas = parseInt($('.noti_up:eq(1)').text()) + 1;
+	$('.noti_up').empty();
+	$('.noti_up').append(nuevas);
+	var not_tot = parseInt($('.noti_tot').text()) + 1;
+	$('.noti_tot').empty();
+	$('.noti_tot').append(not_tot);
+	
+	var html = '<div class="row noti" style="margin: 0 5 10 5px; background: rgba(0,50,187,0.1); padding:5%;" id_noti="' + data.noti.id_noti + '" vista="false" onclick="noti(this)">' + 
+				'<div class="col-lg-12 btn btn-danger" style="margin-bottom: 10px" id_noti_panel="' + data.noti.id_noti + '">NUEVA</div>' +
+				'<div class="col-xs-2">'+
+				'<a target="_blank" href="/app/usuarios/' + data.from._id + '">' + 
+				'<img class="img-responsive img-thumbnail img-circle" src="' + data.from.profile.picture + '">' + 
+				'</a>' +
+				'<span class="fa-stack fa-lg">'+
+				'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB;"/>' +
+				'<i class="fa fa-thumbs-o-up fa-stack-1x fa-inverse"/>' +
+				'<i class="fa fa-ban fa-stack-2x text-danger"></i>' +
+				'</span>' + 
+				'</div>' + // col-xs-2
+				'<div class="col-xs-10">'+ 
+				'<div class="col-lg-12"><p class="lead">'+ new Date().getDate() + '/' + (new Date().getMonth() + 1) + '/' + new Date().getFullYear() + ' ' + new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds() + '</p></div>' +
+				'<p class="lead"><span> A <a target="_blank" href="/app/usuarios/' + data.from._id + '">' + 
+				data.from.profile.username + '</a>'
+				+ '</span> ya no le gusta tu <span><a href="/app/denuncia/'+ data.denuncia.gid +'">denuncia </a></span></p>'
+				'</div>' +
+		'</div>';
+	$('#notificaciones > .panel-body').prepend($(html));
+	
+	
+	BootstrapDialog.show({
+		title: 'Nueva notificación - Denuncia Dislike',
+		message: $(html),
+		buttons: [{label: 'Cerrar', action: function(dialog){dialog.close()}}],
+		onshown: function(dialog){
+			setTimeout(function(){dialog.close()}, 1500);
+		}
+	});
+});
+
+
+///////
+num_denuncias_io.on('denuncia_likeada', function(data){
+	alert('data denuncia: ' + JSON.stringify(data.denuncia) + 
+			  'from: ' + JSON.stringify(data.from) + ' noti: ' + JSON.stringify(data.noti));
+	var nuevas = parseInt($('.noti_up:eq(1)').text()) + 1;
+	$('.noti_up').empty();
+	$('.noti_up').append(nuevas);
+	var not_tot = parseInt($('.noti_tot').text()) + 1;
+	$('.noti_tot').empty();
+	$('.noti_tot').append(not_tot);
+	
+	var html = '<div class="row noti" style="margin: 0 5 10 5px; background: rgba(0,50,187,0.1); padding:5%;" id_noti="' + data.noti.id_noti + '" vista="false" onclick="noti(this)">' + 
+				'<div class="col-lg-12 btn btn-danger" style="margin-bottom: 10px" id_noti_panel="' + data.noti.id_noti + '">NUEVA</div>' +
+				'<div class="col-xs-2">'+
+				'<a target="_blank" href="/app/usuarios/' + data.from._id + '">' + 
+				'<img class="img-responsive img-thumbnail img-circle" src="' + data.from.profile.picture + '">' + 
+				'</a>' +
+				'<span class="fa-stack fa-lg">'+
+				'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB;"/>' +
+				'<i class="fa fa-thumbs-o-up fa-stack-1x fa-inverse"/>' +
+				'</span>' + 
+				'</div>' + // col-xs-2
+				'<div class="col-xs-10">'+ 
+				'<div class="col-lg-12"><p class="lead">'+ new Date().getDate() + '/' + (new Date().getMonth() + 1) + '/' + new Date().getFullYear() + ' ' + new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds() + '</p></div>' +
+				'<p class="lead"><span> A <a target="_blank" href="/app/usuarios/' + data.from._id + '">' + 
+				data.from.profile.username + '</a>'
+				+ '</span> le gusta tu <span><a href="/app/denuncia/'+ data.denuncia.gid +'">denuncia </a></span></p>'
+				'</div>' +
+		'</div>';
+	$('#notificaciones > .panel-body').prepend($(html));
+	
+	
+	BootstrapDialog.show({
+		title: 'Nueva notificación - Denuncia Like',
+		message: $(html),
+		buttons: [{label: 'Cerrar', action: function(dialog){dialog.close()}}],
+		onshown: function(dialog){
+			setTimeout(function(){dialog.close()}, 1500);
+		}
+	});
+});
+
+///////
+
 num_denuncias_io.on('denuncia_cerca', function(data){
 	alert('data denuncia: ' + JSON.stringify(data.denuncia) + 
 			  'from: ' + JSON.stringify(data.from) + ' noti: ' + JSON.stringify(data.noti));

@@ -471,12 +471,12 @@ app.QueryDenuncias = function(opt_options) {
 	  			'<div class="col-lg-6" style="margin-top: 20px;" ><div class="input-group"><span class="input-group-addon"><i class="fa fa-user"></i></span>' +
 	  			'<input class="form-control btn-default" id="username" type="text" name="username" placeholder="denunciado por..."></input></div></div>' +
 	  			'<div class="col-lg-6"></div>' +
-	  			'<div class="col-lg-12"><h4> Denuncias cercanas a...</h4><p> Introduce el centro y el radio de búsqueda. Para saber las coordenadas del centro dirígete a <a href="http://epsg.io/4258/map" target="_blank">http://epsg.io/4258/map</a>. El separador decimal es el punto "." o la coma "," </p></div>' +
-	  			'<div class="col-lg-4" style="margin-top: 20px;" ><div class="input-group"><span class="input-group-addon"><i class="fa fa-location-arrow"></i></span>' +
-	  			'<input class="form-control btn-default" id="lat_centro" type="text" name="lat" placeholder="Latitud del centro del buffer"></input></div></div>' +
-	  			'<div class="col-lg-4" style="margin-top: 20px;" ><div class="input-group"><span class="input-group-addon"><i class="fa fa-location-arrow"></i></span>' +
-	  			'<input class="form-control btn-default" id="lon_centro" type="text" name="lon" placeholder="Longitud del centro del buffer"></input></div></div>' +
-	  			'<div class="col-lg-4" style="margin-top: 20px;" ><div class="input-group"><span class="input-group-addon"><i class="fa fa-location-arrow"></i></span>' +
+	  			'<div class="col-lg-12"><h4> Denuncias cercanas a...</h4><p> Introduce el centro y el radio de búsqueda. Para saber las coordenadas del centro dirígete a <a href="http://epsg.io/4258/map" target="_blank">http://epsg.io/4258/map</a>. El separador decimal es el punto "." o la coma ",". O haz click <a id="punto_centro_buffer" href="#">aquí</a> para dibujar un punto en el mapa </p></div>' +
+	  			'<div class="col-lg-4" style="margin-top: 20px;" ><div class="input-group"><span class="input-group-addon">φ</span>' +
+	  			'<input class="form-control btn-default" id="lat_centro" type="text" name="lat" placeholder="Latitud del centro del buffer (φ)"></input></div></div>' +
+	  			'<div class="col-lg-4" style="margin-top: 20px;" ><div class="input-group"><span class="input-group-addon">λ</i></span>' +
+	  			'<input class="form-control btn-default" id="lon_centro" type="text" name="lon" placeholder="Longitud del centro del buffer (λ)"></input></div></div>' +
+	  			'<div class="col-lg-4" style="margin-top: 20px;" ><div class="input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-record"></i></span>' +
 	  			'<input class="form-control btn-default" id="radio" type="text" name="username" placeholder="Radio del buffer"></input></div></div>' +
 	  			'<div class="col-lg-12"><h4> Buscar por fecha</h4><p>Buscar denuncias por fecha</p></div>' +
 	  			'<div class="col-lg-6"><div class="input-group"><span class="input-group-addon"><i class="fa fa-calendar"></i></span>' +
@@ -489,20 +489,35 @@ app.QueryDenuncias = function(opt_options) {
 		  title: 'Buscar denuncias por...', 
 		  message: html,
 		  draggable: true,
+		  autodestroy: false,
 		  buttons: [{label: 'Cerrar', action: function(dialog){dialog.close();}}, 
 		            {label: 'Buscar', action: function(dialog){
 		            	var data = {};
 		            	data.titulo = $(dialog.getModalBody()).find('#titulo').val();
 		            	data.tags = $(dialog.getModalBody()).find('#tags').val();
 		            	data.username = $(dialog.getModalBody()).find('#username').val(); 
-		            	data.buffer_centro = $(dialog.getModalBody()).find('#lon_centro').val() + ";;" + $(dialog.getModalBody()).find('#lat_centro').val() ; 
+		            	data.lon = $(dialog.getModalBody()).find('#lon_centro').val();
+		            	data.lat = $(dialog.getModalBody()).find('#lat_centro').val(); 
 		            	data.buffer_radio = $(dialog.getModalBody()).find('#radio').val(); 
 		            	data.fecha_desde = $(dialog.getModalBody()).find('#fecha_desde').val(); 
 		            	data.fecha_hasta = $(dialog.getModalBody()).find('#fecha_hasta').val(); 
 		            	num_denuncias_io.emit('query', data);
 		            }}],
-		  onshown: function(dialog){ $('.datepicker').datepicker({ format: 'dd/mm/yyyy', language: 'es', todayBtn: true, todayHighlight: true });}
+		  onshown: function(dialog){ 
+			  $('.datepicker').datepicker({ format: 'dd/mm/yyyy', language: 'es', todayBtn: true, todayHighlight: true });
+			  $(dialog.getModalBody()).find('#punto_centro_buffer').click(function(event){
+				  dialog.close();
+				  var a = map.on('click', function(e){
+					  var coor = e.coordinate;
+					  dialog.open();
+					  $(dialog.getModalBody()).find('#lon_centro').val(coor[0]);
+					  $(dialog.getModalBody()).find('#lat_centro').val(coor[1]);
+					  map.unByKey(a);
+				  });
+			  });
+		  }
 	  });
+
   }
 
   button.addEventListener('click', query_, false);
@@ -577,4 +592,55 @@ app.ImagenesDenuncia = function(opt_options) {
 ol.inherits(app.ImagenesDenuncia, ol.control.Control);
 
 
+/**
+ * Control Creado para darle un like a la denuncia
+ */
+app.LikeDenuncia = function(opt_options) {
 
+  var options = opt_options || {};
+
+  var button = document.createElement('button');
+  button.innerHTML = '<i class="fa fa-thumbs-o-up"></i>';
+  
+  var aux = 0;
+  
+  num_denuncias_io.emit('te_pregunto_que_si_me_gusta_esta_puta_mierda_de_denuncia?', {denuncia: denuncia, usuario_id: usuario_id});
+
+  num_denuncias_io.on('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?', function(data){
+	  if (data.error == false){
+		  if(data.like)
+			  button.innerHTML = '<i class="fa fa-thumbs-up" style="color: #00bbff"></i>';
+		  else
+			  button.innerHTML = '<i class="fa fa-thumbs-o-up"></i>';
+	  }
+	  else {
+		  if (aux == 0) {aux++; return;}
+		  BootstrapDialog.alert({
+			  title: 'Error',
+			  message: 'Debes estar registrado para indicar que te gusta esta denuncia'
+		  });
+	  }
+  });
+  
+  var this_ = this;
+  
+  function like_ (){
+	  num_denuncias_io.emit('le_he_dao_al_boton_de_me_gusta_haz_lo_que_tengas_que_hacer', {denuncia: denuncia, usuario_id: usuario_id});
+  }
+
+  button.addEventListener('click', like_, false);
+
+  var element = document.createElement('div');
+  element.setAttribute('data-toggle', 'left');
+  element.setAttribute('title', 'Like');
+  element.setAttribute('data-content', 'Dale un like a la denuncia');
+  element.className = 'like_denuncia ol-unselectable ol-control';
+  element.appendChild(button);
+
+  ol.control.Control.call(this, {
+    element: element,
+    target: options.target
+  });
+
+};
+ol.inherits(app.LikeDenuncia, ol.control.Control);

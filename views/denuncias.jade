@@ -82,6 +82,9 @@ block content
 									a(href='/app/denuncia/#{denuncia.gid}').btn.btn-danger Ver denuncia
 										i.fa.fa-eye
 								div(style={'max-width':'100%','word-break':'break-all'})
+									i.fa.fa-eye
+									i  
+										| #{denuncia.veces_vista}				
 									i.fa.fa-comments
 									i  
 									if denuncia.comentarios != null
@@ -180,13 +183,13 @@ block script
 				+			'<p class="text-right">Por ' + denuncia.usuario[0].profile.username + '</p>' +		
 				+			'<p class="text-right"><a href="/app/denuncia/' + denuncia.gid + '" class="btn btn-danger">Ver denuncia <i class="fa fa-eye"></i></a></p>' +
 				+			'<div style="max-width:100%; word-break:break-all">' + 
-				+				'<i class="fa fa-comments">  </i>' +
+				+				'<i class="fa fa-comments"></i>' +
 				+				'<i>' + comentarios.length > 0 ? comentarios.length : 0 + '</i>' +
 				+				'<i></i>' +
-				+				'<i class="fa fa-image">  </i>' +
+				+				'<i class="fa fa-image"></i>' +
 				+				'<i>' + imagenes.length > 0 ? imagenes.length : 0 + '</i>' +
 				+				'<i></i>' +
-				+				'<i class="fa fa-tags">  </i>' +
+				+				'<i class="fa fa-tags"></i>' +
 				+				'<i>' + tags.length == 0 ? 0 : tags_str + '</i>' +
 				+			'</div>' +
 				+		'</div>' + 
@@ -197,4 +200,5 @@ block script
 				$('#denuncias').append($(html));
 				
 			});
-		})		
+		});
+	});
