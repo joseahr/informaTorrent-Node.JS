@@ -347,20 +347,20 @@ ContPg.prototype.getDenunciaPage = function(req,res){
 	client = new pg.Client(connectionString);
 	client.connect(function(err){
 		  if(err) {
-			  res.redirect('/app');
+			  return res.redirect('/app');
 		  } //IF ERROR 	 
 		  
 		  // Obtener toda la info de la denuncia
 		  client.query(queries.denuncia(req.params.id_denuncia),
 		  function(error, denuncia_){
 			  client.end();
-			  if (error) res.redirect('/app/denuncias?page=1');
+			  if (error) return console.error('Error consultando ', error);
 			  if (denuncia_.rows.length == 0){
 				  return res.redirect('/app');
 			  }
 			  var denuncia = denuncia_.rows[0];
-			  if (error)
-				  res.redirect('/app');
+			  console.log('denunciaaaaa' + denuncia.likes);
+			  
 			  //client.end();
 			  //console.log(denuncia);
 			  denuncia.geometria = JSON.stringify(denuncia.geometria);
@@ -569,7 +569,7 @@ ContPg.prototype.deleteDenuncia = function(req, res){
 
 var queries = {
 		denuncia: function(id_denuncia){
-			return "SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha," +
+			return "SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha, (select json_agg(usuarios) from usuarios, likes where usuarios._id = likes.id_usuario and likes.id_denuncia = denuncias.gid) as likes, " +
 	  		"ST_AsGeoJSON(the_geom) as geometria FROM denuncias " +
 	  		"LEFT   JOIN LATERAL (" +
 	  		"SELECT json_agg(com) AS comentarios " +
@@ -595,7 +595,7 @@ var queries = {
 					" WHERE gid='" + id_denuncia + "'";
 		},
 		denuncias: function(page){
-			return "SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha," +
+			return "SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha, (select count(*) from likes where id_denuncia = denuncias.gid) as likes, " +
 	  		"ST_AsGeoJSON(the_geom) as geometria FROM denuncias " +
 	  		"LEFT   JOIN LATERAL (" +
 	  		"SELECT json_agg(com) AS comentarios " +
@@ -620,7 +620,7 @@ var queries = {
 			return 'select count(*) as numdenuncias from denuncias';
 		},
 		getUserDenuncias: function(id_usuario){
-			return "SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha," +
+			return "SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha, (select count(*) from likes where id_denuncia = denuncias.gid) as likes, " +
 	  		"ST_AsGeoJSON(the_geom) as geometria FROM denuncias " +
 	  		"LEFT   JOIN LATERAL (" +
 	  		"SELECT json_agg(com) AS comentarios " +
@@ -678,7 +678,7 @@ var queries = {
 			return "select n.*, to_char(n.fecha::timestamp,'DD TMMonth YYYY HH24:MI:SS') as fecha, u.profile as profile_from from notificaciones n, usuarios u where n.id_usuario_to='" + id + "' and n.id_usuario_from=u._id order by n.fecha desc";
 		},
 		denuncias_visor: function(){
-			return "SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha," +
+			return "SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha, (select count(*) from likes where id_denuncia = denuncias.gid) as likes, " +
 	  		"ST_AsGeoJSON(the_geom) as geometria FROM denuncias " +
 	  		"LEFT   JOIN LATERAL (" +
 	  		"SELECT json_agg(com) AS comentarios " +

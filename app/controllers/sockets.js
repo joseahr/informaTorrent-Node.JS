@@ -210,7 +210,7 @@ module.exports = function(io, pg, path, mkdirp, exec, config, validator){
 			var fecha_desde = data.fecha_desde == '' ? undefined : data.fecha_desde.split('/');
 			var fecha_hasta = data.fecha_hasta == '' ? undefined : data.fecha_hasta.split('/');		
 			
-			var query = "SELECT *, to_char(denuncias.fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha," +
+			var query = "SELECT *, to_char(denuncias.fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha, (select count(*) from likes where id_denuncia = denuncias.gid) as likes, " +
 	  		"ST_AsGeoJSON(the_geom) as geom FROM denuncias " +
 	  		"LEFT   JOIN LATERAL (" +
 	  		"SELECT json_agg(com) AS comentarios " +

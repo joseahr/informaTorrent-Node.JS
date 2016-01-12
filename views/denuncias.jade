@@ -86,19 +86,18 @@ block content
 									i  
 										| #{denuncia.veces_vista}				
 									i.fa.fa-comments
+									i  #{denuncia.comentarios != null ? denuncia.comentarios.length : '0'}
+									i.fa.fa-thumbs-o-up
 									i  
-									if denuncia.comentarios != null
-										|  #{denuncia.comentarios.length}
-									else
-										| 0
-									i  | 
+										| #{denuncia.likes}	
+									i  			  
 									i.fa.fa-image 
 									i
 									if denuncia.imagenes != null	
 										|  #{denuncia.imagenes.length}
 									else
 										| 0
-									i  | 
+									i(style="clear: both")
 									i.fa.fa-tags
 									i  
 									if denuncia.tags_ != null

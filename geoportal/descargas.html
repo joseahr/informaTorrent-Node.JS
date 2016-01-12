@@ -130,22 +130,6 @@
 	<!-- section start -->
 	<!-- ================ -->
 	<div id="map" class="clearfix object-non-visible" data-animation-effect="fadeInRightBig">
-				
-		<!-- Botón abrir cerrar menú página -->
-		<!-- Botón Moverse por mapa -->
-		<button id="show_menu" type="button" class="btn btn-small btn-info btn-map" style=" z-index: 2; position: absolute; right: 0.5em; bottom: 30%; min-width: 1.375em">
-			<i class="fa fa-navicon"></i>
-		</button>
-				
-		<!-- Botón Moverse por mapa -->
-		<button id="mover" type="button" class="btn btn-small btn-info btn-map" style=" z-index: 2; position: absolute; right: 0.5em; bottom: 10%; min-width: 1.375em">
-			<i class="fa fa-hand-o-up"></i>
-		</button>
-	
-		<!-- Botón BBOX -->
-		<button id="bbox" type="button" class="btn btn-small btn-info btn-map" style=" z-index: 2; position: absolute; right: 0.5em; bottom: 20%; min-width: 1.375em">
-			<i class="fa fa-download"></i>
-		</button>
 		
 		<!-- Selector Capas Descargar -->
 		<div style="position: absolute; top: 0.5em; left: 20%; right: 20%; z-index: 2" class="btn-map">
@@ -198,6 +182,8 @@
 
 <!-- LayerSwitcher JS -->
 <script src="/javascripts/plugins/ol3-layerswitcher/src/ol3-layerswitcher.js"></script>
+
+<script src="/javascripts/openlayers/botones_mapa.js"/>
 
 <!-- Estilos Features -->
 <script src="/javascripts/openlayers/style.js"></script>
@@ -277,7 +263,10 @@ var map = new ol.Map({
 	           new ol.control.FullScreen(), // FullScreen
 	           new ol.control.LayerSwitcher({tipLabel: 'Leyenda'}), // LayerSwitcher
 	           new ol.control.ScaleLine(), // ScaleLine
-	           new ol.control.ZoomSlider() // ZoomSlider
+	           new ol.control.ZoomSlider(), // ZoomSlider
+	           new app.Move(),
+	           new app.CloseHeader(),
+	           new app.BBOX()
 	]),
 	target: 'map',
 	view: new ol.View({
@@ -356,24 +345,6 @@ createHelpTooltip();
 
 // FIN MAPA
 var hasbbox = true;
-
-$('#mover').click(function(event){
-	console.log('mover');
-	map.removeInteraction(boundingBox);
-	hasbbox = false;
-	$(helpTooltipElement).addClass('hidden');
-	
-});
-
-$('#bbox').click(function(event){
-	console.log('bbox');
-	if(!hasbbox){
-		hasbbox = true;
-		map.addInteraction(boundingBox);
-		$(helpTooltipElement).removeClass('hidden');
-	}
-	
-});
 
 
 </script>

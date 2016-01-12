@@ -85,7 +85,7 @@ select.on('select', function(e){
 							'<div class="col-lg-8 text-center" style="padding: 5px;"><p> denunciado por <span><a href="/app/usuarios/' + f.attributes.denuncia.usuario[0]._id + '">' + f.attributes.denuncia.usuario[0].profile.username + '</a></span></p></div>'+
 							'<div class="col-lg-12 btn-info text-center" style="padding: 5px;">' + f.attributes.denuncia.fecha + '</div>' +
 							'<div class="col-lg-12" style="clear: both; margin-top: 5px;"><i class="fa fa-tags"></i> ' + stringTags + '</div>' + 
-							'<div class="col-lg-12" style="clear: both;"><i class="fa fa-image"></i> ' + numImages + '  <i class="fa fa-comments"></i> ' + numComments + '  <i class="fa fa-eye"></i> ' + f.attributes.denuncia.veces_vista + '</div>' + 
+							'<div class="col-lg-12" style="clear: both;"><i class="fa fa-image"></i> ' + numImages + '  <i class="fa fa-comments"></i> ' + numComments + '  <i class="fa fa-eye"></i> ' + f.attributes.denuncia.veces_vista + '  <i class="fa fa-thumbs-o-up"></i> ' + f.attributes.denuncia.likes + '</div>' + 
 							'</div>' + 
 							'<h4>' + f.attributes.denuncia.titulo + '</h4>' +
 							'<div class="space" style="clear: both;"></div>' + 

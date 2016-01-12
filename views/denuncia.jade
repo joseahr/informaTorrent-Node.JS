@@ -24,13 +24,17 @@ block panel-lateral
 					div(style="margin-top: 5px;  clear: both;" class="btn-info text-center") #{denuncia.fecha}
 				h2 #{denuncia.titulo}
 				h4
+					i.fa.fa-eye
+						|  #{denuncia.veces_vista}
+					i  
+					i#likes.fa.fa-thumbs-o-up
+						|  #{denuncia.likes ? denuncia.likes.length : 0}
+					i  
 					i.fa.fa-tags
 					if denuncia.tags_
 						each tag in denuncia.tags_
 							| ##{tag.tag}  
-					i 
-					i.fa.fa-eye
-						|  #{denuncia.veces_vista}
+				button#fb-share-button.btn.btn-default Facebook
 				div(style="clear: both; margin-top: 20px;") 
 					h4(style="margin-top: 10px") Descripción
 					div(style="word-wrap: break-word;") !{denuncia.descripcion}
@@ -101,6 +105,7 @@ block panel-lateral
 				else
 					p Esta denuncia no contiene imágenes
 block script
+	script(src="/javascripts/share.js")
 	script(src="/javascripts/panel-lateral.js")
 	// TinyMCE Editor
 	script(src="//cdn.tinymce.com/4/tinymce.min.js")
@@ -121,7 +126,30 @@ block script
 		map.addControl(new app.ImagenesDenuncia());
 		map.addControl(new app.ComentariosDenuncia());
 		map.addControl(new app.LikeDenuncia());
-		
+
 		num_denuncias_io.emit('alguien_vio_una_denuncia', {id_denuncia: '#{denuncia.gid}'});
+
+		var likes_html = '<div class="container" style="width: 100%"><div class="col-lg-12">';
+		
+		var usuarios_like = JSON.parse('!{JSON.stringify(denuncia.likes)}');
+
+		usuarios_like.forEach(function(usuario){
+			likes_html += '<a data-toggle="bottom" title="Usuario" data-content="' + usuario.profile.username + '" href="/app/usuarios/' + usuario._id + '" style="float:left; margin: 2px;"><img style="width: 80px; height: 80px;" src="' + usuario.profile.picture + '" class="img img-thumbnail"></img></a>';
+		});
+		likes_html += '</div></div>';
+		
+		$('#likes').click(function(e){
+			BootstrapDialog.show({
+				title: 'Esta denuncia le gusta a...',
+				message: likes_html,
+				buttons: [{label: 'Cerrar', action: function(d){d.close();}}],
+				onshown: function(){
+					$('[data-toggle="bottom"]').popover({
+						trigger: 'hover',
+						placement: 'bottom'
+					});
+				}
+			});
+		});
 		
 	script(src="/javascripts/openlayers/olvisor.js")

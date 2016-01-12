@@ -212,6 +212,24 @@ app.get('/servicios', function(req, res){
     });
 });
 
+app.get('/app/getInfoTabla', function(req, res){
+	var nombre_tabla = req.query.tabla;
+	console.log(nombre_tabla);
+	if (nombre_tabla == 'denuncias')
+		var client = new pg.Client('postgres://jose:jose@localhost/denuncias');
+	else
+		var client = new pg.Client('postgres://jose:jose@localhost/carto_torrent');
+	client.connect(function(error){
+		if(error) return console.error('Error conectando', error);
+		
+		client.query("select column_name as nombre, data_type as tipo from information_schema.columns where column_name <> 'geom' and table_name= '" + nombre_tabla + "'",
+		function(e, r){
+			client.end();
+			return res.send({cols: r.rows});
+		});
+		
+	});
+});
 
 app.get('/app', contHome.getAppHomePage); // Página de Inicio de la aplicación
 

@@ -33,6 +33,9 @@
 <!-- CSS OpenLayers Popup -->
 <link rel="stylesheet" href="http://openlayers.org/en/v3.11.0/examples/popup.css">
 
+<!-- Bootstrap Select CSS -->
+<link rel="stylesheet" href="/javascripts/plugins/bootstrap-select/dist/css/bootstrap-select.css">
+
 <!-- Prefix free -->
 <script src="https://raw.githubusercontent.com/LeaVerou/prefixfree/gh-pages/prefixfree.min.js"></script>
 
@@ -127,22 +130,6 @@
 	<!-- section start -->
 	<!-- ================ -->
 	<div id="map" class="clearfix object-non-visible" data-animation-effect="fadeInRightBig">
-				
-		<!-- Botón abrir cerrar menú página -->
-		<!-- Botón Moverse por mapa -->
-		<button id="show_menu" type="button" class="btn btn-small btn-info btn-map" style="position: absolute; right: 0.5em; bottom: 30%; min-width: 1.375em">
-			<i class="fa fa-navicon"></i>
-		</button>
-				
-		<!-- Botón Moverse por mapa -->
-		<button id="mover" type="button" class="btn btn-small btn-info btn-map" style="position: absolute; right: 0.5em; bottom: 10%; min-width: 1.375em">
-			<i class="fa fa-hand-o-up"></i>
-		</button>
-	
-		<!-- Botón Info -->
-		<button id="info" type="button" class="btn btn-small btn-info btn-map" style="position: absolute; right: 0.5em; bottom: 20%; min-width: 1.375em">
-			<i class="fa fa-info-circle"></i>
-		</button>
 	
 		<!-- Popup Info -->
 		<div id="popup" class="ol-popup" style="min-width: 400px;">
@@ -190,6 +177,8 @@
 <!-- LayerSwitcher JS -->
 <script src="/javascripts/plugins/ol3-layerswitcher/src/ol3-layerswitcher.js"></script>
 
+<script src="/javascripts/openlayers/botones_mapa.js"/>
+
 <!-- Estilos Features -->
 <script src="/javascripts/openlayers/style.js"></script>
 
@@ -199,6 +188,8 @@
 <!-- Capas -->
 <script src="/javascripts/openlayers/capas.js"></script>	
 
+<!-- Bootstrap Select JS -->
+<script src="/javascripts/plugins/bootstrap-select/js/bootstrap-select.js"></script>
 
 <script type="text/javascript">
 
@@ -264,7 +255,11 @@ var map = new ol.Map({
 	           new ol.control.FullScreen(), // FullScreen
 	           new ol.control.LayerSwitcher({tipLabel: 'Leyenda'}), // LayerSwitcher
 	           new ol.control.ScaleLine(), // ScaleLine
-	           new ol.control.ZoomSlider() // ZoomSlider
+	           new ol.control.ZoomSlider(), // ZoomSlider
+	           new app.GetFeatureInfo(),
+	           new app.Move(),
+	           new app.CloseHeader(),
+	           new app.CQL()
 	]),
 	target: 'map',
 	overlays : [popup],
@@ -371,21 +366,15 @@ $('[data-toggle="tab"]').popover({
     'placement': 'top'
 });
 
-$('#mover').click(function(){
-	$(helpTooltipElement).addClass('hidden');
-	info = false;
-});
-$('#info').click(function(){
-	$(helpTooltipElement).removeClass('hidden');
-	info = true;
-});
-
 map.getViewport().addEventListener('mouseout', function(evt){
     $(helpTooltipElement).addClass('hidden');
 }, false);
 
 
-</script>
+</script>    
+<script src="/javascripts/openlayers/get_feature_info.js" />
+
+
 
 </body>
 </html>
