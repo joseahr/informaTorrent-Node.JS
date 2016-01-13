@@ -1,0 +1,174 @@
+html
+  head
+    meta(charset='utf-8')
+    // Para dispositivos móviles
+    meta(name='viewport', content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no')
+    // Bootstrap CSS
+    link(href='/stylesheets/bootstrap/css/bootstrap.css', rel='stylesheet')
+    // Font Awesome Iconos
+    link(rel='stylesheet', href='/stylesheets/font-awesome/css/font-awesome.css')
+    // Fuentes
+    link(href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,400,700,300&subset=latin,latin-ext', rel='stylesheet', type='text/css')
+    link(href='http://fonts.googleapis.com/css?family=Raleway:700,400,300', rel='stylesheet', type='text/css')
+    // CSS Principal
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    // CSS Animaciones
+    link(rel='stylesheet', href='/stylesheets/animations.css')
+    // Highlight CSS
+    link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/styles/default.min.css')
+    // Bootstrap Select CSS
+    link(rel='stylesheet', href='/javascripts/plugins/bootstrap-select/dist/css/bootstrap-select.css')
+    // Prefix free
+    script(src='https://raw.githubusercontent.com/LeaVerou/prefixfree/gh-pages/prefixfree.min.js')
+    block link
+  body.no-trans
+    // header start
+    // ================
+    - var nuevas = 0;
+    if user
+      each noti in misNotificaciones
+        if noti.vista == false
+          - nuevas ++;
+    header.header.fixed.clearfix.navbar.navbar-fixed-top
+      .container
+        .row
+          .col-md-4
+            // header-left start
+            // ================
+            .header-left.clearfix
+              // logo
+              .logo.smooth-scroll
+                a(href='#banner')
+                  span.fa-stack.fa-lg
+                    i.fa.fa-circle.fa-stack-2x
+                    i.fa.fa-bullhorn.fa-stack-1x.fa-inverse
+              // name-and-slogan
+              .site-name-and-slogan.smooth-scroll
+                .site-name
+                  a(href='/') Informa Torrent
+                .site-slogan Tu portal de denuncias
+            // header-left end
+          .col-md-8
+            // header-right start
+            // ================
+            .header-right.clearfix
+              // main-navigation start
+              // ================
+              .main-navigation.animated
+                // navbar start
+                // ================
+                nav.navbar.navbar-default(role='navigation')
+                  .container-fluid
+                    // Toggle get grouped for better mobile display
+                    .navbar-header
+                      button.navbar-toggle(type='button', data-toggle='collapse', data-target='#navbar-collapse-1')
+                        span.sr-only Abrir Menú
+                        span.icon-bar
+                        span.icon-bar
+                        span.icon-bar
+                    // Collect the nav links, forms, and other content for toggling
+                    #navbar-collapse-1.collapse.navbar-collapse.scrollspy.smooth-scroll
+                      ul.nav.navbar-nav.navbar-right(style="height: 100%;")
+                        li(style="height: 100%")
+                          a(href='/app/#banner' style="height: 100%") Inicio
+                        if(!user)
+                          li(style="height: 100%")
+                            a(href="/app/#iniciar" style="height: 100%") Iniciar Sesión
+                          li(style="height: 100%")
+                            a(href='/app/#registrarse' style="height: 100%") Registrarse
+                          li(style="height: 100%")
+                            a(href='/app/#olvidaste' style="height: 100%") ¿Olvidaste contraseña?
+                        else
+                          li(style="height: 100%")
+                            a(href='/app/visor' style="height: 100%") Visor Tiempo Real
+                          li(style="height: 100%")
+                            a(href='/app/denuncias?page=1' style="height: 100%") Denuncias
+                          li(style="height: 100%")
+                            a(href='#' style="height: 70px;" data-toggle="dropdown").media
+                              div.pull-left
+                                img.img-responsive.img-circle.media-object(src="#{user.profile.picture}" style="height: 40px; width: 40px; margin: -10 5 0 0px;")                                       
+                                span.badge.badge-success.danger.pull-right.noti_up #{nuevas}
+                              div.media-body.pull-left
+                                | #{user.profile.username}
+                                span.caret
+                            ul.dropdown-menu(style="width: 100%; background: #E7E7E7")
+                              li.dropdown
+                                a(href="/app/profile#headingOne") Notificaciones
+                                  span(style="float: right; margin-top: -20px;").badge.noti_up #{nuevas}
+                              li.dropdown
+                                a(href="/app/profile") Mi perfil
+                              li.dropdown
+                                a(href="/app/denuncias/nueva") Nueva denuncia
+                              li.dropdown
+                                a(href="/app/logout") Cerrar Sesión
+                // navbar end
+              // main-navigation end
+            // header-right end
+    // header end
+
+    // Contenido
+    // ================
+    .space
+    .space
+    block content
+    #numdenun(style="position: fixed; bottom: 0.5em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;")
+      i.fa.fa-bullhorn(style="margin-right: 5px;")
+      | #{numdenun}
+    #numdenunhoy(style="position: fixed; bottom: 2.875em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;")
+      i.fa.fa-bullhorn(style="margin-right: 5px;")
+      | #{numdenunhoy}
+    #numusu(style="position: fixed; bottom: 0.5em; left: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;")
+      i.fa.fa-user(style="margin-right: 5px;")
+    script.
+      var ip = '#{ip}';
+      var id_usuario = '#{id_usuario}';
+    // Plugins Javascript situados al final de la página, así el contenido carga antes
+    // JQuery y Bootstrap
+    script(type='text/javascript', src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js')
+    script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js', integrity='sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS', crossorigin='anonymous')
+    // Modernizr
+    script(type='text/javascript', src='/javascripts/plugins/modernizr.js')
+    // Jquery appear
+    script(type='text/javascript', src='/javascripts/plugins/jquery.appear.js')
+    // JS Principal
+    script(type='text/javascript', src='/javascripts/template.js')
+    // FitText.js
+    script(type='text/javascript', src='/javascripts/plugins/jquery.fittext.js')
+    // Bootstrap Dialog JS (Nakupanda)
+    script(type='text/javascript', src='/javascripts/plugins/bootstrap-dialog.js')
+    // Highlight JS
+    script(src='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/highlight.min.js')
+    // Bootstrap Select JS
+    script(src='/javascripts/plugins/bootstrap-select/js/bootstrap-select.js')
+    // Mensajes del servidor flash
+    script(type="text/javascripts" src='/javascripts/mensajes_servidor.js')
+    // SOCKET.IO
+    script(src="https://cdn.socket.io/socket.io-1.3.7.js")
+    // FUNCIONALIDADES SOCKET.IO
+    script(src="/javascripts/client-sockets.js")
+    script.
+      var sms = {};
+      if ('#{message.error}' != '') {
+        sms.type = 'type-error';
+        sms.msg = '#{message.error}';
+      }
+      else if ('#{message.success}' != '') {
+        sms.type = 'type-success';
+        sms.msg = '#{message.success}';
+      }
+      else if ('#{message.info}' != '') {
+        sms.type = 'type-info';
+        sms.msg = '#{message.info}';
+      }
+      
+      if(sms.type)      
+        BootstrapDialog.show({
+            type: sms.type,
+            title: 'INFO',
+            message: sms.msg,
+            buttons: [{
+                label: 'Cerrar',
+                action: function(dialog){dialog.close()}
+            }]
+        });
+    block script

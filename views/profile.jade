@@ -1,4 +1,4 @@
-extends layout
+extends layout_sin_cabecera
 block content
 	.section.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
 		// Header Inicio Perfil +  Nombre Usuario
@@ -14,7 +14,7 @@ block content
 				// Columna Izquierda
 				.col-md-4(style="margin-bottom: 10px;")
 					.row(style="margin:0 5 0 5px;")
-						div(style={'background-color': 'rgba(0,50,200,0.3)', 'border-top-left-radius': '10px' , 'border-top-right-radius': '10px'})
+						div(style={'background-color': 'rgba(0,50,187, 0.1)', 'border-top-left-radius': '10px' , 'border-top-right-radius': '10px'})
 							div(style={'border-top-left-radius': '10px' , 'border-top-right-radius': '10px', background: 'url(http://www.lovevalencia.com/wp-content/uploads/2011/07/torrent-e1311319357479.jpg)', 'background-size':'100% 35%','background-repeat':'no-repeat', width: '100%', padding:'40 5 40 5px'}).form-horizontal.text-center
 								img.img-circle.img-responsive.img-thumbnail(src="#{user.profile.picture}" style={'margin': '0 auto', 'width':'200px','height':'200px'})
 								.space

@@ -406,6 +406,12 @@ module.exports = function(io, pg, path, mkdirp, exec, config, validator){
 								return console.error('Error consultando ', e_);
 							}
 							
+							if(data.usuario_id == data.denuncia.id_usuario){
+								// Si le doy a like a una denuncia mía NO ENVIAMOS NOTIFICACIÓN
+								return 	socket.emit('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?',
+								{error: false, like: true });
+							}
+							
 							client.query("insert into notificaciones(id_denuncia, id_usuario_from, id_usuario_to, tipo) " +
 							"values ('" + data.denuncia.gid + "','" + data.usuario_id + "','" + data.denuncia.id_usuario + "','LIKE_DENUNCIA') returning *",
 							function(e__, r__){
@@ -442,6 +448,12 @@ module.exports = function(io, pg, path, mkdirp, exec, config, validator){
 							if(e_) {
 								client.end()
 								return console.error('Error consultando ', e_);
+							}
+							
+							if(data.usuario_id == data.denuncia.id_usuario){
+								// Si me ha dejado de gustar una denuncia mía NO ENVIAMOS NOTIFICACIÓN
+								return 	socket.emit('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?',
+								{error: false, like: false });
 							}
 							
 							client.query("insert into notificaciones(id_denuncia, id_usuario_from, id_usuario_to, tipo) " +

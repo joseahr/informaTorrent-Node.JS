@@ -1,35 +1,38 @@
-extends layout
+extends layout_sin_cabecera
+// POST RESET TOKEN!!!!
 block content
-	div(style={'position':'relative',top:'0px'})
-		div.page-header(style={ 'margin-top':'0px !important','padding-bottom':'0px'})
-			h1(style={'font-size':'25px'}) Cambia tu contraseña
-		.col-lg-12
-		p.text-center Rellene los datos para cambiar la contraseña
-		br
-	div(style={margin:'auto', height:'75%'}).well.centrado
-		div(style={'position':'relative', height:'100%', top:'35%'})
-			form(action="/app/changePass" method="POST")
-				fieldset
-					.form-group.col-lg-4(style={'margin':'0 auto'})
-						.input-group
-							span.input-group-addon
-								i.glyphicon.glyphicon-lock
-							input#rc.form-control(required='', name='password_original', type='password', placeholder='Contraseña Actual', value=' ')
-					.form-group.col-lg-4(style={'margin':'0 auto'})
-						.input-group
-							span.input-group-addon
-								i.glyphicon.glyphicon-lock
-							input#rc.form-control(required='', name='password_nueva', type='password', placeholder='Nueva Contaseña')
-					.form-group.col-lg-4(style={'margin':'0 auto'})
-						.input-group
-							span.input-group-addon
-								i.glyphicon.glyphicon-lock
-							input#rc.form-control(required='', name='password_nueva_repeat', type='password', placeholder='Repita Nueva Contraseña')
-					br
-					.form-group.col-lg-12(style={'margin':'0 auto'})
-						label.control-label(for='passChange')
-						.controls.input-group
-							span.input-group-addon(style={color:'#38B44A !important'})
-								i.glyphicon.glyphicon-send
-							button#signin.btn.btn-success(name='forgotPassChange' style={width:'100%','border-top-left-radius':'0px','border-bottom-left-radius':'0px'})
-								|  Cambiar contraseña
+	.section.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
+		// Header Inicio Perfil +  Nombre Usuario
+		.container
+			.row
+				.col-md-12
+					h1.title
+						i.fa.fa-user(style={'margin-left':'5px', 'margin-right': '5px'})
+						span Recuperar tu cuenta de Usuario
+		// Contenedor del contenido del perfil
+		.container
+			.row
+				.col-lg-12(style="padding: 25px; margin: 10 0 10 0px; border-radius: 5px; background: rgba(0,50,187.0.1)")
+					p Si has llegado hasta aquí es por que no puedes acceder a tu cuenta de usuario con tu contraseña.
+					p Por favor rellene los campos para cambiar de contraseña y poder volver a usar su cuenta.
+				.col-lg-12(style="margin: 0 auto")
+					form(action="/app/reset/#{token}" method="POST" style="background:rgba(0,50,187, 0.1) ; border-radius: 5px; padding: 50px;")
+						fieldset
+							.form-group.col-lg-6(style={'margin':'0 auto'})
+								.input-group
+									span.input-group-addon
+										i.fa.fa-envelope-o.fa-fw
+									input#rc.form-control(required='', name='password', type='password', placeholder='Nueva contraseña', value=' ')
+							.form-group.col-lg-6(style={'margin':'0 auto'})
+								.input-group
+									span.input-group-addon
+										i.fa.fa-key.fa-fw
+									input#rc.form-control(required='', name='passwordRepeat', type='password', placeholder='Repita la nueva contaseña')
+							br
+							.form-group.col-lg-12(style={'margin':'0 auto'})
+								label.control-label(for='passChange')
+								.controls.input-group
+									span.input-group-addon(style={color:'#38B44A !important'})
+										i.fa.fa-send.fa-fw
+									button#signin.btn.btn-success(name='resetToken' style={width:'100%','border-top-left-radius':'0px','border-bottom-left-radius':'0px'})
+										|  Actualizar contraseña

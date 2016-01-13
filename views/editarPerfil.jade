@@ -1,4 +1,4 @@
-extends layout
+extends layout_sin_cabecera
 block link
 	// Bootstrap Select
 	link(rel="stylesheet" href="/javascripts/plugins/bootstrap-select/dist/css/bootstrap-select.css")
@@ -135,8 +135,8 @@ block script
 				// El Response que nos envía el servidor
 				var res = JSON.parse(xhr.responseText);
 				BootstrapDialog.show({
-					title: 'Perfil actualizado correctamente', 
-					message: 'Tus datos se actualizaron correctamente', 
+					title: 'Actualización de perfil', 
+					message: res.msg, 
 					onshown: function(dialog) {
 						setTimeout(function(){
 							dialog.close();
@@ -167,8 +167,8 @@ block script
 				// El Response que nos envía el servidor
 				var res = JSON.parse(xhr.responseText);
 				BootstrapDialog.show({
-					title: 'Imagen de Perfil cambiada', 
-					message: 'Tu imagen de perfil se actualizó correctamente', 
+					title: 'Imagen de Perfil', 
+					message: res.msg, 
 					onshown: function(dialog) {
 						setTimeout(function(){
 							dialog.close();

@@ -36,7 +36,7 @@ Passport.prototype.getChangePass = function(req, res){
 	if(!req.user || !req.user.local.valid)
 	{
 		req.flash('error', 'Debe estar loggeado');
-		return res.redirect('/app/login#scroll')
+		return res.redirect('/app#iniciar')
 	}
 	res.render('cambiarPass.jade');
 };
@@ -45,7 +45,7 @@ Passport.prototype.postChangePass = function(req, res){
 	if(!req.user || !req.user.local.valid)
 	{
 		req.flash('error', 'Debe estar loggeado');
-		return res.redirect('/app/login#scroll')
+		return res.redirect('/app#iniciar')
 	}
 	async.waterfall([function(done){
 		var password_original = req.body.password_original;
@@ -102,7 +102,7 @@ Passport.prototype.postChangePass = function(req, res){
 			}
 		});
 	}, function(ok, done){
-		res.redirect('/app/profile');
+		res.redirect('/app/perfil');
 		done(null);
 	}],
 	function(err){
@@ -185,11 +185,11 @@ Passport.prototype.postResetToken = function(req, res) {
 	        from: 'joherro123@gmail.com',
 	        subject: 'informaTorrent! - Contraseña Actualizada',
 	        text: 'Querido usuario,\n\n' +
-	          'Este mensaje se ha generado automáticamente para avisarte de que la contraseña de la cuenta vinculada al e-mail ' + user.email + ' ha sido actualizada satisfactoriamente.\n Gracias por usar nuestra aplicación!'
+	          'Este mensaje se ha generado automáticamente para avisarte de que la contraseña de la cuenta vinculada al e-mail ' + user.local.email + ' ha sido actualizada satisfactoriamente.\n Gracias por usar nuestra aplicación!'
 	      };
 	      smtpTransport.sendMail(mailOptions, function(err) {
 	        req.flash('success', '¡Genial! Tu contraseña se actualizó correctamente.');
-	        res.redirect('/app#scroll');
+	        res.redirect('/app');
 	        done(err);
 	      });
 	    }
@@ -219,10 +219,10 @@ Passport.prototype.getResetToken = function(req, res) {
 				}
 				if (result.rows.length == 0){
 					req.flash('error', 'La URL solicitada no es válida o ha expirado.');
-				    return res.redirect('/app/#olvidaste')
+				    return res.redirect('/app#olvidaste')
 				}
 				else {
-					contHome.datos(req, res, 'indexapp', 'cambiarPass', {token: req.params.token});
+					res.render('cambiarPass.jade', {token: req.params.token, usuario_cambiar: result.rows[0]});
 				}
 			});
 		}
@@ -233,7 +233,7 @@ Passport.prototype.getResetToken = function(req, res) {
  * GET /app/forgot
  */
 Passport.prototype.getForgot = function(req, res){
-	contHome.datos(req, res, 'indexapp', 'forgot');
+	res.redirect('/app#olvidaste');
 }
 
 /*
@@ -254,7 +254,7 @@ Passport.prototype.postForgot = function(req, res, next) {
     	client.connect(function(e){
 			if (e) done(e);
 			else {
-				client.query("select * from usuarios where local ->> 'email' ='" + req.body.email + "'",
+				client.query("select * from usuarios where lower(local ->> 'email') ='" + req.body.email.toLowerCase() + "' or lower(profile ->> 'username') = '" + req.body.email.toLowerCase() + "'",
 				function(err, result){
 					if(err) {
 						client.end();
@@ -263,7 +263,7 @@ Passport.prototype.postForgot = function(req, res, next) {
 					else {
 						if (result.rows.length == 0) {
 							client.end();
-					        req.flash('error', 'No existe ninguna cuenta con el e-mail ' + req.body.email);
+					        req.flash('error', 'No existe ninguna cuenta con el username o e-mail ' + req.body.email);
 					        done('');
 						}
 						else {
@@ -282,7 +282,7 @@ Passport.prototype.postForgot = function(req, res, next) {
     	});
     },
     function(token, user, done) {
-      if(!user) return res.redirect('/app/#olvidaste');
+      if(!user) return res.redirect('/app#olvidaste');
       var smtpTransport = nodemailer.createTransport('SMTP', {
         service: 'Gmail',
         auth: {
@@ -306,7 +306,7 @@ Passport.prototype.postForgot = function(req, res, next) {
     }
   ], function(err) {
     if (err) return next(err);
-    return res.redirect('/app/forgot#scroll');
+    return res.redirect('/app#olvidaste');
   });
 }
 
@@ -326,7 +326,7 @@ Passport.prototype.unlinkTW = function(req, res) {
     			client.end();
     			if (e) return console.error('error consultando', e);
     			else {
-    				res.redirect('/app/profile#scroll');
+    				res.redirect('/app/perfil');
     			}
     		});
     	}
@@ -350,7 +350,7 @@ Passport.prototype.unlinkFB = function(req, res) {
     			client.end();
     			if (e) return console.error('error consultando', e);
     			else {
-    				res.redirect('/app/profile#scroll');
+    				res.redirect('/app/perfil');
     			}
     		});
     	}
@@ -375,8 +375,8 @@ Passport.prototype.unlinkFB = function(req, res) {
  * Conectar una cuenta de Twitter con otra existente -- Callback
  */
 Passport.prototype.connectTWCallback = passport.authorize('twitter', {
-    successRedirect : '/app/profile#scroll',
-    failureRedirect : '/app/profile#scroll'
+    successRedirect : '/app/perfil',
+    failureRedirect : '/app/perfil'
 });
 
 /*
@@ -388,8 +388,8 @@ Passport.prototype.connectTW = passport.authorize('twitter', { scope : 'email' }
  * Conectar una cuenta de Facebook con otra existente -- Callback
  */
 Passport.prototype.connectFBCallback = passport.authorize('facebook', {
-    successRedirect : '/app/profile#scroll',
-    failureRedirect : '/app/profile#scroll'
+    successRedirect : '/app/perfil',
+    failureRedirect : '/app/perfil'
 });
 
 /*
@@ -410,8 +410,8 @@ Passport.prototype.connectFB = passport.authorize('facebook', { scope : 'email' 
  * Twitter Auth -- Callback de Twitter una vez autentificcados
  */
 Passport.prototype.getTWCallback = passport.authenticate('twitter', {
-    successRedirect : '/app/profile#scroll',
-    failureRedirect : '/app/login#scroll'
+    successRedirect : '/app/perfil',
+    failureRedirect : '/app#iniciar'
 })
 
 /*
@@ -423,8 +423,8 @@ Passport.prototype.getTWAuth = passport.authenticate('twitter', { scope : 'email
  *  Facebook Auth -- Callback de Facebook una vez autentificados
  */
 Passport.prototype.getFBCallback = passport.authenticate('facebook', {
-    successRedirect : '/app/profile#scroll',
-    failureRedirect : '/app/login#scroll'
+    successRedirect : '/app/perfil',
+    failureRedirect : '/app#iniciar'
 });
 
 /*
@@ -436,16 +436,16 @@ Passport.prototype.getFBAuth = passport.authenticate('facebook', { scope : 'emai
  * Post Login
  */
 Passport.prototype.postLogin = passport.authenticate('local-login', {
-    successRedirect : '/app/profile#scroll', // redirect to the secure profile section
-    failureRedirect : '/app/login#scroll', // redirect back to the signup page if there is an error
+    successRedirect : '/app/perfil', // redirect to the secure profile section
+    failureRedirect : '/app#iniciar', // redirect back to the signup page if there is an error
     failureFlash : true // allow flash messages
 });
 /*
  * POST SignUp
  */
 Passport.prototype.postSignUp = passport.authenticate('local-signup', {
-    successRedirect : '/app#scroll', // redirect to the secure profile section
-    failureRedirect : '/app/signup#scroll', // redirect back to the signup page if there is an error
+    successRedirect : '/app', // redirect to the secure profile section
+    failureRedirect : '/app', // redirect back to the signup page if there is an error
     failureFlash : true // allow flash messages
 });
 
@@ -453,14 +453,14 @@ Passport.prototype.postSignUp = passport.authenticate('local-signup', {
  * Renderizamos SignUp
  */
 Passport.prototype.getSignUp = function(req, res) {
-	contHome.datos(req, res, 'indexapp.jade', 'signup');
+	res.redirect('/app#registrarse');
 }
 
 /*
  * Renderizamos LogIn
  */
 Passport.prototype.getLogin = function(req, res) {
-	contHome.datos(req, res, 'indexapp.jade', 'login');
+	res.redirect('/app#iniciar');
 }
 
 
@@ -469,7 +469,7 @@ Passport.prototype.getLogin = function(req, res) {
  */
 Passport.prototype.logout = function(req, res) {
     req.logout();
-    res.redirect('/app#scroll');
+    res.redirect('/app');
 }
 
 /*
@@ -541,7 +541,7 @@ Passport.prototype.confirmUser = function(req, res){
     								req.logIn(user, function(error){
     									console.log(error + ' error autenticando')
     									req.flash('success', 'Tu cuenta se ha confirmado correctamente.');
-    									return res.redirect('/app/profile');
+    									return res.redirect('/app/perfil');
     								});
     							}
     						});

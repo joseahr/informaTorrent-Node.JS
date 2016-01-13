@@ -58,8 +58,7 @@ var IP = os.networkInterfaces()['ens33'][0]['address'];
 
 //var IP = 'http://localhost:3000/'
 
-// Vamos a usar una ruta middleware para pasar mensajes de error 
-// para cualquier rquest de nuestra aplicación
+// Ruta middleware
 app.use(function(req, res, next){
 	
 	res.locals({ip: IP});
@@ -90,7 +89,8 @@ app.use(function(req, res, next){
 					
 					if(req.user){
 					  var getUserNotifications = "select n.*, to_char(n.fecha::timestamp,'DD TMMonth YYYY HH24:MI:SS') as fecha, u.profile as profile_from from notificaciones n, usuarios u where n.id_usuario_to='" + req.user._id + "' and n.id_usuario_from=u._id order by n.fecha desc";
-					  var getUserActions = "select n.*, to_char(n.fecha::timestamp,'DD TMMonth YYYY HH24:MI:SS') as fecha, u.profile as profile_to from notificaciones n, usuarios u where n.id_usuario_from='" + req.user._id + "' and n.id_usuario_to=u._id order by n.fecha desc";
+					  var getUserActions = "select n.*, to_char(n.fecha::timestamp,'DD TMMonth YYYY HH24:MI:SS') as fecha, u.profile as profile_to from notificaciones n, usuarios u where n.id_usuario_from='" + req.user._id + "' and n.id_usuario_to=u._id order by n.fecha desc";					  
+					  
 					  
 					  // Obtener notificaciones
 					  client.query(getUserNotifications, function(err2, noti){
@@ -107,6 +107,11 @@ app.use(function(req, res, next){
 								  return console.error('error consultando acciones', e);
 							  }
 							  
+							  res.locals({
+								  titulo: 'Informa Torrent',
+								  subtitulo: 'La app con la que podrás contribuir a la mejora de Torrent',
+								  owner: 'Ajuntament de Torrent'  	
+							  });
 							  res.locals({misNotificaciones: noti.rows});
 							  res.locals({misAcciones: r.rows});
 							  res.locals({id_usuario: req.user._id});
@@ -233,7 +238,7 @@ app.get('/app/getInfoTabla', function(req, res){
 
 app.get('/app', contHome.getAppHomePage); // Página de Inicio de la aplicación
 
-app.get('/app/profile', isLoggedIn, contPg.getProfile); // Perfil de usuario
+app.get('/app/perfil', isLoggedIn, contPg.getProfile); // Perfil de usuario
 app.get('/app/usuarios/:id_usuario', contPass.getUserProfile);
 app.get('/app/logout', contPass.logout); // Logout
 app.get('/app/login', contPass.getLogin); // Página de Login (modal)

@@ -10,7 +10,7 @@ var connectionString = "postgres://jose:jose@localhost/denuncias", // BDD Denunc
 	config = require('../../config.js'),
 	User, // modelo de usuario
 	validator; // validator 
-var client, io, io_visor;
+var client, clientCarto, io, io_visor;
 	
 /*
  * Constructor
@@ -88,7 +88,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 		// introducida está dentro de torrent
 		// Utilizamos la función ST_Contains(geom, geom) de postGIS
 		
-		var clientCarto = new pg.Client(connectionStringCarto);
+		clientCarto = new pg.Client(connectionStringCarto);
 		clientCarto.connect(function(errCartoConnect){
 			if(errCartoConnect) {
 				return console.error('error fetching client from pool', errCartoConnect);
@@ -462,7 +462,7 @@ ContPg.prototype.getEdit = function(req, res, next){
 					client.end();
 					if (er) return console.error('error realizando consulta', er);
 					else if (denuncia.rows.length == 0)
-						res.redirect('/app/profile');
+						res.redirect('/app/perfil');
 					else{
 						if(denuncia.rows[0].id_usuario != req.user._id){
 							console.log('error usuario');
@@ -492,7 +492,7 @@ ContPg.prototype.deleteDenuncia = function(req, res){
 	
 	if(!req.query.id){
 		//Mostar error
-		res.redirect('/app/profile');
+		res.redirect('/app/perfil');
 	}
 	console.log('delete ' + req.query.id);
 	var id = req.query.id; // id de la denuncia
@@ -517,7 +517,7 @@ ContPg.prototype.deleteDenuncia = function(req, res){
 				client.end();
 				console.log('acceso denengado + id_user ' + id_user + '; id_user_den: ' + user_den_denuncia);
 				req.flash('error','Acceso denegado. No tienes permisos para eliminar esta denuncia');
-				res.redirect('/app/profile');
+				res.redirect('/app/perfil');
 			}
 			else {
 				
@@ -740,7 +740,7 @@ ContPg.prototype.updateDenuncia = function(req, res){
 		// introducida está dentro de torrent
 		// Utilizamos la función ST_Contains(geom, geom) de postGIS
 		
-		var clientCarto = new pg.Client(connectionStringCarto);
+		clientCarto = new pg.Client(connectionStringCarto);
 		clientCarto.connect(function(errCartoConnect){
 			if(errCartoConnect) {
 				return console.error('error fetching client from pool', errCartoConnect);
@@ -924,7 +924,7 @@ ContPg.prototype.updateProfile = function(req, res){
 		return res.send({error: true, msg: 'La contraseña debe tener entre 5 y 20 caracteres'});
 	}
 	
-	if(nueva_password && nueva_password != nueva_password_rep){
+	if(nueva_password != nueva_password_rep){
 		return res.send({error: true, msg: 'Las contraseñas deben coincidir'});	
 	}
 	else if(nueva_password){
@@ -956,7 +956,7 @@ ContPg.prototype.updateProfile = function(req, res){
 	
 	
 	
-	var client = new pg.Client(connectionString);
+	client = new pg.Client(connectionString);
 	
 	client.connect(function(error){
 		if(error) return console.error('Error conectando', error);
@@ -1024,14 +1024,15 @@ ContPg.prototype.changeProfilePicture = function(req, res) {
         return res.send(sms);
 	}
 	var from = file.path; // Ruta origen
-	var to = path.join('./public/files/usuarios', req.user._id + '_-_-_-_' + file.name); // Destino temporal
-	
+	var to = path.join('./public/files/usuarios', req.user._id + path.extname(file.name));
+	console.log(to);
 	fs.rename(from, to, function(err) {
 		     if(err) { 
 		        var msg = "Error subiendo tu archivo "+err;
 		        var type="error";
 		        sms.type = type;
 		        sms.msg = msg;
+		        console.error('error', err);
 		     } 
 		     else {
 		        var fileSize = file.size/1024;
@@ -1039,15 +1040,15 @@ ContPg.prototype.changeProfilePicture = function(req, res) {
 		        var type="success";
 		        sms.type = type;
 		        sms.msg = msg;
-		        sms.path = path.join('/files/usuarios', req.user._id + '_-_-_-_' + file.name);
+		        sms.path = path.join('/files/usuarios', req.user._id + path.extname(file.name));
 		        
-		        var client = new pg.Client(connectionString);
+		        client = new pg.Client(connectionString);
 		        
 		        client.connect(function(error){
 		        	if(error) return console.error('Error conectando ', error);
 		        	var user = req.user;
 		        	
-		        	user.profile.picture = path.join('/files/usuarios', req.user._id + '_-_-_-_' + file.name);
+		        	user.profile.picture = path.join('/files/usuarios', req.user._id + path.extname(file.name));
 		        	client.query("update usuarios set profile='" + JSON.stringify(user.profile) + "' where _id='" + user._id + "'", 
 		        	function(e, r){
 		        		client.end();
@@ -1068,7 +1069,7 @@ ContPg.prototype.changeProfilePicture = function(req, res) {
 
 ContPg.prototype.getEditLoc = function(req,res){
 	
-	var client = new pg.Client(connectionString);
+	client = new pg.Client(connectionString);
 	
 	client.connect(function(error){
 		
@@ -1096,7 +1097,7 @@ ContPg.prototype.postChangeLoc= function(req, res){
 	
 	console.log(wkt + " WKTTTTTTTTTTTTT");
 	
-	var clientCarto = new pg.Client(connectionStringCarto);
+	clientCarto = new pg.Client(connectionStringCarto);
 	clientCarto.connect(function(errCartoConnect){
 		if(errCartoConnect) {
 			return console.error('error fetching client from pool', errCartoConnect);
@@ -1149,7 +1150,7 @@ ContPg.prototype.changeImageGravatar = function(req, res){
 	
 	user.profile.picture = req.body.gravatar;
 	
-	var client = new pg.Client(connectionString);
+	client = new pg.Client(connectionString);
 	
 	client.connect(function(error){
 		if(error) return console.error('Error conectando', error);

@@ -66,12 +66,15 @@ module.exports = function(passport) {
         			done(error);
         		}
         		else {
-        			client.query("select * from usuarios where local ->> 'email' ='" + email + "'", 
-        			function(e, result){
+        			console.log("select * from usuarios where lower(local ->> 'email') = '" + email + "' or profile ->> 'username' = '" + email + "'");
+    				client.query("select * from usuarios where lower(local ->> 'email') = '" + email + "' or lower(profile ->> 'username') = '" + email + "'",
+    				function(e, result){
+    					
         				client.end();
         				if (e) {
-        					done(e);
+        					return done(e);
         				}
+        				console.log(result.rows);
         				if (result.rows.length == 0){
         					// Mostrar mensaje error
         					return done(null, false, req.flash('error', 'Usuario no encontrado.'));

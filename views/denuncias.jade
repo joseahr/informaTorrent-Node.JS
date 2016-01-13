@@ -33,7 +33,7 @@ mixin pagination(start, numPages, curr, base)
 				li
 					a(href='#{base}#{next}' aria-label="Siguiente")
 						span(aria-hidden="true" style={color:'#000'}) &raquo;				
-extends layout.jade
+extends layout_sin_cabecera.jade
 block content
 	.section.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
 		// Header Inicio Perfil +  Nombre Usuario
