@@ -595,9 +595,9 @@ ContPg.prototype.changeProfilePicture = function(req, res) {
 
 ContPg.prototype.getEditLoc = function(req,res){
 	
-	db.query(consultas.obtener_loc_preferida, req.user._id)
+	db.one(consultas.obtener_loc_preferida, req.user._id)
 		.then(function(location){
-			res.render('editarLoc.jade', {loc_pref: location[0].loc_pref});
+			res.render('editarLoc.jade', {loc_pref: location.loc_pref});
 		})
 		.catch(function(error){
 			res.status(500).send(error);
@@ -622,7 +622,7 @@ ContPg.prototype.postChangeLoc= function(req, res){
 			res.send({error: false, msg: 'Ubicación preferida cambiada correctamente'});
 		})
 		.catch(function(error){
-			res.status(500).send(error);
+			res.status(500).send({error: true , msg : error.toString()});
 		});
 	
 }

@@ -145,7 +145,7 @@ require('./app/controllers/sockets.js')(io, pg, path, mkdirp, exec, configUpload
 
 var contHome = require('./app/controllers/home.js'); // Página principal, manejo de mensajes
 var contPass_ = require('./app/controllers/passport_pg_cont.js'); // Iniciar sesión registrar...
-var contPass = new contPass_(passport, pg, bcrypt, async, crypto, nodemailer, contHome, validator, User);
+var contPass = new contPass_(passport, bcrypt, async, crypto, nodemailer, contHome, validator, User, db, queries);
 var contUpload_ = require('./app/controllers/uploadDenuncia.js') // Subir imágenes al rellenar la denuncia
 var contUpload = new contUpload_(io, crypto, fs, path,exec,mkdirp, configUploadImagenes);
 var contPg_ = require('./app/controllers/pg.js');

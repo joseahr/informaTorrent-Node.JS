@@ -183,7 +183,7 @@ function addInteraction(tipo) {
 				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); // Especificamos cabecera
 		
 				xhr.send(JSON.stringify({wkt: wkt, distancia: val})); // Enviamos petición
-		
+				
 				xhr.onload = function(){
 		
 				  var res = JSON.parse(xhr.responseText);
@@ -221,10 +221,10 @@ function addInteraction(tipo) {
 			
 				$('#distancia').change(function(event){
 					val = $('#distancia').val();
-					alert(val);
+					//alert(val);
 				});
 
-				alert($('#distancia').val());
+				//alert($('#distancia').val());
 
 			}
 

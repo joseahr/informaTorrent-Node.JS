@@ -108,6 +108,8 @@ module.exports = {
   		
 	  	eliminar_imagen_denuncia : "delete from imagenes where path=$1" ,	
 	  		
+	  	usuario_por_id : "select * from usuarios where _id = $1", 
+	  	
 	  	usuario_por_username : "select * from usuarios where profile ->> 'username' = $1",
 	  	
 	  	actualizar_info_usuario : "update usuarios set (password, profile) = " +
@@ -146,5 +148,27 @@ module.exports = {
 	  	actualizar_denuncia : "UPDATE denuncias SET (titulo, descripcion, the_geom) = "
 			+ "($1, $2, st_geomfromtext($3,4258))" +
 			" WHERE gid=$4" ,
+			
+		usuario_por_email : "select * from usuarios where local ->> 'email' = $1" ,
+		
+		usuario_por_email_o_username : "select * from usuarios where lower(local ->> 'email') = $1 or lower(profile ->> 'username') = $1",
+				
+		actualizar_local_usuario : "UPDATE usuarios SET local= $1 where _id = $2",
   		
+		usuario_por_password_reset_token : "select * from usuarios where " +
+    		"resetPasswordToken=$1 and " +
+    		"resetPasswordExpires > CURRENT_TIMESTAMP" ,
+    		
+    	perfil_otro_usuario : "select local, profile, st_as_geojson(location_pref) as location_pref, " +
+    		"distancia_aviso from usuarios where _id = $1 " , 
+    	
+    	actualizar_password_reset_token : "UPDATE usuarios SET (password,resetPasswordToken,resetPasswordExpires) " +
+        	"= ($1, '', '') WHERE _id = $2" , 
+        
+        set_token_1_hora : "update usuarios SET (resetPasswordToken, resetPasswordExpires) " +
+			"= ($1, CURRENT_TIMESTAMP + interval '1 hour') WHERE _id=$2" , 	
+		
+		deslincar_twitter : "UPDATE usuarios SET twitter = NULL WHERE _id = $1" , 
+		
+		deslincar_facebook : "UPDATE usuarios SET facebook = NULL WHERE _id = $1" ,  
 }

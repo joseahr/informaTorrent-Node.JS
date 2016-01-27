@@ -2,7 +2,8 @@
  * Controlador Passport
  */
 var passport = require('passport'); // Passport
-var pg; // Modelo de Usuario
+var db;
+var consultas;
 var bcrypt;
 var async;
 var crypto;
@@ -16,9 +17,10 @@ var client;
  * Constructor
  */
 
-function Passport(passport_, pg_, bcrypt_, async_, crypto_, nodemailer_, contHome_, validator_, User_){
+function Passport(passport_, bcrypt_, async_, crypto_, nodemailer_, contHome_, validator_, User_, db_, q_){
 	//passport = passport_;
-	pg = pg_;
+	db = db_;
+	consultas = q_;
 	bcrypt = bcrypt_;
 	async = async_;
 	crypto = crypto_;
@@ -47,67 +49,31 @@ Passport.prototype.postChangePass = function(req, res){
 		req.flash('error', 'Debe estar loggeado');
 		return res.redirect('/app#iniciar')
 	}
-	async.waterfall([function(done){
-		var password_original = req.body.password_original;
-		var password_nueva = req.body.password_nueva;
-		var password_nueva_repeat = req.body.password_nueva_repeat;
-		
-		client = new pg.Client(connectionString);
-		client.connect(function(e){
-			if (e) console.error('error conectando a la bddd', e);
-			else {
-				client.query("select * from usuarios where local ->> 'email' ='" + req.user.local.email + "'",
-				function(err, result){
-					if(err) {
-						client.end();
-						console.error('error consultando', err);
-					}
-					else {
-						if (result.rows.length == 0) {
-							// Mostrar mensaje de error, No debe pasar
-						}
-						else {
-							var user = result.rows[0];
-							
-							if(!User.validPassword(password_original, user.password)){ 
-								client.end();
-				    			req.flash('error', 'Contraseña errónea');
-				    			done(new Error());
-				    			
-				    		}
-				    		else if (req.body.password_nueva != req.body.password_nueva_repeat){
-				    			client.end();
-						          req.flash('error', 'Las contraseñas deben coincidir');
-						          done(new Error());
-					        }
-				    		else{
-				    			user.local.password = User.generateHash(password_nueva);
-				    			
-				    			client.query("UPDATE usuarios SET local='" + JSON.stringify(user.local) + "' " +
-				    			"where local ->> 'email' ='" + user.local.email + "'", 
-				    			function(error, result){
-				    				client.end();
-				    				if (!error){
-				                        req.flash('success', 'Contraseña actualizada correctamente');
-				                        done(null, '');
-				    				}
-				    				done(new Error());
-				    			});
-				    			
-				    		}					
-							
-						}
-					}
-				});
-			}
+	
+	if (req.body.password_nueva != req.body.password_nueva_repeat){
+		req.flash('error', 'Los campos "contraseña" y "repetir contraseña" deben tener el mismo valor.');
+		return res.redirect('back');
+	}
+	
+	var password_original = req.body.password_original;
+	var password_nueva = req.body.password_nueva;
+	var password_nueva_repeat = req.body.password_nueva_repeat;
+	
+	db.one(consultas.usuario_por_email, req.user.local.email)
+		.then(function(user){
+			console.log('password_original: ' + password_original);
+			console.log('password_original_verdadera: ' + user.password);
+			if(!User.validPassword(password_original, user.password))
+				throw new Error('La contraseña introducida no coincide con la original');
+			user.local.password = User.generateHash(password_nueva);
+			return db.none(consultas.actualizar_local_usuario, [JSON.stringify(user.local), user._id]);
+		})
+		.then(function(){
+			req.flash('success', 'La contraseña se actualizó correctamente');
+		})
+		.catch(function(error){
+			res.status(500).send(error);
 		});
-	}, function(ok, done){
-		res.redirect('/app/perfil');
-		done(null);
-	}],
-	function(err){
-		res.redirect('back');
-	});
 };
 
 
@@ -115,119 +81,71 @@ Passport.prototype.postChangePass = function(req, res){
  * POST reset/:token
  */
 Passport.prototype.postResetToken = function(req, res) {
-	  async.waterfall([
-	    function(done) {
-	    	
-	    	client = new pg.Client(connectionString);
-	    	client.connect(function(error){
-	    		if(error) console.error('error conectando a la bdd', error);
-	    		else {
-	    			client.query("select * from usuarios where " +
-	    			"resetPasswordToken='" + req.params.token + "' and " +
-	    			"resetPasswordExpires > CURRENT_TIMESTAMP",
-	    			function(e, result){
-	    				if (e) {
-	    					client.end();
-	    					console.error('error consultando', e);
-	    				}
-	    				else {
-	    					if (result.rows.length == 0){
-	    						// Mensaje de error
-	    						client.end();
-	    				        req.flash('error', 'La URL solicitada no es válida o ha expirado.');
-	    				        var Error = new Error('0');
-	    				        done(Error);
-	    					}
-	    					else {
-	    						var user = result.rows[0];
-	    				        if (req.body.password != req.body.passwordRepeat){
-	    				        	client.end();
-	    					        req.flash('error', 'Las contraseñas deben coincidir.');
-	    					        var Error = new Error('0');
-	  	    				        done(Error);
-	    				        }
-	    				        
-	    				        user.password = User.generateHash(req.body.password);
-	    				        user.resetPasswordToken = undefined;
-	    				        user.resetPasswordExpires = undefined;
-	    				        
-	    				        client.query("UPDATE usuarios SET (password,resetPasswordToken,resetPasswordExpires) " +
-	    				        "= ('" + User.generateHash(req.body.password) + "', NULL, NULL) " +
-	    				        "WHERE _id = '" + user._id +"'",
-	    				        function(error, result1){
-				        			client.end();
-				        			if (error) console.error('error consultando', error);
-				        			else {
-				        				req.logIn(user, function(err) {
-				        					done(error, user);
-				        			    });
-				        			}
-	    				        	
-	    				        });
-	    				        
-	    						
-	    					}
-	    				}
-	    			});
-	    		}
-	    	});
-	    },
-	    function(user, done) {
-	      var smtpTransport = nodemailer.createTransport('SMTP', {
-	        service: 'gmail',
-	        auth: {
-	          user: 'joherro123',
-	          pass: '321:Hermo'
-	        }
-	      });
-	      var mailOptions = {
-	        to: user.local.email,
-	        from: 'joherro123@gmail.com',
-	        subject: 'informaTorrent! - Contraseña Actualizada',
-	        text: 'Querido usuario,\n\n' +
-	          'Este mensaje se ha generado automáticamente para avisarte de que la contraseña de la cuenta vinculada al e-mail ' + user.local.email + ' ha sido actualizada satisfactoriamente.\n Gracias por usar nuestra aplicación!'
-	      };
-	      smtpTransport.sendMail(mailOptions, function(err) {
-	        req.flash('success', '¡Genial! Tu contraseña se actualizó correctamente.');
-	        res.redirect('/app');
-	        done(err);
-	      });
-	    }
-	  ], 
-	  function(err) {
-		  if (err)
-			  return res.redirect('back');
+	
+    if (req.body.password != req.body.passwordRepeat){
+        req.flash('error', 'Las contraseñas deben coincidir.');
+        return res.redirect('back');
+    }
+	
+    var user_;
+	db.oneOrNone(consultas.usuario_por_password_reset_token, req.params.token)
+		.then(function(user){
+			user_ = user;
+			if(!user)
+				throw new Error('La URL solicitada no es válida o ha expirado.');
+			db.none(actualizar_password_reset_token, [User.generateHash(req.body.password), user._id]);
+		})
+		.then(function(){
+			req.flash('Contraseña actualizada correctamente.');
+			req.logIn(user_, function(err) {
+				enviar_email(user_.local.email)
+		    });
+		})
+		.catch(function(error){
+			res.status(500).send(error);
+		});
+	
+		var enviar_email = function(email){
+		
+			var smtpTransport = nodemailer.createTransport('SMTP', {
+				service: 'gmail',
+				auth: {
+					user: 'joherro123',
+					pass: '321:Hermo'
+				}
+			});
+			var mailOptions = {
+				to: email,
+				from: 'joherro123@gmail.com',
+				subject: 'informaTorrent! - Contraseña Actualizada',
+				text: 'Querido usuario,\n\n' +
+					'Este mensaje se ha generado automáticamente para avisarte de que la contraseña de la cuenta vinculada al e-mail ' + user.local.email + ' ha sido actualizada satisfactoriamente.\n Gracias por usar nuestra aplicación!'
+			};
+			smtpTransport.sendMail(mailOptions, function(err) {
+				return res.redirect('/app');
+			});
+		}
+};
 
-	  });
-}
 /*
  * GET reset/:token
  */
 Passport.prototype.getResetToken = function(req, res) {
 	
-	client = new pg.Client(connectionString);
-	client.connect(function(error){
-		if(error) console.error('error conectando a la bdd', error);
-		else {
-			client.query("select * from usuarios where " +
-			"resetPasswordToken='" + req.params.token + "' and " +
-			"resetPasswordExpires > CURRENT_TIMESTAMP",
-			function(e, result){
-				client.end();
-				if (error) {
-					return console.error('error consultando', error)
-				}
-				if (result.rows.length == 0){
-					req.flash('error', 'La URL solicitada no es válida o ha expirado.');
-				    return res.redirect('/app#olvidaste')
-				}
-				else {
-					res.render('cambiarPass.jade', {token: req.params.token, usuario_cambiar: result.rows[0]});
-				}
-			});
-		}
-	});
-}
+	db.oneOrNone(consultas.usuario_por_password_reset_token, req.params.token)
+		.then(function(user){
+			if (!user){
+				req.flash('error', 'La URL solicitada no es válida o ha expirado.');
+			    return res.redirect('/app#olvidaste')
+			}
+			else {
+				res.render('cambiarPass.jade', {token: req.params.token, usuario_cambiar: user});
+			}
+		})
+		.catch(function(error){
+			res.status(500).send(error);
+		});
+};
 
 /*
  * GET /app/forgot
@@ -240,75 +158,52 @@ Passport.prototype.getForgot = function(req, res){
  * POST Forgot -- Envía un mail para cambiar contraseña
  */
 Passport.prototype.postForgot = function(req, res, next) {
-  async.waterfall([
-    function(done) {
-      crypto.randomBytes(20, function(err, buf) {
+	
+    crypto.randomBytes(20, function(err, buf) {
         var token = buf.toString('hex');
-        done(err, token);
-      });
-    },
-    function(token, done) {
-    	console.log(req.body.email);
-    	
-    	client = new pg.Client(connectionString);
-    	client.connect(function(e){
-			if (e) done(e);
-			else {
-				client.query("select * from usuarios where lower(local ->> 'email') ='" + req.body.email.toLowerCase() + "' or lower(profile ->> 'username') = '" + req.body.email.toLowerCase() + "'",
-				function(err, result){
-					if(err) {
-						client.end();
-						console.error('error consultando', err);
-					}
-					else {
-						if (result.rows.length == 0) {
-							client.end();
-					        req.flash('error', 'No existe ninguna cuenta con el username o e-mail ' + req.body.email);
-					        done('');
-						}
-						else {
-							var user = result.rows[0];
-							client.query("update usuarios SET (resetPasswordToken, resetPasswordExpires) " +
-									"= ('" + token + "', CURRENT_TIMESTAMP + interval '1 hour') " +
-									"WHERE _id='" + user._id + "'", 
-							function(error, result1){
-								client.end();
-								done(error, token, user);
-							});
-						}
-					}
-				});
-			}
-    	});
-    },
-    function(token, user, done) {
-      if(!user) return res.redirect('/app#olvidaste');
-      var smtpTransport = nodemailer.createTransport('SMTP', {
-        service: 'Gmail',
-        auth: {
-          user: 'joherro123@gmail.com',
-          pass: '321:Hermo'
-        }
-      });
-      var mailOptions = {
-        to: user.local.email,
-        from: 'joherro123@gmail.com',
-        subject: 'informaTorrent! - Recupera tu contraseña',
-        text: 'Si has recibido este correo es porque usted (u otra persona) ha olvidado sus credenciales.\n\n' +
-          'Si desea completar el proceso para cambiar su contraseña, por favor, diríjase al siguiente enlace:\n\n' +
-          'http://' + req.headers.host + '/app/reset/' + token + '\n\n' +
-          'Si por el contrario usted no solicitó esta acción, ignore el mensaje y su contraseña seguirá siendo la misma.\n'
-      };
-      smtpTransport.sendMail(mailOptions, function(err) {
-        req.flash('info', 'Se ha enviado un e-mail a ' + user.local.email + ' con las instrucciones convenientes.');
-        done(err, 'done');
-      });
-    }
-  ], function(err) {
-    if (err) return next(err);
-    return res.redirect('/app#olvidaste');
-  });
-}
+        var user_;
+        db.oneOrNone(consultas.usuario_por_email_o_username, req.body.email.toLowerCase())
+        	.then(function(user){
+        		if(!user) {
+        			req.flash('error', 'No existe ninguna cuenta con el username o e-mail ' + req.body.email);
+        			return res.redirect('back');
+        		}
+        		user_ = user;
+        		db.none(consultas.set_token_1_hora , [token, user._id]);
+        		
+        	})
+        	.then(function(){
+        		enviar_email(token, user_.local.email);
+        	})
+        	.catch(function(error){
+        		res.status(500).send(error);
+        	});
+        
+        var enviar_email = function(token, email){
+        	var smtpTransport = nodemailer.createTransport('SMTP', {
+                service: 'Gmail',
+                auth: {
+                  user: 'joherro123@gmail.com',
+                  pass: '321:Hermo'
+                }
+              });
+              var mailOptions = {
+                to: email,
+                from: 'joherro123@gmail.com',
+                subject: 'informaTorrent! - Recupera tu contraseña',
+                text: 'Si has recibido este correo es porque usted (u otra persona) ha olvidado sus credenciales.\n\n' +
+                  'Si desea completar el proceso para cambiar su contraseña, por favor, diríjase al siguiente enlace:\n\n' +
+                  'http://' + req.headers.host + '/app/reset/' + token + '\n\n' +
+                  'Si por el contrario usted no solicitó esta acción, ignore el mensaje y su contraseña seguirá siendo la misma.\n'
+              };
+              smtpTransport.sendMail(mailOptions, function(err) {
+                req.flash('info', 'Se ha enviado un e-mail a ' + email + ' con las instrucciones convenientes.');
+                res.redirect('/app');
+              });
+        }      
+    });
+
+};
 
 /*
  * Desconectar - Deslinkear cuenta TW Asociada
@@ -316,45 +211,31 @@ Passport.prototype.postForgot = function(req, res, next) {
 Passport.prototype.unlinkTW = function(req, res) {
     var user           = req.user;
     
-    client = new pg.Client(connectionString);
-    client.connect(function(error){
-    	if (error) return console.error('error conectando la bdd', error);
-    	else {
-    		client.query("UPDATE usuarios SET twitter = NULL " + 
-    		"WHERE _id ='" + user._id + "'", 
-    		function(e, result){
-    			client.end();
-    			if (e) return console.error('error consultando', e);
-    			else {
-    				res.redirect('/app/perfil');
-    			}
-    		});
-    	}
-    });
-}
+    db.none(consultas.deslincar_twitter, user._id)
+    	.then(function(){
+    		req.flash('success', 'Cuenta de Twitter deslinqueada correctamente.');
+    		res.redirect('/app/perfil');
+    	})
+    	.catch(function(error){
+    		res.status(500).send(error);
+    	});
+};
 
 
 /*
  * Desconectar - Deslinkear cuenta FB Asociada
  */
 Passport.prototype.unlinkFB = function(req, res) {
-    var user            = req.user;
+    var user           = req.user;
     
-    client = new pg.Client(connectionString);
-    client.connect(function(error){
-    	if (error) return console.error('error conectando la bdd', error);
-    	else {
-    		client.query("UPDATE usuarios SET facebook = NULL " + 
-    		"WHERE _id ='" + user._id + "'", 
-    		function(e, result){
-    			client.end();
-    			if (e) return console.error('error consultando', e);
-    			else {
-    				res.redirect('/app/perfil');
-    			}
-    		});
-    	}
-    });
+    db.none(consultas.deslincar_facebook, user._id)
+    	.then(function(){
+    		req.flash('success', 'Cuenta de Facebook deslinqueada correctamente.');
+    		res.redirect('/app/perfil');
+    	})
+    	.catch(function(error){
+    		res.status(500).send(error);
+    	});
 }
 
 /*
@@ -478,30 +359,17 @@ Passport.prototype.logout = function(req, res) {
 Passport.prototype.getUserProfile = function(req, res){
 	// Perfil que será visible para los demás usuarios
 	// solo podemos acceder si estamos loggeados
-	if(!req.user) res.redirect('/app');
 	
-	client = new pg.Client(connectionString);
-    client.connect(function(error){
-    	if (error) return console.error('error conectando la bdd', error);
-    	else {
-    		client.query("select * from usuarios where _id='" + req.params.id_usuario + "'", 
-    		function(e, result){
-    			client.end();
-    			if (e) return console.error('error consultando', e);
-    			else {
-    				if (result.rows.length == 0)
-    					res.send(404);
-    				else {
-    					var user = result.rows[0];
-    					
-    					res.render('perfil_otro.jade', {user_otro: result.rows[0]});
-    				}
-    			}
-    		});
-    	}
-    });
+	db.oneOrNone(consultas.perfil_otro_usuario, req.params.id_usuario)
+		.then(function(usuario){
+			if(!usuario) throw new Error('No existe el usuario con id = ' + req.params.id_usuario);
+			res.render('perfil_otro.jade', {user_otro: usuario});
+		})
+		.catch(function(error){
+			res.status(500).send(error);
+		});
 	
-}
+};
 
 /*
  * Confirmar Usuario Ruta: /app/confirmar/:id_usuario
@@ -509,55 +377,24 @@ Passport.prototype.getUserProfile = function(req, res){
 
 Passport.prototype.confirmUser = function(req, res){
 	var iduser = req.params.idUsuario;
-	var msg = '';
-	
-	client = new pg.Client(connectionString);
-    client.connect(function(error){
-    	if (error) return console.error('error conectando la bdd', error);
-    	else {
-    		client.query("select * from usuarios where _id='" + iduser + "'", 
-    		function(e, result){
-    			if (e) {
-    				client.end();
-    				return console.error('error consultando1', e);
-    			}
-    			else {
-    				if (result.rows.length == 0){
-    					client.end();
-    					res.send(404);
-    				}
-    				else {
-    					var user = result.rows[0];
-    					
-    					if(user.local.valid == false){
-    						user.local.valid = true;
-    						
-    						client.query("update usuarios SET local = '" + 
-    						JSON.stringify(user.local) + "' where _id='" + user._id + "'", 
-    						function(e_, res_){
-    							client.end();
-    							if (e_) console.error('error consultando2', e_);
-    							else {
-    								req.logIn(user, function(error){
-    									console.log(error + ' error autenticando')
-    									req.flash('success', 'Tu cuenta se ha confirmado correctamente.');
-    									return res.redirect('/app/perfil');
-    								});
-    							}
-    						});
-    						
-    					}
-    					else{
-    						client.end();
-    						req.flash('error', 'Error confirmando tu cuenta, ya está activada.'); 
-    						return res.redirect('/app');
-    					}
-    					
-    				}
-    			}
-    		});
-    	}
-    });
+	var user_;
+	db.oneOrNone(consultas.usuario_por_id , iduser)
+		.then(function(user){
+			if(user.local.valid) 
+				throw new Error('El usuario ya es válido.');
+			user.local.valid = true;
+			user_ = user;
+			return db.none(consultas.actualizar_local_usuario, [JSON.stringify(user.local) , user._id]);
+		})
+		.then(function(){
+			req.logIn(user_, function(error){
+				req.flash('success', 'Tu cuenta se ha confirmado correctamente.');
+				return res.redirect('/app/perfil');
+			});
+		})
+		.catch(function(error){
+			res.status(500).send(error);
+		});
 };
 
 module.exports = Passport;
