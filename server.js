@@ -11,6 +11,15 @@ var port     = process.env.PORT || 3000;
 var passport = require('passport');
 var flash    = require('connect-flash');
 
+var promiseLib = require('bluebird');
+var configDB = require('./config/database.js');
+var pgp = require('pg-promise')({
+	promiseLib : promiseLib
+});
+var db = pgp(configDB.denuncias);
+var dbCarto = pgp(configDB.carto);
+var queries = require('./app/controllers/queries.js');
+
 var pg = require('pg');
 
 var fs = require('fs');
@@ -18,7 +27,6 @@ var path = require('path');
 
 var cookieParser = require('cookie-parser');
 var session      = require('express-session');
-var configDB = require('./config/database.js');
 
 
 
@@ -33,10 +41,12 @@ require('./config/config_passport_pg')(passport); // pass passport for configura
 
 
 // Express
+var bodyParser = require('body-parser');
+
 app.use(morgan('dev')); // Log cada request en la consola
 app.use(cookieParser()); // Leer Coockies
-app.use(express.json());
-app.use(express.urlencoded());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'jade'); // Jade
 app.set('port', process.env.PORT || 3000);
@@ -59,79 +69,55 @@ var IP = os.networkInterfaces()['ens33'][0]['address'];
 //var IP = 'http://localhost:3000/'
 
 // Ruta middleware
-app.use(function(req, res, next){
+var client;
+function middle_datos (req, res, next){
 	
-	res.locals({ip: IP});
-	
-	var client = new pg.Client('postgres://jose:jose@localhost/denuncias');
+	var id_usuario = req.user ? req.user._id : 'undefined';
 
-	client.connect(function(error){
-		if (error) console.error('error conectando bdd', error);
-		else {
-			client.query("select t1.cnt as numdenun,t2.cnt as numdenunhoy " + 
-					"from (select count(*) as cnt from denuncias) as t1 " + 
-					"cross join (select count(*) as cnt from denuncias " +
-					"where fecha >= to_char(current_timestamp, 'YYYY-MM-DD')::date) as t2"
-			, function(e, result){
-				if (e) console.error('error consultando', e);
-				else {
-					res.locals({numdenun: result.rows[0].numdenun});
-					res.locals({numdenunhoy: result.rows[0].numdenunhoy});
-					
-					res.locals({message: {
-						error: req.flash('error'),
-						success: req.flash('success'),
-						info : req.flash('info')
-						},
-						title:'informaTorrent!',
-						subtitle: 'La app con la que podrás contribuir a la mejora de Torrent.',
-					});
-					
-					if(req.user){
-					  var getUserNotifications = "select n.*, to_char(n.fecha::timestamp,'DD TMMonth YYYY HH24:MI:SS') as fecha, u.profile as profile_from from notificaciones n, usuarios u where n.id_usuario_to='" + req.user._id + "' and n.id_usuario_from=u._id order by n.fecha desc";
-					  var getUserActions = "select n.*, to_char(n.fecha::timestamp,'DD TMMonth YYYY HH24:MI:SS') as fecha, u.profile as profile_to from notificaciones n, usuarios u where n.id_usuario_from='" + req.user._id + "' and n.id_usuario_to=u._id order by n.fecha desc";					  
-					  
-					  
-					  // Obtener notificaciones
-					  client.query(getUserNotifications, function(err2, noti){
-						  //client.end();
-						  if(err2) {
-							  client.end();
-							  return console.error('error consultando notificaciones', err2);
-						  }
-						  
-						  
-						  client.query(getUserActions, function(e, r){
-							  if(e){
-								  client.end();
-								  return console.error('error consultando acciones', e);
-							  }
-							  
-							  res.locals({
-								  titulo: 'Informa Torrent',
-								  subtitulo: 'La app con la que podrás contribuir a la mejora de Torrent',
-								  owner: 'Ajuntament de Torrent'  	
-							  });
-							  res.locals({misNotificaciones: noti.rows});
-							  res.locals({misAcciones: r.rows});
-							  res.locals({id_usuario: req.user._id});
-							  res.locals({user: req.user});
-							  next();
-							  
-						  });
-						  
-					  });
-					}
-					else {
-						res.locals({id_usuario: 'undefined'});
-						next();
-					}
-				}
-			});
-		}
-	});
+	var variables_locales = {
+		ip: IP,
+		message: {
+			error: req.flash('error'),
+			success: req.flash('success'),
+			info : req.flash('info'),
+		},
+		title: 'Informa Torrent',
+		subtitle: 'La app con la que podrás contribuir a la mejora de Torrent.',
+		user: req.user, 
+		id_usuario: id_usuario
+	};
 	
-});
+	db.query(queries.obtener_datos_app) // consultamos los datos de la app
+		.then (function(datos_app){
+			
+			variables_locales.datos_app = datos_app[0]; // obtenemos datos app
+			
+			if (! req.user) throw new Error('no estás loggeado'); // Si no hay usuario conectado --> Continuamos adelante
+											   // ya que no consultamos notificaciones ni acciones	
+			
+			return db.query(queries.obtener_notificaciones, req.user._id); // consultamos notificaciones
+			
+		})
+		.then(function(notificaciones){
+			// obtenemos notificaciones
+			variables_locales.mis_notificaciones = notificaciones; // ls pasamos al objeto res.locals
+			
+			return db.query(queries.obtener_acciones, req.user._id); // consultamos acciones
+			
+		})
+		.then (function(acciones){
+			// obtenemos acciones
+			variables_locales.mis_acciones = acciones;
+			res.locals = variables_locales;
+			next(); // siguiente ruta o middleware
+		})
+		.catch(function (error) {
+			console.log('Error middleware ' + error); 
+			res.locals = variables_locales;
+			next(); // siguiente ruta o middleware
+		});
+	
+};
 
 
 
@@ -163,7 +149,7 @@ var contPass = new contPass_(passport, pg, bcrypt, async, crypto, nodemailer, co
 var contUpload_ = require('./app/controllers/uploadDenuncia.js') // Subir imágenes al rellenar la denuncia
 var contUpload = new contUpload_(io, crypto, fs, path,exec,mkdirp, configUploadImagenes);
 var contPg_ = require('./app/controllers/pg.js');
-var contPg = new contPg_(fs, path, dir, exec, pg, User, validator, io); // Guardar, editar, eliminar denuncia, coments, imgs...
+var contPg = new contPg_(fs, path, dir, exec, User, validator, io, db, dbCarto, queries); // Guardar, editar, eliminar denuncia, coments, imgs...
 
 /*
  * Geoportal, lo servimos como archivos estáticos
@@ -218,32 +204,36 @@ app.get('/servicios', function(req, res){
 });
 
 app.get('/app/getInfoTabla', function(req, res){
-	var nombre_tabla = req.query.tabla;
+	var nombre_tabla = req.query.tabla || '';
 	console.log(nombre_tabla);
 	if (nombre_tabla == 'denuncias')
-		var client = new pg.Client('postgres://jose:jose@localhost/denuncias');
+		db.query(queries.obtener_info_tabla_geoportal, nombre_tabla)
+			.then(function(info){
+				res.send({cols: info});
+			})
+			.catch(function(error){
+				console.log('error tablas ' + error);
+				res.send({cols: []});
+			});
 	else
-		var client = new pg.Client('postgres://jose:jose@localhost/carto_torrent');
-	client.connect(function(error){
-		if(error) return console.error('Error conectando', error);
-		
-		client.query("select column_name as nombre, data_type as tipo from information_schema.columns where column_name <> 'geom' and table_name= '" + nombre_tabla + "'",
-		function(e, r){
-			client.end();
-			return res.send({cols: r.rows});
-		});
-		
-	});
+		dbCarto.query(queries.obtener_info_tabla_geoportal, nombre_tabla)
+			.then(function(info){
+				res.send({cols: info});
+			})
+			.catch(function(error){
+				console.log('error tablas ' + error);
+				res.send({cols: []});
+			});
 });
 
-app.get('/app', contHome.getAppHomePage); // Página de Inicio de la aplicación
+app.get('/app', middle_datos, contHome.getAppHomePage); // Página de Inicio de la aplicación
 
-app.get('/app/perfil', isLoggedIn, contPg.getProfile); // Perfil de usuario
-app.get('/app/usuarios/:id_usuario', contPass.getUserProfile);
+app.get('/app/perfil', middle_datos, isLoggedIn, contPg.getProfile); // Perfil de usuario
+app.get('/app/usuarios/:id_usuario', middle_datos, contPass.getUserProfile);
 app.get('/app/logout', contPass.logout); // Logout
-app.get('/app/login', contPass.getLogin); // Página de Login (modal)
+app.get('/app/login', middle_datos, contPass.getLogin); // Página de Login (modal)
 app.post('/app/login', contPass.postLogin); // POST Login
-app.get('/app/signup', contPass.getSignUp); // Página de Registro (modal)
+app.get('/app/signup', middle_datos, contPass.getSignUp); // Página de Registro (modal)
 app.post('/app/signup', contPass.postSignUp); // POST SignUP
 
 app.get('/app/auth/facebook', contPass.getFBAuth); // Inicio de Sesión con FB
@@ -265,32 +255,32 @@ app.get('/app/unlink/facebook', isLoggedIn, contPass.unlinkFB); // Unlink Cuenta
 app.get('/app/unlink/twitter', isLoggedIn, contPass.unlinkTW); // Unlink cuenta TW
 
 app.post('/app/forgot', contPass.postForgot); // Envía un mail para elegir nueva contraseña
-app.post('/app/reset/:token', contPass.postResetToken); // Cambia la contraseña del usuario que la haya olvidado
+app.post('/app/reset/:token', middle_datos, contPass.postResetToken); // Cambia la contraseña del usuario que la haya olvidado
 
-app.get('/app/reset/:token', contPass.getResetToken); // Formulario para cambiar la contraseña de un usuario qu la haya olvidado
-app.get('/app/forgot', contPass.getForgot); // Formulario para recuperar la contraseña
+app.get('/app/reset/:token', middle_datos, contPass.getResetToken); // Formulario para cambiar la contraseña de un usuario qu la haya olvidado
+app.get('/app/forgot', middle_datos, contPass.getForgot); // Formulario para recuperar la contraseña
 
-app.get('/app/changePass', isLoggedIn, contPass.getChangePass);
+app.get('/app/changePass', middle_datos, isLoggedIn, contPass.getChangePass);
 app.post('/app/changePass', isLoggedIn, contPass.postChangePass); // Cambiar contraseña
 
 app.post('/app/fileUpload/:tempDirID', isLoggedIn, contUpload.postPicture); // Subir imagen de una denuncia a una carpeta temporal Random
 app.get('/app/filelist/:tempDirID', isLoggedIn, contUpload.getPicturesList); // Devuelve la lista de imágenes en la carpeta temporal
 app.get('/app/deleteFile/:tempDirID/:fileName', isLoggedIn, contUpload.getDeletePicture); // Elimina una imagen de la carpeta temporal
-app.get('/app/denuncias/nueva', isLoggedIn,contUpload.indexNueva);
+app.get('/app/denuncias/nueva', middle_datos, isLoggedIn,contUpload.indexNueva);
 
 app.post('/app/denuncia/:id_denuncia/addComentario', isLoggedIn, contPg.addComentario);
 app.post('/app/denuncias/nueva/save', isLoggedIn, contPg.saveDenuncia);
 
 app.post('/app/denuncias/editar', isLoggedIn, contPg.updateDenuncia);
 
-app.get('/app/denuncias', isLoggedIn, contPg.getDenunciasPage);//Ruta que nos mostrará las denuncias ordenadas por fecha
+app.get('/app/denuncias', middle_datos, isLoggedIn, contPg.getDenunciasPage);//Ruta que nos mostrará las denuncias ordenadas por fecha
 
-app.get('/app/denuncia/:id_denuncia', contPg.getDenunciaPage);// Ruta que nos muestra la informacion de una denuncia
+app.get('/app/denuncia/:id_denuncia', middle_datos, contPg.getDenunciaPage);// Ruta que nos muestra la informacion de una denuncia
 
-app.get('/app/confirmar/:idUsuario', contPass.confirmUser);
+app.get('/app/confirmar/:idUsuario', middle_datos, contPass.confirmUser);
 
 app.get('/app/eliminar', isLoggedIn, contPg.deleteDenuncia);
-app.get('/app/editar', isLoggedIn, contPg.getEdit);
+app.get('/app/editar', middle_datos, isLoggedIn, contPg.getEdit);
 
 app.get('/app/getImagenesDenuncia', contPg.getImagenesDenuncia);
 
@@ -299,27 +289,27 @@ app.get('/app/deleteImagen', contPg.deleteImagenDenuncia);
 
 app.post('/app/perfil/editar', isLoggedIn, contPg.updateProfile);
 
-app.get('/app/perfil/editar', isLoggedIn, contPg.getUpdateProfilePage);
+app.get('/app/perfil/editar', middle_datos, isLoggedIn, contPg.getUpdateProfilePage);
 
 app.post('/app/perfil/cambiar_imagen', isLoggedIn, contPg.changeProfilePicture);
 
-app.get('/app/perfil/editar_loc', isLoggedIn, contPg.getEditLoc);
+app.get('/app/perfil/editar_loc', middle_datos, isLoggedIn, contPg.getEditLoc);
 
 app.post('/app/perfil/editar_loc', isLoggedIn, contPg.postChangeLoc);
 
 app.post('/app/perfil/gravatar', isLoggedIn, contPg.changeImageGravatar);
 
-app.get('/app/visor', contPg.getVisorPage);
+app.get('/app/visor', middle_datos, contPg.getVisorPage);
 
 /*
  * Middlewares de Error y ruta *
  */
 
-app.get('*', function(req, res, next) {
-	console.log('ruta no encontrada');
-	req.flash('error', 'Ruta no encontrada');
-	res.redirect('/app');
-});
+//app.get('*', function(req, res, next) {
+//	console.log('ruta no encontrada');
+//	req.flash('error', 'Ruta no encontrada');
+//	res.redirect('/app');
+//});
 
 function isLoggedIn(req, res, next) {
     if (req.isAuthenticated()){

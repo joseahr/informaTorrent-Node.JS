@@ -4,6 +4,8 @@
 
 global.clients = {}; // Un cliente puede tener varios sockets abiertos
 
+var client;
+
 module.exports = function(io, pg, path, mkdirp, exec, config, validator){
 	
 	io.of('/app/visor').on('connection', function(socket){
@@ -16,7 +18,7 @@ module.exports = function(io, pg, path, mkdirp, exec, config, validator){
 		
 		socket.on('noti_vista', function(data){
 			// data --> id de la notificación
-			var client = new pg.Client('postgres://jose:jose@localhost/denuncias');
+			client = new pg.Client('postgres://jose:jose@localhost/denuncias');
 			
 			client.connect(function(error){
 				if(error) return console.error('error conectando', error);
@@ -84,7 +86,7 @@ module.exports = function(io, pg, path, mkdirp, exec, config, validator){
 			// Guardar las notificaciones en postgres y Emitir el evento a los usuarios involucrados
 			// en caso de que estén conectados
 			var id_usuario_from = this.id_usuario;
-			var client = new pg.Client('postgres://jose:jose@localhost/denuncias');
+			client = new pg.Client('postgres://jose:jose@localhost/denuncias');
 						
 			client.connect(function(error){
 				if(error) console.error('Error conectando a la bdd', error);
@@ -162,7 +164,7 @@ module.exports = function(io, pg, path, mkdirp, exec, config, validator){
 			console.log('denuncia comentada ' + denuncia.gid);
 			
 			var id_usuario_from = this.id_usuario;
-			var client = new pg.Client('postgres://jose:jose@localhost/denuncias');
+			client = new pg.Client('postgres://jose:jose@localhost/denuncias');
 			
 			client.connect(function(error){
 				

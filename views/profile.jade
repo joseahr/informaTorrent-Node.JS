@@ -39,11 +39,11 @@ block content
 													i.fa.fa-inbox
 													|  Notificaciones
 												div(style="position: absolute;top: 30%;left:1%;")
-													span.badge(style="background:#5BC0DE;float:left").noti_tot #{misNotificaciones.length}
+													span.badge(style="background:#5BC0DE;float:left").noti_tot #{mis_notificaciones.length}
 													span.badge(style="background:#D9534F;float:right").noti_up #{nuevas}
 									#notificaciones.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingOne')
 										.panel-body(style='text-align: center;height: 60%;overflow-y:scroll;')
-											each noti in misNotificaciones
+											each noti in mis_notificaciones
 												.row(style={margin: '0 5 10 5px', background: 'rgba(0,50,187,0.1)', padding: '5%'} id_noti="#{noti.id_noti}" vista="#{noti.vista}").noti
 													if (noti.vista == false)
 														.col-lg-12.btn.btn-danger(style="margin-bottom: 10px" id_noti_panel="#{noti.id_noti}") NUEVA
@@ -172,9 +172,9 @@ block content
 									#acciones.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingThree')
 										.panel-body(style='text-align: center;height: 60%;overflow-y:scroll;')
 											p.lead ¡Has realizado 
-												span#has_realizado.lead #{misAcciones.length} 
+												span#has_realizado.lead #{mis_acciones.length} 
 												| acciones!
-											each noti in misAcciones
+											each noti in mis_acciones
 												.row(style={margin: '0 5 10 5px', background: 'rgba(0,50,187,0.1)', padding: '5%'})
 													.col-xs-3
 														a(target="_blank" href="/app/usuarios/#{noti.id_usuario_to}")

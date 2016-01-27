@@ -65,51 +65,43 @@ block content
 		// Contenedor del contenido del perfil
 		.container
 			.row#denuncias
-				each denuncia in denuncias
-					hr(style={'margin': '35px 0px 0px 0px'})
-					div(style={'background':'rgba(255,255,255,0.3)', 'padding-top':'20px', 'padding-bottom':'20px'})
-						.media(style={ 'padding-left':'20px', 'padding-right':'20px'})
-							a.pull-left
-								if denuncia.imagenes != null
-									img(src="#{denuncia.imagenes[0].path}" style={'width' : '100px','height' : '100px'}).media-object.img-thumbnail
-								else
-									img(src="http://telecapita.org/sites/all/themes/flat/images/thumbnail-default.jpg" style={'width' : '100px','height' : '100px'}).media-object.img-thumbnail
-							.media-body(style="width: 100%; display: inline;")
-								h4(style={'float':'left'}).media-heading #{denuncia.titulo}
-								p.text-right #{denuncia.fecha}						
-								p.text-right Por #{denuncia.usuario[0].profile.username} 
-								p.text-right 
-									a(href='/app/denuncia/#{denuncia.gid}').btn.btn-danger Ver denuncia
-										i.fa.fa-eye
-								div(style={'max-width':'100%','word-break':'break-all'})
-									i.fa.fa-eye
-									i  
-										| #{denuncia.veces_vista}				
-									i.fa.fa-comments
-									i  #{denuncia.comentarios != null ? denuncia.comentarios.length : '0'}
-									i.fa.fa-thumbs-o-up
-									i  
-										| #{denuncia.likes}	
-									i  			  
-									i.fa.fa-image 
-									i
-									if denuncia.imagenes != null	
-										|  #{denuncia.imagenes.length}
-									else
-										| 0
-									i(style="clear: both")
-									i.fa.fa-tags
-									i  
-									if denuncia.tags_ != null
-										each tag in denuncia.tags_
-											| ##{tag.tag} 
-					hr(style={'margin': '0px 0px 20px 0px'})
 block link
 	link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.1/css/bootstrap-datepicker.css")
 block script
+	script(src='/javascripts/plugins/ol3/ol.js')
 	script(src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.1/js/bootstrap-datepicker.js")
 	script(src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.1/locales/bootstrap-datepicker.es.min.js")
 	script.
+		// al INICIAR
+		var denuncias = !{denuncias};
+		var tipo, coords, extension;
+		denuncias.forEach(function(d){
+			tipo = JSON.parse(d.geometria).type;
+			coords = JSON.parse(d.geometria).coordinates;
+			
+			if(tipo == 'Point') extension = new ol.geom.Point(coords).getExtent();
+			if(tipo == 'LineString') extension = new ol.geom.LineString(coords).getExtent();
+			if(tipo == 'Polygon') extension = new ol.geom.Polygon(coords).getExtent();
+			//alert(extension);
+			extension[0] = extension[0] - 0.0015; //Xmin
+			extension[1] = extension[1] - 0.0015; //Ymin
+			extension[2] = extension[2] + 0.0015; //Xmax
+			extension[3] = extension[3] + 0.0015; //Ymax
+			
+			var width = 1200;
+			var dif = Math.abs(extension[2] - extension[0]) / Math.abs(extension[3] - extension[1]) ;
+			var height = Math.round(width / dif);
+			
+			var imagenes = d.imagenes ? d.imagenes[0].path : '';
+			var html = '<a href="/app/denuncia/' + d.gid + '"><div style="padding:10px;" class="col-md-4">' + 
+			'<img src="' + imagenes + '" class="col-lg-12" style="max-height: 200px;">' +
+			'<p class="text-center" style="background: rgba(255,255,255,0.3);background-size: 100% 100%;position: absolute; top: 5px; left:30px; right: 30px; color: #000"><b>' + d.titulo + '</b></p>' +
+			'</img>' + 
+			'<img style="max-height: 200px;" src="http://192.168.1.13:8080/geoserver/jahr/wms?service=WMS&version=1.1.0&request=GetMap&layers=jahr:OI.OrthoimageCoverage,jahr:denuncias&styles=&bbox=' + extension + '&width=' + width + '&height=' + height + '&srs=EPSG:4258&format=image/png&cql_filter=1=1;gid=&#39;' + d.gid + '&#39;" class="col-md-12"></img>' +
+			'</a></div>';
+			$('#denuncias').append(html);
+		});
+	
 		$('#buscar').click(function(event){
 			var html = '<div class="row">' +
 			'<div class="col-lg-6"><div class="input-group"><span class="input-group-addon">Título</span>' +
@@ -154,14 +146,15 @@ block script
 		
 		num_denuncias_io.on('api', function(data){
 			$('#denuncias').empty();
+			var html_ = '';
 			data.query.forEach(function(denuncia){
+			
 				var tags = data.query.tags_ || [];
 
-				var imagenes = [];
-				comentarios = [];
-				
-				if(denuncia.comentarios) comentarios = denuncia.comentarios;
-				if(denuncia.imagenes) imagenes = denuncia.imagenes;
+				var imagenes = denuncia.imagenes ? denuncia.imagenes.length : 0;
+				var comentarios = denuncia.comentarios ? denuncia.comentarios.length : 0;
+				var veces_vista = denuncia.veces_vista;
+				var likes = denuncia.likes || 0;
 				
 				var imagen = imagenes.length > 0 ? denuncia.imagenes[0].path : 'http://telecapita.org/sites/all/themes/flat/images/thumbnail-default.jpg';
 				
@@ -169,35 +162,55 @@ block script
 				tags.forEach(function(tag){
 					tags_str += '#' + tag.tag + ' ';
 				});
+				
 				alert(denuncia.titulo);
-				var html = '<hr style="margin: 35px 0px 0px 0px;"></hr>' + 
-				+ '<div style={background:rgba(255,255,255,0.3); padding-top:20px; padding-bottom:20px">' + 
-				+	'<div class="media" style="padding-left:20px; padding-right:20px">' +  
-				+		'<a class="pull-right">' +
-				+			'<img class="media-object img-thumbnail" src="' + imagen + '" style="width : 100px; height : 100px"></img>' +
-				+		'</a>' +
-				+		'<div class="media-body" style="width: 100%; display: inline;">' +
-				+			'<h4 style="float:left" class="media-heading">' + denuncia.titulo + '</h4>' +
-				+			'<p class="text-right">' + denuncia.fecha + '</p>' +		
-				+			'<p class="text-right">Por ' + denuncia.usuario[0].profile.username + '</p>' +		
-				+			'<p class="text-right"><a href="/app/denuncia/' + denuncia.gid + '" class="btn btn-danger">Ver denuncia <i class="fa fa-eye"></i></a></p>' +
-				+			'<div style="max-width:100%; word-break:break-all">' + 
-				+				'<i class="fa fa-comments"></i>' +
-				+				'<i>' + comentarios.length > 0 ? comentarios.length : 0 + '</i>' +
-				+				'<i></i>' +
-				+				'<i class="fa fa-image"></i>' +
-				+				'<i>' + imagenes.length > 0 ? imagenes.length : 0 + '</i>' +
-				+				'<i></i>' +
-				+				'<i class="fa fa-tags"></i>' +
-				+				'<i>' + tags.length == 0 ? 0 : tags_str + '</i>' +
-				+			'</div>' +
-				+		'</div>' + 
-				+	'</div>' + 
-				+'</div>' +
-				+'<hr style="margin: 0px 0px 20px 0px;"></hr>';
-				alert(html)
-				$('#denuncias').append($(html));
+				html_ += '<hr style="margin: 35px 0px 0px 0px;"></hr>' + 
+				'<div style="background:rgba(255,255,255,0.3); padding-top:20px; padding-bottom:20px">' + 
+					'<div class="media" style="padding-left:20px; padding-right:20px">' +  
+						'<a class="pull-left">' +
+							'<img class="media-object img-thumbnail" src="' + imagen + '" style="width : 100px; height : 100px"></img>' +
+						'</a>' +
+						'<div class="media-body" style="width: 100%; display: inline;">' +
+							'<h4 style="float:left" class="media-heading">' + denuncia.titulo + '</h4>' +
+							'<p class="text-right">' + denuncia.fecha + '</p>' +		
+							'<p class="text-right">Por ' + denuncia.usuario[0].profile.username + '</p>' +		
+							'<p class="text-right"><a href="/app/denuncia/' + denuncia.gid + '" class="btn btn-danger">Ver denuncia <i class="fa fa-eye"></i></a></p>' +
+							'<div style="max-width:100%; word-break:break-all">' + 
+								'<i class="fa fa-eye"></i>' +
+								'<i>' + veces_vista + '</i>' +
+								'<i></i>' +
+								'<i class="fa fa-comments"></i>' +
+								'<i>' + comentarios + '</i>' +
+								'<i></i>' +
+								'<i class="fa fa-thumbs-o-up"></i>' +
+								'<i>' + likes + '</i>' +
+								'<i></i>' +
+								'<i class="fa fa-image"></i>' +
+								'<i>' + imagenes + '</i>' +
+								'<i></i>' +
+								'<i class="fa fa-tags"></i>' +
+								'<i>' + tags_str + '</i>' +
+							'</div>' +
+						'</div>' + 
+					'</div>' + 
+				'</div>' +
+				'<hr style="margin: 0px 0px 20px 0px;"></hr>';
+				console.log(html_);
 				
 			});
+			
+			BootstrapDialog.alert({
+				message: '¡' + data.query.length + ' denuncias encontradas de acuerdo a tus criterios de búsqueda!',
+				title: 'Resultado de tu búsqueda',
+				type: BootstrapDialog.TYPE_WARNING
+			});
+			
+			$.each(BootstrapDialog.dialogs, function(id, dialog){
+				setTimeout(function(){
+					dialog.close();
+				}, 2000);
+			});
+			
+			$('#denuncias').append($(html_));
 		});
-	});
+		

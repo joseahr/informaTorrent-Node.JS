@@ -136,6 +136,23 @@ var denuncias = new ol.layer.Tile({
 	})
 });
 
+//Denuncias Heat Map
+
+var denunciasHeatMap = new ol.layer.Heatmap({
+  title: 'Zonas más conflictivas',
+  source: new ol.source.Vector({
+    url: 'http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=jahr:denuncias&maxFeatures=1000000&outputFormat=application/json',
+    format: new ol.format.GeoJSON({
+      extractStyles: false
+    })
+  }),
+  blur: 10,
+  radius: 10
+});
+denunciasHeatMap.getSource().on('addfeature', function(event){
+	event.feature.setGeometry(new ol.geom.Point(ol.extent.getCenter(event.feature.getGeometry().getExtent())));
+});
+
 /*
  *  Capa de nuestro servidor WMS Teselado (GeoWebCache)
  */
@@ -162,15 +179,17 @@ var ortoWMST = new ol.layer.Tile({
 var municipioWMST = new ol.layer.Tile({
 	title: 'Municipio',
 	visible: false,
-	source: new ol.source.TileWMS({
-		url: ip + '/geoserver/jahr/wms',
-		params: {'FORMAT': format, 
-             	 'VERSION': '1.1.1',
-             	 tiled: true,
-             	 LAYERS: 'jahr:muni_torrent',
-             	 STYLES: '',
-		},
-		gutter: 200
+	source: new ol.source.WMTS({
+		url: ip + '/geoserver/gwc/service/wmts',
+		layer:'jahr:muni_torrent',
+		matrixSet: 'EPSG:4326',
+		format: 'image/png',
+		projection: proj,
+		tileGrid: new ol.tilegrid.WMTS({
+			origin : [-180, 90],
+			resolutions : resolutions,
+			matrixIds : matrixIds
+		})
 	})
 });
 
@@ -330,7 +349,7 @@ var groupCapasBase = new ol.layer.Group({
 // orto, municipio, manzanas, viales, caminos, nom_viales, portales
 var groupCartoTorrentWMS = new ol.layer.Group({
 	title: 'Cartografía de Torrent WMS',
-	layers: [orto, municipio, manzanas, viales, caminos, nom_viales, portales, denuncias]
+	layers: [orto, municipio, manzanas, viales, caminos, nom_viales, portales, denuncias, denunciasHeatMap]
 });
 var groupCartoTorrentWMST = new ol.layer.Group({
 	title: 'Cartografía de Torrent WMS Teselado',

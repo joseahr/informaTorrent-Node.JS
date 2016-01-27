@@ -110,6 +110,7 @@ $(function(){
 				num_denuncias_io.emit('new_denuncia_added', res.denuncia);
 				//console.log(res.denuncia);
 				// Ha habido éxito subiendo la denuncia
+
 				BootstrapDialog.show({
 					type: BootstrapDialog.TYPE_SUCCESS,
 					title: 'Subido Correctamente',
@@ -117,7 +118,7 @@ $(function(){
 					closable: false,
 					buttons: [{
 					label: 'Cerrar',
-					action: function(dialog){dialog.close(); window.location.replace('/app/denuncias?page=1');}}]
+					action: function(dialog){dialog.close(); window.location.replace('/app/visor');}}]
 					// Cuando se cierre redirigimos al usuario 
 				});
 			}

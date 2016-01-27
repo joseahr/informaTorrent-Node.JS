@@ -243,6 +243,10 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
         	console.log(lyr.getSource());
         	nombreLayer = lyr.getSource().Z;
         }
+        else if (lyr instanceof ol.layer.Heatmap){
+        	console.log(lyr.getSource());
+        	nombreLayer = lyr.getSource().Z;
+        }
         if (nombreLayer){
         	img.src = 'http://localhost:8080/geoserver/jahr/ows?service=WMS&request=GetLegendGraphic&format=image%2Fpng&width=20&height=20&layer=' 
         		+ nombreLayer;

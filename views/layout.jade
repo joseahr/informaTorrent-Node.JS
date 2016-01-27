@@ -2,6 +2,7 @@ html
   head
     meta(charset='utf-8')
     // Para dispositivos móviles
+    link(rel='icon', href='/images/siteicon.png')
     meta(name='viewport', content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no')
     // Bootstrap CSS
     link(href='/stylesheets/bootstrap/css/bootstrap.css', rel='stylesheet')
@@ -25,8 +26,8 @@ html
     // header start
     // ================
     - var nuevas = 0;
-    if user
-      each noti in misNotificaciones
+    if locals.user
+      each noti in mis_notificaciones
         if noti.vista == false
           - nuevas ++;
     header.header.fixed.clearfix.navbar.navbar-fixed-top
@@ -71,7 +72,7 @@ html
                       ul.nav.navbar-nav.navbar-right(style="height: 100%;")
                         li(style="height: 100%")
                           a(href='/app/#banner' style="height: 100%") Inicio
-                        if(!user)
+                        if(!locals.user)
                           li(style="height: 100%")
                             a(href="/app/#iniciar" style="height: 100%") Iniciar Sesión
                           li(style="height: 100%")
@@ -86,10 +87,10 @@ html
                           li(style="height: 100%")
                             a(href='#' style="height: 70px;" data-toggle="dropdown").media
                               div.pull-left
-                                img.img-responsive.img-circle.media-object(src="#{user.profile.picture}" style="height: 40px; width: 40px; margin: -10 5 0 0px;")                                       
+                                img.img-responsive.img-circle.media-object(src="#{locals.user.profile.picture}" style="height: 40px; width: 40px; margin: -10 5 0 0px;")                                       
                                 span.badge.badge-success.danger.pull-right.noti_up #{nuevas}
                               div.media-body.pull-left
-                                | #{user.profile.username}
+                                | #{locals.user.profile.username}
                                 span.caret
                             ul.dropdown-menu(style="width: 100%; background: #E7E7E7")
                               li.dropdown
@@ -107,7 +108,7 @@ html
     // header end
     // banner start
     // ================ 
-    #banner.banner(style="background: url('https://images.unsplash.com/photo-1445964047600-cdbdb873673d?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&w=1800&fit=max&s=e590407728cc89ef57f248ebec481dd5'); background-size: cover; background-position: center center; background-repeat: no-repeat")
+    #banner.banner(style="background: url('https://images.unsplash.com/photo-1445964047600-cdbdb873673d?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&w=1800&fit=max&s=e590407728cc89ef57f248ebec481dd5'); background-size: cover; background-position: center center; background-repeat: no-repeat;")
       .banner-image
       .banner-caption
         .container
@@ -125,10 +126,10 @@ html
     block content
     #numdenun(style="position: absolute; bottom: 0.5em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;")
       i.fa.fa-bullhorn(style="margin-right: 5px;")
-      | #{numdenun}
+      | #{locals.datos_app.num_denun_total}
     #numdenunhoy(style="position: absolute; bottom: 2.875em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;")
       i.fa.fa-bullhorn(style="margin-right: 5px;")
-      | #{numdenunhoy}
+      | #{locals.datos_app.num_denun_hoy}
     #numusu(style="position: absolute; bottom: 0.5em; left: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;")
       i.fa.fa-user(style="margin-right: 5px;")
     script.
