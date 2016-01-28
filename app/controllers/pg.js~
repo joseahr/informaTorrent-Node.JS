@@ -184,12 +184,11 @@ ContPg.prototype.getDenunciasPage = function(req, res){
 		page = 1;
 		console.log('pagina no numerica');
 	}
-	if(page <= 0) page = 1;
 	db.query(consultas.numero_denuncias)
 		.then(function(num_denuncias){
 			numDenuncias = num_denuncias[0].numdenun;
-			//if (Math.ceil(numDenuncias/10) > 0)
-			maxPages = Math.ceil(numDenuncias/10);
+			if (Math.ceil(numDenuncias/10) > 0)
+				maxPages = Math.ceil(numDenuncias/10);
 			if (page > maxPages) page = maxPages;
 			return db.query(consultas.obtener_denuncias_recientes_por_pagina, page);
 			

@@ -152,7 +152,11 @@ module.exports = {
 		usuario_por_email : "select * from usuarios where local ->> 'email' = $1" ,
 		
 		usuario_por_email_o_username : "select * from usuarios where lower(local ->> 'email') = $1 or lower(profile ->> 'username') = $1",
-				
+		
+		usuario_por_id_facebook : "select * from usuarios where facebook ->> 'id' = $1" , 
+		
+		usuario_por_id_twitter : "select * from usuarios where twitter ->> 'id' = $1" , 
+		
 		actualizar_local_usuario : "UPDATE usuarios SET local= $1 where _id = $2",
   		
 		usuario_por_password_reset_token : "select * from usuarios where " +
@@ -171,4 +175,50 @@ module.exports = {
 		deslincar_twitter : "UPDATE usuarios SET twitter = NULL WHERE _id = $1" , 
 		
 		deslincar_facebook : "UPDATE usuarios SET facebook = NULL WHERE _id = $1" ,  
+		
+		notificacion_vista : "update notificaciones set vista=true where id_noti=$1" ,
+		
+		usuarios_cerca_de_denuncia : "select _id, " + 
+			"st_distance(st_transform(location_pref, 25830), st_transform(st_geomfromtext($1, 4258), 25830)) " +
+			"as distancia from usuarios where " +
+			"st_distance(st_transform(location_pref, 25830), st_transform(st_geomfromtext($1, 4258), 25830)) " +
+			"< distancia_aviso and _id <> $2" ,
+			
+		insertar_notificacion : "insert into notificaciones(id_denuncia, id_usuario_from, id_usuario_to, tipo, distancia) " +
+			"values ($1, $2, $3, $4, $5) returning *" ,
+			
+		denuncia_vista : "update denuncias set veces_vista = veces_vista + 1 where gid=$1" ,
+		
+		check_like_denuncia : "select * from likes where id_usuario = $1 and id_denuncia = $2" ,
+		
+		insertar_like : "insert into likes(id_usuario, id_denuncia) values ($1, $2)",
+		
+		eliminar_like : "delete from likes where id_usuario = $1 and id_denuncia = $2",
+		
+		denuncias_sin_where : "SELECT *, to_char(denuncias.fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha, (select count(*) from likes where id_denuncia = denuncias.gid) as likes, " +
+	  		"ST_AsGeoJSON(the_geom) as geom FROM denuncias " +
+	  		"LEFT   JOIN LATERAL (" +
+	  		"SELECT json_agg(com) AS comentarios " +
+	  		"FROM  (SELECT c.id_usuario, c.contenido, to_char(c.fecha::timestamp,'TMDay, DD TMMonth YYYY a las HH24:MI:SS') as fecha, u.* FROM comentarios c, usuarios u WHERE c.id_usuario = u._id and c.id_denuncia = denuncias.gid ORDER BY fecha DESC) com" +
+	  		") comentarios ON true " +
+	  		"LEFT   JOIN LATERAL (" +
+	  		"SELECT json_agg(img) AS imagenes " +
+	  		"FROM  (SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY') as fecha  FROM imagenes WHERE id_denuncia = denuncias.gid) img" +
+	  		") imagenes ON true " +
+	  		"LEFT   JOIN LATERAL (" +
+	  		"SELECT json_agg(usuarios) AS usuario " +
+	  		"FROM  (SELECT * FROM usuarios WHERE _id = denuncias.id_usuario) usuarios" +
+	  		") usuarios ON true " +
+	  		"LEFT   JOIN LATERAL (" +
+	  		"SELECT json_agg(t_) AS tags_ " +
+	  		"FROM  (SELECT tag FROM tags WHERE id_denuncia = denuncias.gid) t_ " +
+	  		") t ON true " +
+	  		"WHERE " , 
+		
+	  	crear_usuario : "insert into usuarios(password, local, profile) VALUES ($1, $2, $3) returning *" ,
+	  	
+	  	set_facebook_usuario : "update usuarios SET facebook = $1 where _id = $2" , 
+
+	  	set_twitter_usuario : "update usuarios SET twitter = $1 where _id = $2" , 	  	
+	  	
 }

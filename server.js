@@ -36,10 +36,6 @@ var session      = require('express-session');
 
 //http.globalAgent.maxSockets = Infinity;
 
-
-require('./config/config_passport_pg')(passport); // pass passport for configuration
-
-
 // Express
 var bodyParser = require('body-parser');
 
@@ -141,15 +137,16 @@ var dir = require('node-dir'),
 	validator = require('validator'),
 	nodemailer = require('nodemailer');
 
-require('./app/controllers/sockets.js')(io, pg, path, mkdirp, exec, configUploadImagenes, validator); // SOCKET.IO LADO DEL SERVIDOR
+require('./config/config_passport_pg')(passport, db, queries); // pass passport for configuration
+require('./app/controllers/sockets.js')(io, path, mkdirp, exec, configUploadImagenes, validator, db, queries, pgp); // SOCKET.IO LADO DEL SERVIDOR
 
 var contHome = require('./app/controllers/home.js'); // Página principal, manejo de mensajes
 var contPass_ = require('./app/controllers/passport_pg_cont.js'); // Iniciar sesión registrar...
-var contPass = new contPass_(passport, bcrypt, async, crypto, nodemailer, contHome, validator, User, db, queries);
+var contPass = new contPass_(crypto, nodemailer, validator, User, db, queries);
 var contUpload_ = require('./app/controllers/uploadDenuncia.js') // Subir imágenes al rellenar la denuncia
-var contUpload = new contUpload_(io, crypto, fs, path,exec,mkdirp, configUploadImagenes);
+var contUpload = new contUpload_(fs, path, configUploadImagenes);
 var contPg_ = require('./app/controllers/pg.js');
-var contPg = new contPg_(fs, path, dir, exec, User, validator, io, db, dbCarto, queries); // Guardar, editar, eliminar denuncia, coments, imgs...
+var contPg = new contPg_(fs, path, dir, exec, User, validator, db, dbCarto, queries); // Guardar, editar, eliminar denuncia, coments, imgs...
 
 /*
  * Geoportal, lo servimos como archivos estáticos

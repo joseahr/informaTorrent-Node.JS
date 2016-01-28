@@ -4,28 +4,20 @@
 var passport = require('passport'); // Passport
 var db;
 var consultas;
-var bcrypt;
-var async;
 var crypto;
 var nodemailer;
-var contHome;
 var validator;
-var connectionString = "postgres://jose:jose@localhost/denuncias";
 var User;
-var client;
 /*
  * Constructor
  */
 
-function Passport(passport_, bcrypt_, async_, crypto_, nodemailer_, contHome_, validator_, User_, db_, q_){
+function Passport(crypto_, nodemailer_, validator_, User_, db_, q_){
 	//passport = passport_;
 	db = db_;
 	consultas = q_;
-	bcrypt = bcrypt_;
-	async = async_;
 	crypto = crypto_;
 	nodemailer = nodemailer_;
-	contHome = contHome_;
 	validator = validator_;
 	User = User_;
 };

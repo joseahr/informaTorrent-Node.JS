@@ -3,22 +3,13 @@
  */
 
 var config;
-var crypto;
 var path;
 var fs;
-var mkdirp;
-var io='';
-var exec;
 
-var formidable = require('formidable');
 
-function UploadFoto(sio, crypto_, fs_, path_,exec_,mkdirp_, config_) {
-	io = sio;
-	crypto = crypto_;
+function UploadFoto(fs_, path_, config_) {
 	fs = fs_;
 	path = path_;
-	exec = exec_;
-	mkdirp = mkdirp_;
 	config = config_;
 }
 	
