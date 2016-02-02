@@ -10,11 +10,14 @@ var fs, // file System
 	validator, // validator 
 	db, 
 	dbCarto, 
-	consultas;	
+	consultas,
+	multer_imagen_perfil,
+	multer_temp_denuncia;
 /*
  * Constructor
  */
-function ContPg(fs_, path_, dir_, exec_, User_, validator_, db_, dbCarto_, consultas_){
+function ContPg(fs_, path_, dir_, exec_, User_, validator_, 
+		db_, dbCarto_, consultas_, multer_imagen_perfil_, multer_temp_denuncia_){
 	fs = fs_;
 	path = path_;
 	dir = dir_;
@@ -24,7 +27,64 @@ function ContPg(fs_, path_, dir_, exec_, User_, validator_, db_, dbCarto_, consu
 	db = db_;
 	dbCarto = dbCarto_;
 	consultas = consultas_;
+	multer_imagen_perfil = multer_imagen_perfil_.single('file');
+	multer_temp_denuncia = multer_temp_denuncia_.single('file');
 	
+}
+
+/*
+ * Renderizamos la página para añadir una denuncia
+ */
+ContPg.prototype.renderNueva = function(req, res){
+	res.render('nueva');
+}
+
+/*
+ * Eliminar imagen de la carpeta temporal
+ */
+ContPg.prototype.deleteTempImage = function(req, res){
+	var path_image = path.join(path.join(config.TEMPDIR, req.params.tempDirID), req.params.fileName);
+	
+	fs.unlink(path_image, function(error){
+		if(error) return res.status(500).send('Error borrando la imagen:\n' + error);
+		res.send('Imagen eliminada correctamente');
+	});
+	
+}
+
+/*
+ * Subir una imagen a la carpeta temporal
+ */
+ContPg.prototype.uploadTempImage = function(req, res){
+	multer_temp_denuncia(req, res, function(error){
+		
+		if(error) {
+			console.log(error.toString());
+			return res.status(500).send({type: 'error', msg: error});
+		}
+		
+		var file = req.file;
+		var extension = path.extname(file.path);
+		
+		console.log('patttth ' + file.path);
+		
+		if(!extension.match(formatsAllowed)){
+			// Eliminamos la imagen subida si no es de uno de los formatos permitidos
+			var to = path.join('./public/files/temp', path.basename(file.path));
+			fs.unlink(to, function(error_){
+				if(error_) console.log('error unlink ' + error_);
+				return res.status(413).send({type: 'error', msg: 'Formato no permitido'});
+			});
+		}
+		else {
+			// Todo ok
+			return res.send({
+				type: 'success', 
+				msg: 'Archivo subido correctamente a '+to+' ('+(file.size.toFixed(2)) +' kb)'
+			});
+		}
+		
+	});
 }
 
 /*
@@ -36,7 +96,7 @@ ContPg.prototype.addComentario = function(req, res){
 	var user_id = req.user._id;
 	var id_denuncia = req.params.id_denuncia;
 	
-	if (!contenido || !user_id || !id_denuncia) return res.send(404);
+	if (!contenido || !user_id || !id_denuncia) return res.status(500).send('Fallo insertando comentario');
 	
 	console.log(consultas.añadir_comentario);
 	
@@ -256,35 +316,7 @@ ContPg.prototype.deleteImagenDenuncia = function(req, res){
 	}
 }
 
-/*
- * Ruta /app/getImagenes?id=id_denuncia
- */
-ContPg.prototype.getImagenesDenuncia = function(req, res){
-	if (!req.query.id) return res.status(500).send('No se ha especificado el id de la denuncia');
-	var id = req.query.id;
-	
-	db.query(consultas.denuncia_por_id, id)
-		.then(function(denuncia){
-			var list = [];
-			if(denuncia[0].imagenes)
-				denuncia[0].imagenes.forEach(function(imagen){
-					var obj = {};
-					obj.name = path.basename(imagen.path);
-					obj.size = 0;
-					obj.path = imagen.path;
-					list.push(obj);
-				});
-			
-			res.send(list);
-		})
-		.catch(function(error){
-			res.status(500).send(error);
-		});
-}
 
-/*
- *  Ruta /app/edit/
- */
 ContPg.prototype.getEdit = function(req, res){
 	var id = req.query.id;
 	if(!id){
@@ -298,7 +330,9 @@ ContPg.prototype.getEdit = function(req, res){
 			.then(function(denuncia){
 				if(denuncia.length == 0) throw new Error('No existe la denuncia');
 				if(denuncia[0].id_usuario != req.user._id) throw new Error('Permiso denegado. Usted no puede editar esta denuncia.')
-				denuncia[0].tags_ = JSON.stringify(denuncia.tags_);
+				//console.log(denuncia[0]);
+				denuncia[0].tags_ = JSON.stringify(denuncia[0].tags_);
+				console.log(denuncia[0]);
 				res.render('editar.jade', {denuncia: denuncia[0]});
 			})
 			.catch(function(error){
@@ -450,7 +484,7 @@ ContPg.prototype.updateDenuncia = function(req, res){
 			});
 		})
 		.catch(function(error){
-			console.log('Error insertando nueva denuncia ' + error.toString());
+			console.log('Error insertando nueva denuncia ' + JSON.stringify(error));
 			res.send({type: 'error', msg: error.toString()})
 		});
 }; // Fin saveDenuncia
@@ -529,63 +563,53 @@ ContPg.prototype.updateProfile = function(req, res){
 var formatsAllowed = 'png|jpg|jpeg|gif'; // Podríamos poner más
 
 ContPg.prototype.changeProfilePicture = function(req, res) {
+	
+	multer_imagen_perfil(req, res, function(error){
 		
-	var sms = {}; //JSON DE INFO QUE ENVIAREMOS
-	
-	
-	var file = req.files.file;
-	console.log(req.files);
-	var extname = path.extname(file.path);
-	if (!extname.match(formatsAllowed)){
-        var msg = "Error subiendo tu archivo. Formato no válido. ";
-        var type="error";
-        sms.type = type;
-        sms.msg = msg;
-        return res.send(sms);
-	}
-	console.log(file.size );
-	if (file.size > (4096*1024)){
-        var msg = "Error subiendo tu archivo. Imagen demasiado grande. ";
-        var type="error";
-        sms.type = type;
-        sms.msg = msg;
-        return res.send(sms);
-	}
-	var from = file.path; // Ruta origen
-	var to = path.join('./public/files/usuarios', req.user._id + path.extname(file.name));
-	console.log(to);
-	fs.rename(from, to, function(err) {
-		     if(err) { 
-		        var msg = "Error subiendo tu archivo "+err;
-		        var type="error";
-		        sms.type = type;
-		        sms.msg = msg;
-		        console.error('error', err);
-		        return res.send(sms);
-		     } 
-		     else {
-		        var fileSize = file.size/1024;
-		        var msg = "Archivo subido correctamente a "+to+" ("+(fileSize.toFixed(2)) +" kb)";
-		        var type="success";
-		        sms.type = type;
-		        sms.msg = msg;
-		        sms.path = path.join('/files/usuarios', req.user._id + path.extname(file.name));
-		        
-		        var user = req.user;
-	        	
-	        	user.profile.picture = path.join('/files/usuarios', req.user._id + path.extname(file.name));
-		        
-		        db.none(consultas.actualizar_perfil, [JSON.stringify(user.profile), user._id])
-		        	.then(function(){
-		        		res.send(sms);
-		        	})
-		        	.catch(function(error){
-		        		res.status(500).send(error);
-		        	});
-		        
-		     }
-		     
-	  });
+		if(error) return res.status(500).send({type: 'error', msg: 'Error subiendo archivo. ' + error});
+		
+		// La imagen se subió correctamente
+		//console.log('imagen subida guay ' + JSON.stringify(req.files.file));
+		var file = req.file;
+		var extension = path.extname(file.path);
+		
+		console.log('patttth ' + file.path);
+		
+		if(!extension.match(formatsAllowed)){
+			// Eliminamos la imagen subida si no es de uno de los formatos permitidos
+			fs.unlink(path.join('./public/files/usuarios', path.basename(file.path)), function(error_){
+				if(error_) console.log('error unlink ' + error_);
+				return res.status(413).send({type: 'error', msg: 'Formato no permitido'});
+			});
+		}
+		else {
+	        var user = req.user;
+	        var sub = '/files/usuarios'
+	        if(user.profile.picture.indexOf(sub) > -1){
+	        	console.log('eliminando imagen anterior');
+	        	// Tenía una imagen subida
+	        	fs.unlink(path.join('./public', user.profile.picture), function(err){
+	        		if(err) console.log(err); // No debería ocurrir
+	        	});
+	        }
+	        
+	    	user.profile.picture = path.join('/files/usuarios', path.basename(file.path));
+	        
+	        db.none(consultas.actualizar_perfil, [JSON.stringify(user.profile), user._id])
+	        	.then(function(){
+	        		res.send({
+	        			type: 'success', 
+	        			msg: 'Imagen de Perfil cambiada correctamente.',
+	        			path: user.profile.picture
+	        		});
+	        	})
+	        	.catch(function(error){
+	        		res.status(500).send(error);
+	        	});
+		}
+		
+	});
+		
 };
 
 

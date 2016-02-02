@@ -16,7 +16,7 @@ socket.on('connect', function() {
 	    url: "/app/fileUpload/" + random,
 	    maxFilesize: 4,
 	    maxFiles: 10,
-	    paramName: "uploadfile",
+	    paramName: "file",
 	    maxThumbnailFilesize: 30,
 	    addRemoveLinks: true,
 	    acceptedFiles: 'image/*',
@@ -55,21 +55,30 @@ socket.on('connect', function() {
 		    	    });
 
 	    	});
-
-	    	$.ajax({
-	    		url:'/app/getImagenesDenuncia?id=' + denuncia_id,
-	    		type:'GET', // Método GET
-	    		data:{},
-	    		success: function(imgsYaSubidas){
-	    			imgsYaSubidas.forEach(function(imagen){
-			             dropzone.emit("addedfile", imagen);
-			             dropzone.emit("thumbnail", imagen, imagen.path);
-			             dropzone.emit("complete", imagen);
-	    			});
-	    			dropzone.options.maxFiles = dropzone.options.maxFiles - imgsYaSubidas.length;
-	    			console.log(dropzone.options.maxFiles);
-	    		}
+	    	
+	    	//alert(imagenes);
+	    	imagenes.forEach(function(imagen){
+	    		dropzone.emit("addedfile", imagen);
+	            dropzone.emit("thumbnail", imagen, imagen.path);
+	            dropzone.emit("complete", imagen);
 	    	});
+	    	var l = imagenes.length;
+			dropzone.options.maxFiles = dropzone.options.maxFiles - l;
+			console.log(dropzone.options.maxFiles);
+//	    	$.ajax({
+//	    		url:'/app/getImagenesDenuncia?id=' + denuncia_id,
+//	    		type:'GET', // Método GET
+//	    		data:{},
+//	    		success: function(imgsYaSubidas){
+//	    			imgsYaSubidas.forEach(function(imagen){
+//			             dropzone.emit("addedfile", imagen);
+//			             dropzone.emit("thumbnail", imagen, imagen.path);
+//			             dropzone.emit("complete", imagen);
+//	    			});
+//	    			dropzone.options.maxFiles = dropzone.options.maxFiles - imgsYaSubidas.length;
+//	    			console.log(dropzone.options.maxFiles);
+//	    		}
+//	    	});
 	    	
 	    }
 	 }); // CONFIG DROPZONE

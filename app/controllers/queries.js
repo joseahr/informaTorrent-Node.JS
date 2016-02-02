@@ -163,7 +163,7 @@ module.exports = {
     		"resetPasswordToken=$1 and " +
     		"resetPasswordExpires > CURRENT_TIMESTAMP" ,
     		
-    	perfil_otro_usuario : "select local, profile, st_as_geojson(location_pref) as location_pref, " +
+    	perfil_otro_usuario : "select local, profile, st_asgeojson(location_pref) as location_pref, " +
     		"distancia_aviso from usuarios where _id = $1 " , 
     	
     	actualizar_password_reset_token : "UPDATE usuarios SET (password,resetPasswordToken,resetPasswordExpires) " +

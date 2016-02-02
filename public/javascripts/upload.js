@@ -20,7 +20,7 @@ socket.on('connect', function() {
 	    url: "/app/fileUpload/" + random,
 	    maxFilesize: 4,
 	    maxFiles: 10,
-	    paramName: "uploadfile",
+	    paramName: "file",
 	    maxThumbnailFilesize: 30,
 	    addRemoveLinks: true,
 	    acceptedFiles: 'image/*',

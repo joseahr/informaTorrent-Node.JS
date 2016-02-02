@@ -201,9 +201,10 @@ block script
 				var res = JSON.parse(xhr.responseText);
 				$('#imagen').empty();
 				$('#imagen').append('<img class="img img-responsive img-thumbnail img-circle" id="imagenperfil" src="' + res.path + '" style="width: 200px; height: 200px;">');
+				alert(res.path);
 				BootstrapDialog.show({
 					title: 'Imagen de Perfil cambiada', 
-					message: res.msg, 
+					message: res.msg + res.path, 
 					onshown: function(dialog) {
 						setTimeout(function(){
 							dialog.close();

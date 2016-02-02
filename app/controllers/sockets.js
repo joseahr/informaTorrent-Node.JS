@@ -224,8 +224,8 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 			if(data.usuario_id == '') 
 				return socket.emit('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?', 
 					{error: true});
-
-			db.oneOrNone(consultas.check_like_denuncia)
+			var id_usuario = this.id_usuario;
+			db.oneOrNone(consultas.check_like_denuncia, [id_usuario, data.denuncia.gid])
 				.then(function(like){
 					socket.emit('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?',
 						{error: false, like: (like != null) });
@@ -242,7 +242,9 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 				return socket.emit('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?', 
 					{error: true});
 			var me_gusta, notificacion_;
-			db.oneOrNone(consultas.check_like_denuncia)
+			var id_usuario = this.id_usuario;
+			console.log(id_usuario + 'id_USUUSUSUSU');
+			db.oneOrNone(consultas.check_like_denuncia, [id_usuario, data.denuncia.gid])
 				.then(function(like){
 					me_gusta = (like != null);
 					socket.emit('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?',

@@ -1,6 +1,5 @@
 extends map-layout
 // block link
-- var tags__ = '!{denuncia.tags_}'
 block link
 	link(rel="stylesheet" href='//cdnjs.cloudflare.com/ajax/libs/dropzone/3.8.4/css/dropzone.css')
 	link(rel="stylesheet" href="/javascripts/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.css")
@@ -43,6 +42,8 @@ block script
 	script.
 		var denuncia_id = '#{denuncia.gid}';
 		var json = {type: JSON.parse('!{denuncia.geometria}').type, coordinates: JSON.parse('!{denuncia.geometria}').coordinates};
+		var imagenes = JSON.parse('!{JSON.stringify(denuncia.imagenes)}');
+		var tags = JSON.parse('!{denuncia.tags_}');
 	// TAGS
 	script(src="/javascripts/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.js")
 	// TinyMCE Editor
@@ -65,21 +66,17 @@ block script
 					alert('Tag repetido');
 				}
 			});
-			var tags = [];
+
 			try {
-				var data = JSON.parse('!{JSON.stringify(denuncia.tags_)}');
-				data.forEach(function(tag){
+				alert(tags);
+				//var data = JSON.parse('!{JSON.stringify(denuncia.tags_)}');
+				tags.forEach(function(tag){
 					$('#tags').tagsinput('add', tag.tag);
 				});
 			}
 			catch (e) {
 				alert(e);
 			}
-			
-			tags.forEach(function(tag){
-				alert(tag);
-				$('#tags').tagsinput('add', tag);
-			});
 			
 			
 		}

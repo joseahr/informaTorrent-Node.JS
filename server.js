@@ -47,7 +47,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'jade'); // Jade
 app.set('port', process.env.PORT || 3000);
 
-app.use(require('connect-multiparty')());
+//app.use(require('connect-multiparty')());
 
 
 
@@ -65,7 +65,7 @@ var IP = os.networkInterfaces()['ens33'][0]['address'];
 //var IP = 'http://localhost:3000/'
 
 // Ruta middleware
-var client;
+
 function middle_datos (req, res, next){
 	
 	var id_usuario = req.user ? req.user._id : 'undefined';
@@ -121,6 +121,7 @@ var server = http.createServer(app);
 server.listen(port);
 console.log('The magic happens on port ' + port);
 
+// multer
 
 //socket io
 var io = require('socket.io').listen(server);
@@ -140,13 +141,44 @@ var dir = require('node-dir'),
 require('./config/config_passport_pg')(passport, db, queries); // pass passport for configuration
 require('./app/controllers/sockets.js')(io, path, mkdirp, exec, configUploadImagenes, validator, db, queries, pgp); // SOCKET.IO LADO DEL SERVIDOR
 
+//Multer - Subida de Imágenes
+var multer = require('multer');
+
+var filename_perfil_img = function(req, file, cb){
+	console.log('fileeeee' + JSON.stringify(file));
+	var random = Math.floor(Math.random() * 1000);
+	cb(null, req.user._id + '-' + random + path.extname(file.originalname));
+};
+
+var filename_temp_img = function(req, file, cb){
+	console.log('fileeeee' + JSON.stringify(file));
+	cb(null, path.join(req.params.tempDirID, file.originalname));
+}
+
+function crearMulter(dest, filename){
+	return multer({
+		limits: {
+			fileSize: 3 * 1024 * 1024 // 3 mb
+		},
+		storage: multer.diskStorage({
+			destination: function(req, file, cb){
+				console.log('destttttttttttt' + dest);
+				cb(null, dest);
+			},
+			filename: filename,
+		})
+	});
+}
+
 var contHome = require('./app/controllers/home.js'); // Página principal, manejo de mensajes
 var contPass_ = require('./app/controllers/passport_pg_cont.js'); // Iniciar sesión registrar...
 var contPass = new contPass_(crypto, nodemailer, validator, User, db, queries);
-var contUpload_ = require('./app/controllers/uploadDenuncia.js') // Subir imágenes al rellenar la denuncia
-var contUpload = new contUpload_(fs, path, configUploadImagenes);
 var contPg_ = require('./app/controllers/pg.js');
-var contPg = new contPg_(fs, path, dir, exec, User, validator, db, dbCarto, queries); // Guardar, editar, eliminar denuncia, coments, imgs...
+var contPg = new contPg_(fs, path, dir, exec, User, validator, 
+		db, dbCarto, queries, 
+		crearMulter('./public/files/usuarios', filename_perfil_img), 
+		crearMulter('./public/files/temp', filename_temp_img)); // Guardar, editar, eliminar denuncia, coments, imgs...
+
 
 /*
  * Geoportal, lo servimos como archivos estáticos
@@ -226,7 +258,7 @@ app.get('/app/getInfoTabla', function(req, res){
 app.get('/app', middle_datos, contHome.getAppHomePage); // Página de Inicio de la aplicación
 
 app.get('/app/perfil', middle_datos, isLoggedIn, contPg.getProfile); // Perfil de usuario
-app.get('/app/usuarios/:id_usuario', middle_datos, contPass.getUserProfile);
+app.get('/app/usuarios/:id_usuario', middle_datos, isLoggedIn, contPass.getUserProfile);
 app.get('/app/logout', contPass.logout); // Logout
 app.get('/app/login', middle_datos, contPass.getLogin); // Página de Login (modal)
 app.post('/app/login', contPass.postLogin); // POST Login
@@ -260,10 +292,9 @@ app.get('/app/forgot', middle_datos, contPass.getForgot); // Formulario para rec
 app.get('/app/changePass', middle_datos, isLoggedIn, contPass.getChangePass);
 app.post('/app/changePass', isLoggedIn, contPass.postChangePass); // Cambiar contraseña
 
-app.post('/app/fileUpload/:tempDirID', isLoggedIn, contUpload.postPicture); // Subir imagen de una denuncia a una carpeta temporal Random
-app.get('/app/filelist/:tempDirID', isLoggedIn, contUpload.getPicturesList); // Devuelve la lista de imágenes en la carpeta temporal
-app.get('/app/deleteFile/:tempDirID/:fileName', isLoggedIn, contUpload.getDeletePicture); // Elimina una imagen de la carpeta temporal
-app.get('/app/denuncias/nueva', middle_datos, isLoggedIn,contUpload.indexNueva);
+app.post('/app/fileUpload/:tempDirID', isLoggedIn, contPg.uploadTempImage); // Subir imagen de una denuncia a una carpeta temporal Random
+app.get('/app/deleteFile/:tempDirID/:fileName', isLoggedIn, contPg.deleteTempImage); // Elimina una imagen de la carpeta temporal
+app.get('/app/denuncias/nueva', middle_datos, isLoggedIn, contPg.renderNueva);
 
 app.post('/app/denuncia/:id_denuncia/addComentario', isLoggedIn, contPg.addComentario);
 app.post('/app/denuncias/nueva/save', isLoggedIn, contPg.saveDenuncia);
@@ -279,7 +310,7 @@ app.get('/app/confirmar/:idUsuario', middle_datos, contPass.confirmUser);
 app.get('/app/eliminar', isLoggedIn, contPg.deleteDenuncia);
 app.get('/app/editar', middle_datos, isLoggedIn, contPg.getEdit);
 
-app.get('/app/getImagenesDenuncia', contPg.getImagenesDenuncia);
+//app.get('/app/getImagenesDenuncia', contPg.getImagenesDenuncia);
 
 app.get('/app/deleteImagen', contPg.deleteImagenDenuncia);
 
