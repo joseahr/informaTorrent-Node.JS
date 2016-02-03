@@ -1,224 +1,101 @@
+var helper = require('../queries/helper.js');
 module.exports = {
 		
-		obtener_info_tabla_geoportal : "select column_name as nombre, data_type as tipo " +
-			"from information_schema.columns " +
-			"where column_name <> 'geom' and table_name=$1",
+		obtener_info_tabla_geoportal : helper.select.geoportal.info_tabla,
 		
-		obtener_datos_app : "select t1.cnt as num_denun_total, "+
-			"t2.cnt as num_denun_hoy, t3.cnt as num_usuarios_total " + 
-			"from (select count(*) as cnt from denuncias) as t1 " + 
-			"cross join (select count(*) as cnt from denuncias " +
-			"where fecha >= to_char(current_timestamp, 'YYYY-MM-DD')::date) as t2 " +
-			"cross join (select count(*) as cnt from usuarios) as t3",
+		obtener_datos_app : helper.select.app.datos,
 			
-		obtener_notificaciones : "select n.*, " +
-			"to_char(n.fecha::timestamp,'DD TMMonth YYYY HH24:MI:SS') as fecha, " +
-			"u.profile as profile_from from notificaciones n, usuarios u " +
-			"where n.id_usuario_to=$1 and n.id_usuario_from=u._id order by n.fecha desc",
+		obtener_notificaciones : helper.select.usuarios.notificaciones,
 			
-		obtener_acciones : "select n.*, " +
-			"to_char(n.fecha::timestamp,'DD TMMonth YYYY HH24:MI:SS') as fecha, " +
-			"u.profile as profile_to from notificaciones n, usuarios u " +
-			"where n.id_usuario_from=$1 and n.id_usuario_to=u._id order by n.fecha desc",
+		obtener_acciones : helper.select.usuarios.acciones,
 			
-		añadir_comentario : "insert into comentarios(id_usuario, id_denuncia, contenido) " +
-			"VALUES($1, $2, $3)",
+		añadir_comentario : helper.insert.denuncias.comentario,
 		
 		comprobar_geometria : function(wkt){
 			if (wkt.match(/POINT/g))
-				return "select st_contains(muni_torrent.geom, st_geomfromtext('"+ wkt +"',4258)) " +
-				"from muni_torrent";
+				return helper.select.denuncias.comprobar_geometria_puntual;
 			else if(wkt.match(/LINESTRING/g))
-				return "select st_contains(muni_torrent.geom, st_geomfromtext('"+ wkt +"',4258)), " +
-				"st_length(st_transform(st_geomfromtext('"+ wkt +"',4258) , 25830)) from muni_torrent";
+				return helper.select.denuncias.comprobar_geometria_lineal;
 			else if(wkt.match(/POLYGON/g))
-				return "select st_contains(muni_torrent.geom, st_geomfromtext('"+ wkt +"',4258)), " +
-				"st_area(st_transform(st_geomfromtext('"+ wkt +"',4258) , 25830)) from muni_torrent";
+				return helper.select.denuncias.comprobar_geometria_poligonal;
 		},
 		
-		añadir_denuncia : "insert into denuncias" +
-			"(titulo, descripcion, the_geom, id_usuario) " + 
-			"VALUES($1, $2, ST_GeomFromText($3,4258), $4) returning gid",
+		añadir_denuncia : helper.insert.denuncias.nueva,
 		
-		añadir_imagen_denuncia : "insert into imagenes" +
-			"(path, id_denuncia, id_usuario) " +
-			"VALUES($1, $2, $3)",
+		añadir_imagen_denuncia : helper.insert.denuncias.imagen,
 			
-		añadir_tag_denuncia : "insert into tags(id_denuncia, tag) " +
-			"VALUES($1, $2)",
+		añadir_tag_denuncia : helper.insert.denuncias.tag,
 		
-		obtener_denuncias_usuario : "SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha, " +
-			"(select count(*) from likes where id_denuncia = denuncias.gid) as likes, " +
-	  		"ST_AsGeoJSON(the_geom) as geometria FROM denuncias " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(com) AS comentarios " +
-	  		"FROM  (SELECT id_usuario, contenido, to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha FROM comentarios WHERE id_denuncia = denuncias.gid ORDER BY fecha DESC) com" +
-	  		") comentarios ON true " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(img) AS imagenes " +
-	  		"FROM  (SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY') as fecha  FROM imagenes WHERE id_denuncia = denuncias.gid) img" +
-	  		") imagenes ON true " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(t_) AS tags_ " +
-	  		"FROM  (SELECT * FROM tags WHERE id_denuncia = denuncias.gid) t_" +
-	  		") tags ON true " +
-	  		"WHERE  id_usuario=$1 ORDER BY denuncias.fecha DESC" ,
+		obtener_denuncias_usuario : helper.select.denuncias.por_id,
 	  	
-	  	numero_denuncias : "select count(*) as numdenuncias from denuncias",
+	  	numero_denuncias : helper.select.denuncias.num_total,
 	  	
-	  	obtener_denuncias_recientes_por_pagina : "SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha, (select count(*) from likes where id_denuncia = denuncias.gid) as likes, " +
-	  		"ST_AsGeoJSON(the_geom) as geometria FROM denuncias " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(com) AS comentarios " +
-	  		"FROM  (SELECT c.id_usuario, c.contenido, to_char(c.fecha::timestamp,'TMDay, DD TMMonth YYYY a las HH24:MI:SS') as fecha, u.* FROM comentarios c, usuarios u WHERE c.id_usuario = u._id and c.id_denuncia = denuncias.gid ORDER BY fecha DESC) com" +
-	  		") comentarios ON true " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(img) AS imagenes " +
-	  		"FROM  (SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY') as fecha  FROM imagenes WHERE id_denuncia = denuncias.gid) img" +
-	  		") imagenes ON true " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(usuarios) AS usuario " +
-	  		"FROM  (SELECT * FROM usuarios WHERE _id = denuncias.id_usuario) usuarios" +
-	  		") usuarios ON true " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(t_) AS tags_ " +
-	  		"FROM  (SELECT * FROM tags WHERE id_denuncia = denuncias.gid) t_" +
-	  		") tags ON true " +
-	  		"ORDER BY denuncias.fecha DESC limit 10 offset ($1 - 1)*10",
+	  	obtener_denuncias_recientes_por_pagina : helper.select.denuncias.por_pagina,
   		
-  		denuncia_por_id: "SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha, (select json_agg(usuarios) from usuarios, likes where usuarios._id = likes.id_usuario and likes.id_denuncia = denuncias.gid) as likes, " +
-	  		"ST_AsGeoJSON(the_geom) as geometria FROM denuncias " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(com) AS comentarios " +
-	  		"FROM  (SELECT c.id_usuario, c.contenido, to_char(c.fecha::timestamp,'TMDay, DD TMMonth YYYY a las HH24:MI:SS') as fecha, u.* FROM comentarios c, usuarios u WHERE c.id_usuario = u._id and c.id_denuncia = denuncias.gid ORDER BY c.fecha DESC) com" +
-	  		") comentarios ON true " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(img) AS imagenes " +
-	  		"FROM  (SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY') as fecha  FROM imagenes WHERE id_denuncia = denuncias.gid) img" +
-	  		") imagenes ON true " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(usuario) AS usuario " +
-	  		"FROM  (SELECT * FROM usuarios WHERE _id = denuncias.id_usuario) usuario" +
-	  		") usuarios ON true " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(t_) AS tags_ " +
-	  		"FROM  (SELECT * FROM tags WHERE id_denuncia = denuncias.gid) t_" +
-	  		") tags ON true " +
-	  		"WHERE  gid=$1 ORDER BY denuncias.fecha DESC" ,
+  		denuncia_por_id: helper.select.denuncias.por_id,
   		
-	  	eliminar_imagen_denuncia : "delete from imagenes where path=$1" ,	
+	  	eliminar_imagen_denuncia : helper.delete.denuncias.imagen,	
 	  		
-	  	usuario_por_id : "select * from usuarios where _id = $1", 
+	  	usuario_por_id : helper.select.usuarios.por_id, 
 	  	
-	  	usuario_por_username : "select * from usuarios where profile ->> 'username' = $1",
+	  	usuario_por_username : helper.select.usuarios.por_username,
 	  	
-	  	actualizar_info_usuario : "update usuarios set (password, profile) = " +
-	  		"($1, $2) where _id=$3",
+	  	actualizar_info_usuario : helper.update.usuarios.contraseña_perfil,
 	  		
-	  	actualizar_perfil : "update usuarios set profile = " +
-  			"$1 where _id=$2",
+	  	actualizar_perfil : helper.update.usuarios.perfil,
   			
-  		obtener_loc_preferida : "select st_asgeojson(location_pref) as loc_pref from usuarios where _id=$1",
+  		obtener_loc_preferida : helper.select.usuarios.localizacion_preferida,
 		
-  		actualizar_loc_pref : "update usuarios set (location_pref, distancia_aviso) = " +
-  			"(st_geomfromtext($1, 4258),$2) where _id=$3",
+  		actualizar_loc_pref : helper.update.usuarios.localizacion_preferida,
   			
-  		denuncias_visor : "SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha, (select count(*) from likes where id_denuncia = denuncias.gid) as likes, " +
-	  		"ST_AsGeoJSON(the_geom) as geometria FROM denuncias " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(com) AS comentarios " +
-	  		"FROM  (SELECT c.id_usuario, c.contenido, to_char(c.fecha::timestamp,'TMDay, DD TMMonth YYYY a las HH24:MI:SS') as fecha, u.* FROM comentarios c, usuarios u WHERE c.id_usuario = u._id and c.id_denuncia = denuncias.gid ORDER BY fecha DESC) com" +
-	  		") comentarios ON true " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(img) AS imagenes " +
-	  		"FROM  (SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY') as fecha  FROM imagenes WHERE id_denuncia = denuncias.gid) img" +
-	  		") imagenes ON true " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(usuarios) AS usuario " +
-	  		"FROM  (SELECT * FROM usuarios WHERE _id = denuncias.id_usuario) usuarios" +
-	  		") usuarios ON true " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(t_) AS tags_ " +
-	  		"FROM  (SELECT * FROM tags WHERE id_denuncia = denuncias.gid) t_" +
-	  		") tags ON true " +
-	  		"WHERE denuncias.fecha > current_timestamp - interval '1 DAY' order by denuncias.fecha DESC" ,
+  		denuncias_visor : helper.select.denuncias.visor,
 	  	
-	  	eliminar_denuncia_por_id : "delete from denuncias where gid=$1",
+	  	eliminar_denuncia_por_id : helper.delete.denuncias.por_id,
 	  	
-	  	actualizar_denuncia : "UPDATE denuncias SET (titulo, descripcion, the_geom) = "
-			+ "($1, $2, st_geomfromtext($3,4258))" +
-			" WHERE gid=$4" ,
+	  	actualizar_denuncia : helper.update.denuncias.por_id,
 			
-		usuario_por_email : "select * from usuarios where local ->> 'email' = $1" ,
+		usuario_por_email : helper.select.usuarios.por_email,
 		
-		usuario_por_email_o_username : "select * from usuarios where lower(local ->> 'email') = $1 or lower(profile ->> 'username') = $1",
+		usuario_por_email_o_username : helper.select.usuarios.por_email_o_username,
 		
-		usuario_por_id_facebook : "select * from usuarios where facebook ->> 'id' = $1" , 
+		usuario_por_id_facebook : helper.select.usuarios.por_id_facebook, 
 		
-		usuario_por_id_twitter : "select * from usuarios where twitter ->> 'id' = $1" , 
+		usuario_por_id_twitter : helper.select.usuarios.por_id_twitter, 
 		
-		actualizar_local_usuario : "UPDATE usuarios SET local= $1 where _id = $2",
+		actualizar_local_usuario : helper.update.usuarios.local,
   		
-		usuario_por_password_reset_token : "select * from usuarios where " +
-    		"resetPasswordToken=$1 and " +
-    		"resetPasswordExpires > CURRENT_TIMESTAMP" ,
+		usuario_por_password_reset_token : helper.select.usuarios.por_reset_token,
     		
-    	perfil_otro_usuario : "select local, profile, st_asgeojson(location_pref) as location_pref, " +
-    		"distancia_aviso from usuarios where _id = $1 " , 
+    	perfil_otro_usuario : helper.select.usuarios.perfil_otro, 
     	
-    	actualizar_password_reset_token : "UPDATE usuarios SET (password,resetPasswordToken,resetPasswordExpires) " +
-        	"= ($1, '', '') WHERE _id = $2" , 
+    	actualizar_password_reset_token : helper.update.usuarios.reset_token, 
         
-        set_token_1_hora : "update usuarios SET (resetPasswordToken, resetPasswordExpires) " +
-			"= ($1, CURRENT_TIMESTAMP + interval '1 hour') WHERE _id=$2" , 	
+        set_token_1_hora : helper.update.usuarios.token_hora, 	
 		
-		deslincar_twitter : "UPDATE usuarios SET twitter = NULL WHERE _id = $1" , 
+		deslincar_twitter : helper.update.usuarios.deslincar_twitter, 
 		
-		deslincar_facebook : "UPDATE usuarios SET facebook = NULL WHERE _id = $1" ,  
+		deslincar_facebook : helper.update.usuarios.deslincar_facebook,  
 		
-		notificacion_vista : "update notificaciones set vista=true where id_noti=$1" ,
+		notificacion_vista : helper.update.usuarios.notificacion_vista,
 		
-		usuarios_cerca_de_denuncia : "select _id, " + 
-			"st_distance(st_transform(location_pref, 25830), st_transform(st_geomfromtext($1, 4258), 25830)) " +
-			"as distancia from usuarios where " +
-			"st_distance(st_transform(location_pref, 25830), st_transform(st_geomfromtext($1, 4258), 25830)) " +
-			"< distancia_aviso and _id <> $2" ,
+		usuarios_cerca_de_denuncia : helper.select.usuarios.cerca_denuncia,
 			
-		insertar_notificacion : "insert into notificaciones(id_denuncia, id_usuario_from, id_usuario_to, tipo, distancia) " +
-			"values ($1, $2, $3, $4, $5) returning *" ,
+		insertar_notificacion : helper.insert.usuarios.notificacion,
 			
-		denuncia_vista : "update denuncias set veces_vista = veces_vista + 1 where gid=$1" ,
+		denuncia_vista : helper.update.denuncias.vista,
 		
-		check_like_denuncia : "select * from likes where id_usuario = $1 and id_denuncia = $2" ,
+		check_like_denuncia : helper.select.denuncias.me_gusta,
 		
-		insertar_like : "insert into likes(id_usuario, id_denuncia) values ($1, $2)",
+		insertar_like : helper.insert.denuncias.like,
 		
-		eliminar_like : "delete from likes where id_usuario = $1 and id_denuncia = $2",
+		eliminar_like : helper.delete.denuncias.like,
 		
-		denuncias_sin_where : "SELECT *, to_char(denuncias.fecha::timestamp,'TMDay, DD TMMonth YYYY HH24:MI:SS') as fecha, (select count(*) from likes where id_denuncia = denuncias.gid) as likes, " +
-	  		"ST_AsGeoJSON(the_geom) as geom FROM denuncias " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(com) AS comentarios " +
-	  		"FROM  (SELECT c.id_usuario, c.contenido, to_char(c.fecha::timestamp,'TMDay, DD TMMonth YYYY a las HH24:MI:SS') as fecha, u.* FROM comentarios c, usuarios u WHERE c.id_usuario = u._id and c.id_denuncia = denuncias.gid ORDER BY fecha DESC) com" +
-	  		") comentarios ON true " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(img) AS imagenes " +
-	  		"FROM  (SELECT *,to_char(fecha::timestamp,'TMDay, DD TMMonth YYYY') as fecha  FROM imagenes WHERE id_denuncia = denuncias.gid) img" +
-	  		") imagenes ON true " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(usuarios) AS usuario " +
-	  		"FROM  (SELECT * FROM usuarios WHERE _id = denuncias.id_usuario) usuarios" +
-	  		") usuarios ON true " +
-	  		"LEFT   JOIN LATERAL (" +
-	  		"SELECT json_agg(t_) AS tags_ " +
-	  		"FROM  (SELECT tag FROM tags WHERE id_denuncia = denuncias.gid) t_ " +
-	  		") t ON true " +
-	  		"WHERE " , 
+		denuncias_sin_where : helper.select.denuncias.sin_where, 
 		
-	  	crear_usuario : "insert into usuarios(password, local, profile) VALUES ($1, $2, $3) returning *" ,
+	  	crear_usuario : helper.insert.usuarios.crear,
 	  	
-	  	set_facebook_usuario : "update usuarios SET facebook = $1 where _id = $2" , 
+	  	set_facebook_usuario : helper.update.usuarios.facebook, 
 
-	  	set_twitter_usuario : "update usuarios SET twitter = $1 where _id = $2" , 	  	
+	  	set_twitter_usuario : helper.update.usuarios.twitter, 	  	
 	  	
 }

@@ -1,0 +1,1 @@
+insert into usuarios(password, local, profile) VALUES ($1, $2, $3) returning *

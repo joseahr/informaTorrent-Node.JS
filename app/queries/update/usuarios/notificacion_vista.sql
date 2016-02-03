@@ -1,0 +1,1 @@
+update notificaciones set vista=true where id_noti = $1

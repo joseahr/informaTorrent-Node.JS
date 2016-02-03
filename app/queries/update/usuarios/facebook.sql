@@ -1,0 +1,1 @@
+update usuarios SET facebook = $1 where _id = $2

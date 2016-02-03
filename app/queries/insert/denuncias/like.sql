@@ -1,0 +1,1 @@
+insert into likes(id_usuario, id_denuncia) values ($1, $2)

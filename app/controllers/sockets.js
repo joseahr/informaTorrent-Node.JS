@@ -180,7 +180,7 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 			else if(buffer_centro_ && !buffer_radio_) return socket.emit('error_query', {msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros.'});
 			else if(!buffer_centro_ && buffer_radio_) return socket.emit('error_query', {msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros.'});
 			
-			var query = consultas.denuncias_sin_where + filtro_denuncias(filtro);
+			var query = consultas.denuncias_sin_where.query + filtro_denuncias(filtro);
 			
 			var aux = false;
 			

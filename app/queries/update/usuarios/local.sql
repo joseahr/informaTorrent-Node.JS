@@ -1,0 +1,1 @@
+UPDATE usuarios SET local= $1 where _id = $2

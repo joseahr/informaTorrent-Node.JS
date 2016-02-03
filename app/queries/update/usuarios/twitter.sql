@@ -1,0 +1,1 @@
+update usuarios SET twitter = $1 where _id = $2

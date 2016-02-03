@@ -1,0 +1,1 @@
+update usuarios set profile = $1 where _id = $2

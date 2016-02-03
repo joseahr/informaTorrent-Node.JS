@@ -1,0 +1,1 @@
+update usuarios SET (resetPasswordToken, resetPasswordExpires) = ($1, CURRENT_TIMESTAMP + interval '1 hour') WHERE _id=$2

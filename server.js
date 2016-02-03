@@ -13,14 +13,16 @@ var flash    = require('connect-flash');
 
 var promiseLib = require('bluebird');
 var configDB = require('./config/database.js');
-var pgp = require('pg-promise')({
+var pg_options = {
 	promiseLib : promiseLib
-});
+};
+
+var pgp = require('pg-promise')(pg_options);
 var db = pgp(configDB.denuncias);
 var dbCarto = pgp(configDB.carto);
 var queries = require('./app/controllers/queries.js');
 
-var pg = require('pg');
+require('pg-monitor').attach(pg_options, ['query', 'error', 'connect', 'disconnect', 'task', 'transact']);
 
 var fs = require('fs');
 var path = require('path');

@@ -1,0 +1,1 @@
+update usuarios set (location_pref, distancia_aviso) = (st_geomfromtext($1, 4258),$2) where _id = $3

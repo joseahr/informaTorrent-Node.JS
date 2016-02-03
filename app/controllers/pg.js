@@ -142,7 +142,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 	if(errormsg.length > 0)
 		return res.send({type: 'error', msg: errormsg});
 	
-	dbCarto.one(consultas.comprobar_geometria(wkt))
+	dbCarto.one(consultas.comprobar_geometria(wkt) , wkt)
 		.then(function(geom_check){
 			if (geom_check.st_contains == false)
 				throw new Error('La geometría debe estar dentro de Torrent.');
@@ -164,7 +164,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 				  // a la carpeta final
 				  files.forEach(function(ruta) {
 					  
-				    console.log('img: ' + path.basename(ruta));
+					  console.log('img: ' + path.basename(ruta));
 				    
 					  var from = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
 					  var to = path.join(config.UPLOADDIR, tempDirID +"-" + path.basename(ruta));
@@ -203,6 +203,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 			
 		})
 		.then (function(){
+			// TODO: Socket.on('new denuncia added') ponerlo aquiiiiii!!!
 			res.send({
 				type: 'success', 
 				msg: 'Denuncia guardada correctamente',
@@ -418,7 +419,7 @@ ContPg.prototype.updateDenuncia = function(req, res){
 	if(errormsg.length > 0)
 		return res.send({type: 'error', msg: errormsg});
 	
-	dbCarto.one(consultas.comprobar_geometria(wkt))
+	dbCarto.one(consultas.comprobar_geometria(wkt), wkt)
 		.then(function(geom_check){
 			if (geom_check.st_contains == false)
 				throw new Error('La geometría debe estar dentro de Torrent.');
@@ -597,6 +598,8 @@ ContPg.prototype.changeProfilePicture = function(req, res) {
 	        
 	        db.none(consultas.actualizar_perfil, [JSON.stringify(user.profile), user._id])
 	        	.then(function(){
+	        		for (var socketId in global.clients[req.user._id])
+	        			global.clients[req.user._id][socketId].emit('imagen cambiá', {path : user.profile.picture});
 	        		res.send({
 	        			type: 'success', 
 	        			msg: 'Imagen de Perfil cambiada correctamente.',
@@ -650,11 +653,20 @@ ContPg.prototype.postChangeLoc = function(req, res){
 ContPg.prototype.changeImageGravatar = function(req, res){
 	
 	var user = req.user;
+	var sub = '/files/usuarios'
+	if(user.profile.picture.indexOf(sub) > -1){
+    	fs.unlink(path.join('./public', user.profile.picture), function(err){
+    		console.log('imagen anterior eliminada');
+    		if(err) console.log(err); // No debería ocurrir
+    	});
+	}
 	
 	user.profile.picture = req.body.gravatar;
 	
 	db.none(consultas.actualizar_perfil, [JSON.stringify(user.profile), user._id])
 		.then(function(){
+    		for (var socketId in global.clients[req.user._id])
+    			global.clients[req.user._id][socketId].emit('imagen cambiá', {path : user.profile.picture});
 			res.send({msg: 'Imagen de perfil actualizada correctamente', path: req.body.gravatar});
 		})
 		.catch(function(error){

@@ -1,0 +1,1 @@
+insert into comentarios(id_usuario, id_denuncia, contenido) VALUES($1, $2, $3)

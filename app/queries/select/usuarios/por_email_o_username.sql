@@ -1,0 +1,1 @@
+select * from usuarios where lower(local ->> 'email') = $1 or lower(profile ->> 'username') = $1

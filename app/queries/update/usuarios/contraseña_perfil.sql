@@ -1,0 +1,1 @@
+update usuarios set (password, profile) = ($1, $2) where _id = $3

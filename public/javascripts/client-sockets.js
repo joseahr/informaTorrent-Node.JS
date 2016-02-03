@@ -11,6 +11,10 @@ $('.noti').click(function(event){
 	
 });
 
+num_denuncias_io.on('imagen cambiá', function(data){
+	alert(data.path);
+});
+
 function noti($this){
 	var vista = $($this).attr('vista');
 	if(vista == 'true') return;

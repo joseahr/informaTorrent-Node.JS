@@ -1,0 +1,1 @@
+select * from usuarios where profile ->> 'username' = $1
