@@ -92,9 +92,12 @@ ContPg.prototype.uploadTempImage = function(req, res){
  */
 ContPg.prototype.addComentario = function(req, res){
 	
+	var denuncia, notificacion;
 	var contenido = req.body.contenido;
 	var user_id = req.user._id;
 	var id_denuncia = req.params.id_denuncia;
+	
+	var datos = JSON.stringify({contenido : contenido});
 	
 	if (!contenido || !user_id || !id_denuncia) return res.status(500).send('Fallo insertando comentario');
 	
@@ -102,11 +105,35 @@ ContPg.prototype.addComentario = function(req, res){
 	
 	db.none(consultas.añadir_comentario, [user_id, id_denuncia, contenido])
 		.then (function(){
-			return res.redirect('back');
+			return db.one(consultas.denuncia_por_id, id_denuncia);
+		})
+		.then(function(denuncia_){
+			denuncia = denuncia_;
+			if(denuncia.id_usuario == user_id){
+				res.redirect('back');
+				var err = new Error('Notificación no enviada. Mismo usuario, prop de la denunc');
+				err.same_user = true;
+			}
+			return db.one(consultas.notificar_denuncia_comentada, 
+					[id_denuncia, user_id, denuncia.id_usuario, datos]);
+		})
+		.then(function(notificacion_){
+			notificacion = notificacion_;
+			if(clients[denuncia.id_usuario]){
+				for(var socketId in clients[denuncia.id_usuario]){
+					clients[denuncia.id_usuario][socketId].emit('denuncia_comentada', 
+						{denuncia: denuncia, from: req.user, noti: notificacion});
+				}
+				res.redirect('back');
+			}
+			else {
+				console.log('el usuario de la denuncia comentada está conectado');
+				res.redirect('back');
+			}
 		})
 		.catch(function(error){
 			console.log(error);
-			res.send(404);
+			res.status(500).send(error);
 		});
 
 };
@@ -117,9 +144,10 @@ ContPg.prototype.addComentario = function(req, res){
 
 ContPg.prototype.saveDenuncia = function(req, res){
 	
-	var response = {}; // La respuesta que se envía
-	var errormsg = ''; // mensaje de errores
+	var errormsg = '';
 	
+	var usuarios_cerca = [];
+	var from;
 	var imagenes = []; // Lista de imágenes a guardar en la base de datos
 	var titulo = req.body.titulo.replace(/["' # $ % & + ` -]/g, " ");
 	var contenido = req.body.contenido.replace(/["' # $ % & + ` -]/g, " ");
@@ -187,7 +215,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 				
 				let denuncia = yield this.one(consultas.añadir_denuncia, [titulo, contenido, wkt, user_id]);
 				
-				denuncia_io.id = denuncia.gid;
+				denuncia_io = denuncia;
 				
 				imagenes.forEach(function(path){
 					q.push(t.none(consultas.añadir_imagen_denuncia, [path, denuncia.gid, user_id]));
@@ -204,15 +232,71 @@ ContPg.prototype.saveDenuncia = function(req, res){
 		})
 		.then (function(){
 			// TODO: Socket.on('new denuncia added') ponerlo aquiiiiii!!!
+			
+			// Buscar usuarios cerca, emitir notificacion
+			console.log(denuncia_io + ' new denuncia addedd');
+			for(var socketId in global.clients[req.user._id]){
+				global.clients[req.user._id][socketId].broadcast.emit('new_denuncia', {denuncia: denuncia_io});
+				global.clients[req.user._id][socketId].emit('new_denuncia', {denuncia: denuncia_io});
+				break;
+			}
+			
+			return db.any(consultas.usuarios_cerca_de_denuncia, [wkt, req.user._id]);
+			
+		})
+		.then(function(usuarios){
+			if(usuarios.length == 0) {
+				//throw new Error('No hay usuarios cerca de la denuncia');
+				console.log('////////////');
+				console.log('NO HAY USUARIOS AFECTADOS');
+				res.send({
+					type: 'success', 
+					msg: 'Denuncia guardada correctamente',
+					denuncia: denuncia_io,
+					num_usuarios_afectados : usuarios.length
+				});
+				var err = new Error('No hay usuarios cerca de la denuncia');
+				err.no_users_found = true;
+				throw err;
+			}
+			else {
+				usuarios_cerca = usuarios;
+				return db.one(consultas.usuario_por_id, req.user._id);
+			}
+		})
+		.then(function(usuario){
+			from = usuario;
+			return db.tx(function (t){
+				var q = [];
+				usuarios_cerca.forEach(function(user){
+					var datos = JSON.stringify({distancia : user.distancia});
+					q.push(db.one(consultas.notificar_denuncia_cerca, 
+						[denuncia_io.gid, req.user._id, user._id, datos]));
+				});
+				return t.batch(q);
+			});
+		})
+		.then(function(notificaciones){
+			console.log('notificaciones');
+			notificaciones.forEach(function(notificacion){
+				for(var socketId in global.clients[notificacion.id_usuario_to]){
+					console.log(socketId);
+					console.log('El usuario ' + notificacion.id_usuario_from + ' ha publicado una denuncia carca de la ubicación del usuario ' + notificacion.id_usuario_to);
+					clients[notificacion.id_usuario_to][socketId].emit('denuncia_cerca', 
+						{denuncia: denuncia_io, from: from, noti: notificacion, imagenes: imagenes});	
+				}
+			});
 			res.send({
 				type: 'success', 
 				msg: 'Denuncia guardada correctamente',
-				denuncia: denuncia_io
+				denuncia: denuncia_io,
+				num_usuarios_afectados : usuarios_cerca.length
 			});
 		})
 		.catch(function(error){
 			console.log('Error insertando nueva denuncia ' + error);
-			res.send({type: 'error', msg: error.toString()})
+			//console.log('headeeerSENT', res.headersSent);
+			if(!error.no_users_found) res.send({type: 'error', msg: error.toString()})
 		});
 }; // Fin saveDenuncia
 

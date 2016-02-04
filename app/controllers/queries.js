@@ -26,7 +26,7 @@ module.exports = {
 			
 		añadir_tag_denuncia : helper.insert.denuncias.tag,
 		
-		obtener_denuncias_usuario : helper.select.denuncias.por_id,
+		obtener_denuncias_usuario : helper.select.usuarios.denuncias,
 	  	
 	  	numero_denuncias : helper.select.denuncias.num_total,
 	  	
@@ -80,7 +80,9 @@ module.exports = {
 		
 		usuarios_cerca_de_denuncia : helper.select.usuarios.cerca_denuncia,
 			
-		insertar_notificacion : helper.insert.usuarios.notificacion,
+		notificar_denuncia_cerca : helper.insert.usuarios.notificaciones.denuncia_cerca,
+		
+		notificar_denuncia_comentada : helper.insert.usuarios.notificaciones.denuncia_comentada,
 			
 		denuncia_vista : helper.update.denuncias.vista,
 		

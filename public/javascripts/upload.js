@@ -3,7 +3,6 @@ var json = {}; // Objeto que se pasará al cuerpo de la petición XHR
 
 // Nos conectamos a Socket.io
 var socket = io.connect("http://" + ip + ":3000/app/denuncias/nueva");
-
 // Cuando se conecte
 socket.on('connect', function() {
 	// Almacenamos la sessionId que nos genera socket.io

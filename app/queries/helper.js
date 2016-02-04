@@ -49,7 +49,10 @@ var mis_consultas = {
 		},
 		usuarios : {
 			crear : sql('insert', 'usuarios/crear.sql'),
-			notificacion : sql('insert', 'usuarios/notificacion.sql')
+			notificaciones : {
+				denuncia_cerca : sql('insert', 'usuarios/notificaciones/denuncia_cerca.sql'),
+				denuncia_comentada : sql('insert', 'usuarios/notificaciones/denuncia_comentada.sql')
+			}
 		}
 	},
 	update : {
