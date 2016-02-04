@@ -273,7 +273,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 					q.push(db.one(consultas.notificar_denuncia_cerca, 
 						[denuncia_io.gid, req.user._id, user._id, datos]));
 				});
-				return t.batch(q);
+				return t.batch(q); // Devuelve una lista de promesas que ddeben evaluarse
 			});
 		})
 		.then(function(notificaciones){
