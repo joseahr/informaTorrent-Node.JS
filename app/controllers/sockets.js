@@ -128,8 +128,11 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 		});
 		
 		socket.on('alguien_vio_una_denuncia', function(data){
-			
-			db.none(consultas.denuncia_vista, data.id_denuncia)
+			db.one(consultas.denuncia_por_id, data.id_denuncia)
+				.then(function(denuncia){
+					var tipo = JSON.parse(denuncia.geometria).type;
+					return db.none(consultas.denuncia_vista(tipo), data.id_denuncia)
+				})
 				.then(function(){
 					console.log('incrementado veces_vista');
 				})
@@ -164,20 +167,33 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 			var me_gusta, notificacion_;
 			var id_usuario = this.id_usuario;
 			console.log(id_usuario + 'id_USUUSUSUSU');
-			db.oneOrNone(consultas.check_like_denuncia, [id_usuario, data.denuncia.gid])
+			
+			var denuncia;
+			
+			db.one(consultas.denuncia_por_id, data.denuncia.gid)
+				.then(function(denuncia_){
+					denuncia = denuncia_;
+					denuncia.tipo = denuncia.geometria.type;
+					denuncia.coordenadas = denuncia.geometria.coordinates;
+					denuncia.geometria = undefined;
+					return db.oneOrNone(consultas.check_like_denuncia, [id_usuario, data.denuncia.gid]);
+				})
 				.then(function(like){
-					me_gusta = (like != null);
+					console.log(like);
+					me_gusta = (like == null);
 					socket.emit('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?',
-						{error: false, like: (like != null) });
-					if(!like){
+						{error: false, like: me_gusta });
+					if(like == null){
 						// No le gusta aún, entonces le ha dado a me gusta
 						return db.tx(function(t){
 							q = [];
 							q.push(t.none(consultas.insertar_like, [data.usuario_id, data.denuncia.gid]));
+							console.log('from',data.usuario_id, 'to', data.denuncia.id_usuario);
 							// Si el usuario es el propietario de la denuncia no enviamos notificacion
-							if(data.usuario_id != data.denuncia.id_usuario) 
+							if(data.usuario_id != data.denuncia.id_usuario) {
 								q.push(t.one(consultas.insertar_notificacion, 
-									[data.denuncia.gid, data.usuario_id, data.denuncia.id_usuario,'LIKE_DENUNCIA', 0]));
+									[data.denuncia.gid, data.usuario_id, data.denuncia.id_usuario,'LIKE_DENUNCIA', JSON.stringify({})]));
+							}
 							return t.batch(q);
 						});
 					}
@@ -186,32 +202,36 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 						return db.tx(function(t){
 							q = [];
 							q.push(t.none(consultas.eliminar_like, [data.usuario_id, data.denuncia.gid]));
-							if(data.usuario_id != data.denuncia.id_usuario) 
+							if(data.usuario_id != data.denuncia.id_usuario){
 								q.push(t.one(consultas.insertar_notificacion, 
-									[data.denuncia.gid, data.usuario_id, data.denuncia.id_usuario,'NO_LIKE_DENUNCIA', 0]));
+									[data.denuncia.gid, data.usuario_id, data.denuncia.id_usuario,'NO_LIKE_DENUNCIA', JSON.stringify({})]));
+							}
 							return t.batch(q);
 						});
 					}
 				})
 				.then(function(notificacion){
-					if(notificacion){
+					console.log('noti length', notificacion);
+					if(notificacion[1] == null){
+						throw new Error('No notificación. Mismo usuario que el propietario de la denuncia. No emito noti.');
+					}
+					else {
 						// Si hay noti es decir el usuario que da al like y el usuario prop de la 
 						// denuncia son distintos
 						notificacion_ = notificacion;
 						return db.one(consultas.usuario_por_id, data.usuario_id);
 					}
-					else throw new Error('No notificación. Mismo usuario que el propietario de la denuncia. No emito noti.')
 				})
 				.then(function(usuario){
 					if(me_gusta && clients[data.denuncia.id_usuario])
 						for(var socketId in clients[data.denuncia.id_usuario]){
 							clients[data.denuncia.id_usuario][socketId].emit('denuncia_likeada', 
-								{denuncia: data.denuncia, from: usuario, noti: notificacion_});
+								{denuncia: denuncia, from: usuario, noti: notificacion_});
 						}
 					else if(!me_gusta && clients[data.denuncia.id_usuario])
 						for(var socketId in clients[data.denuncia.id_usuario]){
 							clients[data.denuncia.id_usuario][socketId].emit('denuncia_no_likeada', 
-								{denuncia: data.denuncia, from: usuario, noti: notificacion_});
+								{denuncia: denuncia, from: usuario, noti: notificacion_});
 						}
 						
 				})
@@ -225,21 +245,25 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 	}); // io.of('/app/visor')
 
 	io.of('/app/denuncias/nueva').on('connection', function(socket){
-		socket.join('sessionId');
-		console.log(socket.id + ' sessionID');
+		//socket.join('sessionId');
+		console.log(socket.id + ' creando o editando denuncia');
 		
 		// Creamos una carpeta temporal dentro de public/files/temp/
 		// cuyo nombre es el identificador del socket
-		mkdirp(path.join(config.TEMPDIR, socket.id), function (err){
-			if(err) console.log(err);
-		}); // Crea un directorio si no existe
+		
+		socket.on('crear_carpeta_temporal', function(data){
+			mkdirp(path.join(config.TEMPDIR, data.random), function (err){
+				console.log(data.random);
+				if(err) console.log(err);
+			}); // Crea un directorio si no existe
+		});
 		
 		
 		socket.on('disconnect', function(){
-			console.log(this.id + ' desconectado');
-			exec( 'rm -r ' + config.TEMPDIR + "/" + this.id, function ( errD, stdout, stderr ){
-				if (errD) console.log(errD);
-			});
+//			console.log(this.id + ' desconectado');
+//			exec( 'rm -r ' + config.TEMPDIR + "/" + this.id, function ( errD, stdout, stderr ){
+//				if (errD) console.log(errD);
+//			});
 		});
 	});
 	

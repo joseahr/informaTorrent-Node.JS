@@ -6,7 +6,7 @@ $('.noti').click(function(event){
 	var vista = $(this).attr('vista');
 	if(vista == 'true') return;
 	var id_noti = $(this).attr('id_noti');
-	
+	console.log('hkgkhgkhg click');
 	num_denuncias_io.emit('noti_vista', id_noti);
 	
 });
@@ -18,15 +18,18 @@ num_denuncias_io.on('imagen cambiá', function(data){
 function noti($this){
 	var vista = $($this).attr('vista');
 	if(vista == 'true') return;
+	console.log('shsjhskjhsksjh FUNCION');
 	var id_noti = $($this).attr('id_noti');
 	
-	num_denuncias_io.emit('noti_vista', id_noti);	
+	num_denuncias_io.emit('noti_vista', id_noti);
+	var vista = $($this).attr('vista', 'true');
 }
 
 num_denuncias_io.on('noti_vista_cb', function(data){
 	// data == id_noti
 	$("[id_noti='" + data +"']").attr('vista', 'true');
-	$("[id_noti_panel='" + data +"']").hide();
+	$("[id_noti='" + data +"']").css('background-color', '#fff');
+	//$("[id_noti_panel='" + data +"']").hide();
 	
 	var nuevas = parseInt($('.noti_up:eq(1)').text()) - 1;
 	$('.noti_up').empty();

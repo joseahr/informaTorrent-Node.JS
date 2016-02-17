@@ -1,0 +1,154 @@
+extends map-layout.jade
+block meta
+	meta(property='og:url' content='/app/denuncia/#{denuncia.gid}')
+	meta(property='og:type' content='website')
+	meta(property='og:title' content='Your Website Title')
+	meta(property='og:description' content='Your description')
+block link
+	link(rel="stylesheet" href="/stylesheets/carousel.css")
+block panel-lateral
+	#contenido.cd-panel.from-right
+		header.cd-panel-header
+			h1(style="margin-top: 0px; color: #55ACEE !important; font-size: 20px;") Contenido
+			a.cd-panel-close(href='#0') Close
+		.cd-panel-container
+			.cd-panel-content
+				div(style="background: rgba(0,0,0,0.2); padding: 15 0 0 0px").row
+					.col-lg-4
+						img.img.img-responsive.img-circle(style="width: 80px; height: 80px;" src="#{denuncia.usuario[0].profile.picture}")
+					.col-lg-8
+						h4 denunciado por 
+							span
+								a(href="/app/usuarios/#{denuncia.id_usuario}")
+									| #{denuncia.usuario[0].profile.username}
+					div(style="margin-top: 5px;  clear: both;" class="btn-info text-center") #{denuncia.fecha}
+				h2 #{denuncia.titulo}
+				h4
+					i.fa.fa-eye
+						|  #{denuncia.veces_vista}
+					i  
+					i#likes.fa.fa-thumbs-o-up
+						|  #{denuncia.likes}
+					i  
+					i.fa.fa-tags
+					if denuncia.tags_
+						each tag in denuncia.tags_
+							| ##{tag.tag}  
+				div(style="clear: both; margin-top: 20px;") 
+					h4(style="margin-top: 10px") Descripción
+					div(style="word-wrap: break-word;") !{denuncia.descripcion}
+	#comentarios.cd-panel.from-right
+		header.cd-panel-header
+			h1(style="margin-top: 0px; color: #55ACEE !important; font-size: 20px;") Comentarios
+			a.cd-panel-close(href='#0') Close
+		.cd-panel-container
+			.cd-panel-content
+				if user
+					p Añade un comentario
+					form(id="form_add_comentario" action="/app/denuncia/#{denuncia.gid}/addComentario", method="post")
+						textarea#comentar(name="contenido" rows='3' style={'height':'200px'}).form-control
+						.col-lg-12.input-group.space(style={'margin-top':'5px', 'margin-bottom':'15px'})
+							span.input-group-addon
+								i.fa.fa-comment.fa-fw
+							input.form-control.btn-success(type="submit", value="Comentar")
+				if(denuncia.comentarios)
+					p Contiene #{denuncia.comentarios.length} comentarios
+					each comentario in denuncia.comentarios
+						.col-lg-12.space
+							.row(style={background: 'rgba(0,50,187, 0.1)', padding:'10 5 10 5px'}).form-horizontal.text-center
+								.col-lg-4
+									a(href="/app/usuarios/#{comentario.id_usuario}")
+										img.img-responsive.img-thumbnail.img-circle(src="#{comentario.profile.picture}" style="width: 80px; height: 80px;")
+									p.space
+										a(href="/app/usuarios/#{comentario.id_usuario}") #{comentario.profile.username}
+								.col-lg-8
+									div.btn-warning
+										p #{comentario.fecha}
+									.space
+									| !{comentario.contenido}
+				else
+					p Esta denuncia no contiene comentarios
+	#imagenes.cd-panel.from-right
+		header.cd-panel-header
+			h1(style="margin-top: 0px; color: #55ACEE !important; font-size: 20px;") Imágenes
+			a.cd-panel-close(href='#0') Close
+		.cd-panel-container
+			.cd-panel-content
+				if(denuncia.imagenes)
+					p Contiene #{denuncia.imagenes.length} imágenes
+					.well(style="height: 100%;")
+						#thumbnail-preview-indicators.carousel.slide(data-ride='carousel' style="height: 100%;")
+							ol.carousel-indicators
+								- var aux = 0;
+								each imagen in denuncia.imagenes
+									if aux == 0
+										li.active(data-target='#thumbnail-preview-indicators', data-slide-to='#{aux}')
+											.thumbnail
+												img.img-responsive(src='#{imagen.path}')										
+									else
+										li(data-target='#thumbnail-preview-indicators', data-slide-to='#{aux}')
+											.thumbnail
+												img.img-responsive(src='#{imagen.path}' style="height: 10%;")
+									- aux++;
+							.carousel-inner(style="height: 100%;")
+								- var aux = 0
+								if denuncia.imagenes
+									each imagen in denuncia.imagenes
+										if aux == 0
+											.item.slides.active(style="height: 100%;")
+												.slide(class="slide-#{aux + 1}" style="height: 100%;background: url('#{imagen.path}'); background-size: 100% 100%;")
+										else
+											.item.slides(style="height: 100%;")
+												div(class="slide-#{aux + 1}" style="height: 100%;background: url('#{imagen.path}'); background-size: 100% 100%;")
+										- aux++;
+				else
+					p Esta denuncia no contiene imágenes
+block script
+	script(src="/javascripts/share.js")
+	script(src="/javascripts/panel-lateral.js")
+	// TinyMCE Editor
+	script(src="//cdn.tinymce.com/4/tinymce.min.js")
+	script.
+		var denuncia = {
+			titulo: '#{denuncia.titulo}',
+			gid: '#{denuncia.gid}',
+			id_usuario: '#{denuncia.id_usuario}'
+		};
+		$('#form_add_comentario').submit(function(){
+			alert('click');
+			num_denuncias_io.emit('new_comentario_added', {denuncia: denuncia});
+			return true;
+		});
+		var geojsonDenuncia = !{denuncia.geometria}; // geometría del servidor
+		// solo podemos acceder a ella desde este tipo de scripts que tienen un punto al final
+		map.addControl(new app.InfoDenuncia());
+		map.addControl(new app.ImagenesDenuncia());
+		map.addControl(new app.ComentariosDenuncia());
+		map.addControl(new app.LikeDenuncia());
+
+		num_denuncias_io.emit('alguien_vio_una_denuncia', {id_denuncia: '#{denuncia.gid}'});
+
+		var likes_html = '<div class="container" style="width: 100%"><div class="col-lg-12">';
+		
+		var usuarios_like = JSON.parse('!{JSON.stringify(denuncia.likes)}');
+
+		usuarios_like.forEach(function(usuario){
+			likes_html += '<a data-toggle="bottom" title="Usuario" data-content="' + usuario.profile.username + '" href="/app/usuarios/' + usuario._id + '" style="float:left; margin: 2px;"><img style="width: 80px; height: 80px;" src="' + usuario.profile.picture + '" class="img img-thumbnail"></img></a>';
+		});
+		likes_html += '</div></div>';
+		
+		$('#likes').click(function(e){
+			BootstrapDialog.show({
+				title: 'Esta denuncia le gusta a...',
+				message: likes_html,
+				buttons: [{label: 'Cerrar', action: function(d){d.close();}}],
+				onshown: function(){
+					$('[data-toggle="bottom"]').popover({
+						trigger: 'hover',
+						placement: 'bottom'
+					});
+				}
+			});
+		});
+		
+	script(src="/javascripts/openlayers/olvisor.js")

@@ -14,17 +14,14 @@ block content
 				// Columna Izquierda
 				.col-md-4(style="margin-bottom: 10px;")
 					.row(style="margin:0 5 0 5px;")
-						div(style={'background-color': 'rgba(0,50,187, 0.1)', 'border-top-left-radius': '10px' , 'border-top-right-radius': '10px'})
-							div(style={'border-top-left-radius': '10px' , 'border-top-right-radius': '10px', background: 'url(http://www.lovevalencia.com/wp-content/uploads/2011/07/torrent-e1311319357479.jpg)', 'background-size':'100% 35%','background-repeat':'no-repeat', width: '100%', padding:'40 5 40 5px'}).form-horizontal.text-center
+						div(style={'background-color': 'rgba(0,50,187, 0.1)', 'border-top-left-radius': '10px' , 'border-top-right-radius': '10px', padding: '0px'}).container-fluid
+							div(style={'border-top-left-radius': '10px' , 'border-top-right-radius': '10px', background: 'url(http://www.lovevalencia.com/wp-content/uploads/2011/07/torrent-e1311319357479.jpg)', 'background-size':'100% 60%','background-repeat':'no-repeat', width: '100%', padding:'40 0 40 0px'}).text-center
 								img.img-circle.img-responsive.img-thumbnail(src="#{user.profile.picture}" style={'margin': '0 auto', 'width':'200px','height':'200px'})
-								.space
-								a.btn.btn-default(href="/app/denuncias/nueva" style={'min-width': '250px'}) Nueva Denuncia
-								.space
-								a.btn.btn-default(href="/app/perfil/editar" style={'min-width': '250px'}) Editar Perfil
-								.space
-								a.btn.btn-default(style={'width': '250px'} href="/app/perfil/editar_loc") Editar localización
-								.space
-								a.btn.btn-danger(href="/app/logout" style={'width': '250px'}) Cerrar Sesión
+							.col-lg-12.text-center(style={'margin-bottom' : '40px'})
+								a.btn.btn-default.col-lg-12(href="/app/denuncias/nueva" style={width : '100%'}) Nueva Denuncia
+								a.btn.btn-default.col-lg-12(href="/app/perfil/editar" style = {'margin-top':'5px', width : '100%'}) Editar Perfil
+								a.btn.btn-default.col-lg-12( href="/app/perfil/editar_loc" style = {'margin-top':'5px', width : '100%'}) Editar localización
+								a.btn.btn-danger.col-lg-12(href="/app/logout" style = {'margin-top':'5px', width : '100%'}) Cerrar Sesión
 				// Columna Central
 				.col-md-8
 					.row(style="margin:0 5 0 5px;")
@@ -42,57 +39,7 @@ block content
 													span.badge(style="background:#5BC0DE;float:left").noti_tot #{mis_notificaciones.length}
 													span.badge(style="background:#D9534F;float:right").noti_up #{nuevas}
 									#notificaciones.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingOne')
-										.panel-body(style='text-align: center;height: 60%;overflow-y:scroll;')
-											each noti in mis_notificaciones
-												.row(style={margin: '0 5 10 5px', background: 'rgba(0,50,187,0.1)', padding: '5%'} id_noti="#{noti.id_noti}" vista="#{noti.vista}").noti
-													if (noti.vista == false)
-														.col-lg-12.btn.btn-danger(style="margin-bottom: 10px" id_noti_panel="#{noti.id_noti}") NUEVA
-													.col-xs-3
-														a(target="_blank" href="/app/usuarios/#{noti.id_usuario_from}")
-															img.img-responsive.img-thumbnail.img-circle(src="#{noti.profile_from.picture}" style={'width':'50px !important', 'height':'50px'})
-														if(noti.tipo == 'DENUNCIA_CERCA')
-															span.fa-stack.fa-lg
-																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
-																i.fa.fa-map-marker.fa-stack-1x.fa-inverse
-														else if(noti.tipo == 'COMENTARIO_DENUNCIA')
-															span.fa-stack.fa-lg
-																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
-																i.fa.fa-comments.fa-stack-1x.fa-inverse
-														else if(noti.tipo == 'LIKE_DENUNCIA')
-															span.fa-stack.fa-lg
-																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
-																i.fa.fa-thumbs-o-up.fa-stack-1x.fa-inverse
-														else if(noti.tipo === 'NO_LIKE_DENUNCIA')	
-															span.fa-stack.fa-lg
-																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
-																i.fa.fa-thumbs-o-up.fa-stack-1x.fa-inverse
-																i.fa.fa-ban.fa-stack-2x.text-danger
-																											
-													.col-xs-9
-														.col-lg-12
-															p.lead #{noti.fecha}
-														p.lead 
-															span 
-																if (noti.tipo == 'LIKE_DENUNCIA' || noti.tipo == 'NO_LIKE_DENUNCIA')
-																	| A 
-																a(target="_blank" href="/app/usuarios/#{noti.id_usuario_from}") #{noti.profile_from.username}
-															if(noti.tipo == 'DENUNCIA_CERCA')
-																|  ha publicado una 
-																span 
-																	a(href="/app/denuncia/#{noti.id_denuncia}") denuncia
-																|  cerca de tu ubicación (#{noti.distancia} metros)
-															else if(noti.tipo == 'COMENTARIO_DENUNCIA')
-																|  ha comentado una 
-																span
-																	a(href="/app/denuncia/#{noti.id_denuncia}")  denuncia tuya
-															else if (noti.tipo == 'LIKE_DENUNCIA')
-																|  le gusta tu 
-																span
-																	a(href="/app/denuncia/#{noti.id_denuncia}")  denuncia
-															else if (noti.tipo == 'NO_LIKE_DENUNCIA')
-																|  ya no le gusta tu 
-																span
-																	a(href="/app/denuncia/#{noti.id_denuncia}")  denuncia
+										.panel-body(style='text-align: center;')
 								.panel.panel-default
 									// Notificaciones
 									#headingTwo.panel-heading(role='tab')
@@ -101,67 +48,10 @@ block content
 												i.fa.fa-files-o
 												| Mis Denuncias
 									#mis_denuncias.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTwo')
-										.panel-body(style='text-align: center;height: 60%;overflow-y:scroll;')
+										.panel-body(style='text-align: center;')
 											p.lead ¡Has realizado 
 												span#has_realizado.lead #{misDenuncias.length} 
 												| denuncias!
-											- var count = 1;
-											each denuncia in misDenuncias
-												// Contenedor
-												.row(id="#{denuncia.gid}" style={margin: '0 5 10 5px', background: 'rgba(0,50,187,0.1)', padding: '5%'})
-													.col-lg-12
-														// Nombre denuncia
-														p.lead.btn-warning(style={'word-break':'break-all', 'border':'1px solid #fff'})
-															| #{denuncia.titulo}
-														// Fecha Denuncia
-														p.btn-default.lead(style={margin: '10 0 20 0px'}) #{denuncia.fecha}
-													.col-lg-12
-														.col-md-4(style={'padding':'0px'})
-															div(style={width: '100%', margin: '0 auto'})
-																if(denuncia.imagenes != null)
-																	img.img-thumbnail.img-responsive(src="#{denuncia.imagenes[0].path}" style={'width':'100%'})
-																else
-																	img.img-thumbnail.img-responsive(src="/files/images/bg.jpg" style={'width':'100%'})
-																// Coments Tags Imágenes
-																.col-lg-12(style={'padding':'10 0 0 0px'}).text-center
-																	p
-																		i.fa.fa-comments
-																			if denuncia.comentarios
-																				| &nbsp #{denuncia.comentarios.length} &nbsp
-																			else 
-																				| &nbsp 0 &nbsp	
-																		i.fa.fa-image
-																			if denuncia.imagenes
-																				| &nbsp #{denuncia.imagenes.length} &nbsp
-																			else 
-																				| &nbsp 0 &nbsp
-																		i.fa.fa-tags
-																			if denuncia.tags_
-																				| &nbsp #{denuncia.tags_.length} &nbsp
-																			else 
-																				| &nbsp 0 &nbsp
-																		i.fa.fa-eye
-																			| &nbsp #{denuncia.veces_vista}														
-														.col-md-8(style={'padding':'0px'})
-															.col-lg-12(style={overflow: 'hidden', 'height': '23%', padding: '5px', 'white-space':'normal', 'text-overflow':'ellipsis', 'word-break':'break-all'}) !{denuncia.descripcion}														
-															.col-md-4(style={'padding':'10 0 0 0px'})
-																.input-group(style={'border-radius': '5px', padding: '0 5 0 5px'})
-																	span.input-group-addon
-																		i.fa.fa-eye
-																	a(target="_blank" href="/app/denuncia/#{denuncia.gid}")
-																		input.form-control.btn-default(type="button" value="VER" style={'border-top-right-radius': '5px', 'border-bottom-right-radius': '5px'})
-															.col-md-4(style={'padding':'10 0 0 0px'})
-																.input-group(style={'border-radius': '5px', padding: '0 5 0 5px'})
-																	span.input-group-addon
-																		i.fa.fa-pencil-square-o
-																	a(target="_blank" href="/app/editar?id=#{denuncia.gid}")
-																		input.form-control.btn-default(type="button" value="EDITAR" style={'border-top-right-radius': '5px', 'border-bottom-right-radius': '5px'})														
-															.col-md-4(style={'padding':'10 0 0 0px'})
-																.input-group(style={'border-radius': '5px', padding: '0 5 0 5px'})
-																	span.input-group-addon
-																		i.fa.fa-trash
-																	button.form-control.btn-danger(onclick="eliminar('#{denuncia.gid}')" style={'border-top-right-radius': '5px', 'border-bottom-right-radius': '5px'}) ELIMINAR
-												- count++;
 								.panel.panel-default
 									// Notificaciones
 									#headingThree.panel-heading(role='tab')
@@ -170,70 +60,19 @@ block content
 												i.fa.fa-files-o
 												| Mis Acciones
 									#acciones.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingThree')
-										.panel-body(style='text-align: center;height: 60%;overflow-y:scroll;')
+										.panel-body(style='text-align: center;')
 											p.lead ¡Has realizado 
 												span#has_realizado.lead #{mis_acciones.length} 
 												| acciones!
-											each noti in mis_acciones
-												.row(style={margin: '0 5 10 5px', background: 'rgba(0,50,187,0.1)', padding: '5%'})
-													.col-xs-3
-														a(target="_blank" href="/app/usuarios/#{noti.id_usuario_to}")
-															img.img-responsive.img-thumbnail.img-circle(src="#{noti.profile_to.picture}" style={'width':'50px', 'height':'50px'})
-														if(noti.tipo == 'DENUNCIA_CERCA')
-															span.fa-stack.fa-lg
-																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
-																i.fa.fa-map-marker.fa-stack-1x.fa-inverse
-														else if(noti.tipo == 'COMENTARIO_DENUNCIA')
-															span.fa-stack.fa-lg
-																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
-																i.fa.fa-comments.fa-stack-1x.fa-inverse
-														else if(noti.tipo == 'LIKE_DENUNCIA')
-															span.fa-stack.fa-lg
-																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
-																i.fa.fa-thumbs-o-up.fa-stack-1x.fa-inverse
-														else if(noti.tipo === 'NO_LIKE_DENUNCIA')	
-															span.fa-stack.fa-lg
-																i.fa.fa-circle.fa-stack-2x(style="color: #339BEB")
-																i.fa.fa-thumbs-o-up.fa-stack-1x.fa-inverse
-																i.fa.fa-ban.fa-stack-2x.text-danger												
-													.col-xs-9
-														.col-lg-12
-															p.lead #{noti.fecha}
-														p.lead 
-															if(noti.tipo == 'DENUNCIA_CERCA')
-																|  Has publicado una 
-																span
-																	a(href="/app/denuncia/#{noti.id_denuncia}") denuncia
-																|  cerca de 
-																span 
-																	a(href="/app/usuarios/#{noti.id_usuario_to}")  #{noti.profile_to.username}
-															else if(noti.tipo == 'COMENTARIO_DENUNCIA')
-																|  Has comentado una 
-																span
-																	a(href="/app/denuncia/#{noti.id_denuncia}") denuncia
-																	|  del usuario 
-																	span
-																		a(href="/app/usuarios/#{noti.id_usuario_to}")  #{noti.profile_to.username}
-															else if (noti.tipo == 'LIKE_DENUNCIA')
-																| Te gusta la  
-																span
-																	a(href="/app/denuncia/#{noti.id_denuncia}")  denuncia
-																	|  del usuario 
-																	span
-																		a(href="/app/usuarios/#{noti.id_usuario_to}")  #{noti.profile_to.username}
-															else if (noti.tipo == 'NO_LIKE_DENUNCIA')
-																| Ya no te gusta la  
-																span
-																	a(href="/app/denuncia/#{noti.id_denuncia}")  denuncia
-																	|  del usuario 
-																	span
-																		a(href="/app/usuarios/#{noti.id_usuario_to}")  #{noti.profile_to.username}
 block script
+	// OpenLayers.js
+	script(src='/javascripts/plugins/ol3/ol.js')
 	script.
+		// Eliminar una denuncia
 		function eliminar(id){
 			//alert(id);
 			BootstrapDialog.show({
-				title: 'Eliminar denuncia',
+				title: 'Eliminar denuncia ID ' + id,
 				message: '¿Estás seguro de eliminar esta denuncia?',
 				type: BootstrapDialog.TYPE_INFO,
 				buttons: [
@@ -249,4 +88,208 @@ block script
 					{label: 'Cancelar', action: function(dialog){dialog.close();}}
 				]
 			});
-		}										
+		}		
+		// Obtener Imagen miniatura de geoserver
+		function getGeoserverMiniatura(denuncia, width){
+			
+			tipo = denuncia.tipo;
+			coords = denuncia.coordenadas;
+			//alert(coords + ' ' + tipo);
+			var extension = [];
+			var tabla = '';
+			if(tipo == 'Point'){
+				extension = new ol.geom.Point(coords).getExtent();
+				tabla = 'denuncias_puntos';
+			}
+			if(tipo == 'LineString'){
+				extension = new ol.geom.LineString(coords).getExtent();
+				tabla = 'denuncias_lineas';
+			}
+			if(tipo == 'Polygon'){
+				extension = new ol.geom.Polygon(coords).getExtent();
+				tabla = 'denuncias_poligonos';
+			}
+			//alert(extension);
+			extension[0] = extension[0] - 0.001; //Xmin
+			extension[1] = extension[1] - 0.001; //Ymin
+			extension[2] = extension[2] + 0.001; //Xmax
+			extension[3] = extension[3] + 0.001; //Ymax
+				
+			var dif = Math.abs(extension[2] - extension[0]) / Math.abs(extension[3] - extension[1]) ;
+			var height = Math.round(width / dif);
+			return "http://192.168.1.14:8080/geoserver/jahr/wms?service=WMS&version=1.1.0&request=GetMap" +
+				"&layers=jahr:OI.OrthoimageCoverage,jahr:" + tabla + "&styles=&bbox=" + 
+				extension + "&width=" + width + "&height=" + height + 
+				"&srs=EPSG:4258&format=image/png&cql_filter=1=1;gid='" + denuncia.gid + "'";
+
+		}							
+		
+		function getFechaFormatted(fecha){
+			var dia = fecha.getDate();
+			var mes = fecha.getMonth() + 1;
+			var año = fecha.getFullYear();
+			var hora = fecha.getHours();
+			var minutos = fecha.getMinutes();
+			var segundos = fecha.getSeconds();
+			if (dia < 10) dia = '0' + dia;
+			if(mes < 10) mes = '0' + mes;
+			if(hora < 10) hora = '0' + hora;
+			if(minutos < 10) minutos = '0' + minutos;
+			if(segundos<10) segundos = '0' + segundos;
+			return dia + '-' + mes + '-' + año + '  ' + hora + ':' + minutos + ':' + segundos;
+		}
+		
+		function getIconoNotificacion(tipo){
+			if(tipo == 'DENUNCIA_CERCA'){
+				return '<span class="fa-stack fa-lg">' +
+					   		'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB"></i>' +
+					   		'<i class="fa fa-map-marker fa-stack-1x fa-inverse"></i>' +
+					   '</span>';
+			}
+			else if(tipo == 'COMENTARIO_DENUNCIA'){
+				return '<span class="fa-stack fa-lg">' +
+					   		'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB"></i>' +
+					   		'<i class="fa fa-comments fa-stack-1x fa-inverse"></i>' +
+					   '</span>';
+			}
+			else if(tipo == 'LIKE_DENUNCIA'){
+				return '<span class="fa-stack fa-lg">' +
+					   		'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB"></i>' +
+					   		'<i class="fa fa-thumbs-o-up fa-stack-1x fa-inverse"></i>' +
+					   '</span>';			
+			}
+			else if(tipo === 'NO_LIKE_DENUNCIA'){
+				return '<span class="fa-stack fa-lg">' +
+					   		'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB"></i>' +
+					   		'<i class="fa fa-thumbs-o-up fa-stack-1x fa-inverse"></i>' +
+					   		'<i class="fa fa-ban fa-stack-2x text-danger"></i>' +
+					   '</span>';			
+			}
+		}
+		
+		function getInfoNotificacion(noti){
+			var id_usuario_from = noti.id_usuario_from;
+			var username = noti.profile_from.username;
+			if(noti.tipo == 'DENUNCIA_CERCA'){
+				return '<a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
+						'publicó una denuncia cerca de tu ubicación. <p>Distancia : ' + noti.datos.distancia.toFixed(3) + ' metros.</p>';
+			}
+			else if(noti.tipo == 'COMENTARIO_DENUNCIA'){
+				return '<a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
+						'comentó: "' + noti.datos.contenido.substring(0,20)  + '..." en tu denuncia.';
+			}
+			else if(noti.tipo == 'LIKE_DENUNCIA'){
+				return '<a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
+						'ha indicado que le gusta tu denuncia.';			
+			}
+			else if(noti.tipo === 'NO_LIKE_DENUNCIA'){
+				return '<a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
+						'ha indicado que ya no le gusta tu denuncia.';			
+			}		
+		}
+		
+		function getInfoAccion(noti){
+			var id_usuario_to = noti.id_usuario_to;
+			var username = noti.profile_to.username;
+			if(noti.tipo == 'DENUNCIA_CERCA'){
+				return 'Has publicado una denuncia cerca de <a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a> ' +
+						'. <p>Distancia : ' + noti.datos.distancia.toFixed(3) + ' metros.</p>';
+			}
+			else if(noti.tipo == 'COMENTARIO_DENUNCIA'){
+				return 'Comentaste: "' + noti.datos.contenido.substring(0,20)  + '..." en la denuncia de ' +
+					'<a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a> ';
+			}
+			else if(noti.tipo == 'LIKE_DENUNCIA'){
+				return 'Te ha gustado la denuncia de <a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a> ';		
+			}
+			else if(noti.tipo === 'NO_LIKE_DENUNCIA'){
+				return 'Indicaste que ya no te gusta la denuncia de <a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a> ';			
+			}		
+		}
+		
+		function fillDenuncias (){
+			
+			var html = '';
+			
+			JSON.parse('!{JSON.stringify(misDenuncias)}').forEach(function(denuncia){
+			console.log(denuncia.likes);
+				var contenido = denuncia.descripcion.substring(0, 50) + '...';
+				var comentarios = denuncia.comentarios ? denuncia.comentarios.length : 0;
+				var tags = denuncia.tags_ ? denuncia.tags_.length : 0;
+				var imagenes = denuncia.imagenes ? denuncia.imagenes.length : 0;
+				var likes = denuncia.likes ? denuncia.likes.length : 0;
+				var fecha = new Date(denuncia.fecha);
+				var id = denuncia.gid;
+				html += '<div class="row" id="' + denuncia.gid + '">' + 
+							'<p style="position:relative; top:35px; left: 5px; text-align:left; z-index:2; font-size: 0.85em; padding-left: 20px;"><i class="fa fa-clock-o"></i> ' + getFechaFormatted(fecha) + '</p>' + 									
+							'<div class="thumbnail container-fluid" style="margin: 10 5 5 5px; padding-top: 10px; overflow-x: hidden;">' + 
+								'<div class="col-lg-12 container imagen_con_menu">' + 
+									'<h2 style="background:rgba(255,255,255,0.4); margin: 0px; position: absolute; top: 20px; right: 0px; left:0px; z-index:1; font-size: 1.5em; color: #000; font-weight: bold;">' + denuncia.titulo + '</h2>' +
+									'<img src="' + getGeoserverMiniatura(denuncia, 1200) + '" style="border-top-right-radius: 10px;border-top-left-radius: 10px; float:left; max-height: 300px; margin-top: 20px; padding: 0px; width: 100%;">' +
+									'<div class="menu_encima_de_imagen text-center">' + 
+										'<a target="_blank" href="/app/denuncia/' + id + '"><button type="button" class="btn btn-block btn-info" style="background: rgba(10,50,250,0.25); border:0px;"><i class="fa fa-eye">  IR A LA DENUNCIA</i></button></a>' +
+										'<a target="_blank" href="/app/editar?id=' + id + '"><button type="button" class="btn btn-block btn-warning" style="background: rgba(200,200,10,0.25); border:0px;"><i class="fa fa-edit"> EDITAR DENUNCIA</i></button></a>' +
+										'<a><button id="' + id + '" onclick="eliminar(this.id)" type="button" class="btn btn-block btn-danger" style="background: rgba(250,50,10,0.25); border:0px;"><i class="fa fa-trash"> ELIMINAR DENUNCIA</i></button></a>' +
+									'</div>' +
+									'<div class="panel-footer col-lg-12" style="clear:both;">' +
+										'<i class="fa fa-eye"> ' + denuncia.veces_vista + '&nbsp;&nbsp;</i>' +
+										'<i class="fa fa-thumbs-up"> ' + likes + '&nbsp;&nbsp;</i>' +
+										'<i class="fa fa-comments"> ' + comentarios + '&nbsp;&nbsp;</i>' +
+										'<i class="fa fa-image"> ' + imagenes + '&nbsp;&nbsp;</i>' +
+										'<i class="fa fa-tags"> ' + tags + '  </i>' +
+									'</div>'+
+								'</div>' + 
+							'</div>' + 
+						'</div>';
+			});
+			
+			$('#mis_denuncias > .panel-body').append(html);
+			
+		}; fillDenuncias();
+		
+		function fillNotificaciones(){
+			var html = '';
+			JSON.parse('!{JSON.stringify(mis_notificaciones)}').forEach(function(notificacion){
+				console.log(JSON.stringify(notificacion));
+				var fecha = new Date(notificacion.fecha);
+				
+				var color = notificacion.vista ? 'fff' : 'fff8e7';
+				
+				html += '<div class="row">' + 
+							'<div class="thumbnail container-fluid noti" style="margin: 5px; padding: 10 0 5 0px; overflow-x: hidden; background-color:' + color + ';" id_noti="' + notificacion.id_noti + '" vista="' + notificacion.vista + '" onclick="noti(this)">' + 
+								'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getFechaFormatted(fecha) + ' <i class="fa fa-clock-o"></i> </p>' + 																
+								'<div class="media" style="margin : 0 20 0 20px;">' + 
+									'<a class="media-left" target="_blank" href="/app/usuarios/' + notificacion.id_usuario_from + '">' + 
+										'<img src="' + notificacion.profile_from.picture + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-circle">' +
+									'</a>' + 
+									'<div class="media-body" style="padding: 30 20 30 20px">' + getInfoNotificacion(notificacion) + '</div>'+ 
+								'</div>' + 
+								'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getIconoNotificacion(notificacion.tipo) + '</p>' + 
+							'</div>' + 
+						'</div>';
+			});
+			$('#notificaciones > .panel-body').append(html);
+		}; fillNotificaciones();
+		
+		function fillAcciones(){
+			var html = '';
+			JSON.parse('!{JSON.stringify(mis_acciones)}').forEach(function(notificacion){
+				var fecha = new Date(notificacion.fecha);
+				
+				var color = notificacion.vista ? 'fff' : 'fff8e7';
+				
+				html += '<div class="row">' + 
+							'<div class="thumbnail container-fluid" style="margin: 5px; padding: 10 0 5 0px; overflow-x: hidden; background-color:' + color + ';">' + 
+								'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getFechaFormatted(fecha) + ' <i class="fa fa-clock-o"></i> </p>' + 																
+								'<div class="media" style="margin : 0 20 0 20px;">' + 
+									'<a class="media-left" target="_blank" href="/app/usuarios/' + notificacion.id_usuario_to + '">' + 
+										'<img src="' + notificacion.profile_to.picture + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-circle">' +
+									'</a>' + 
+									'<div class="media-body" style="padding: 30 20 30 20px">' + getInfoAccion(notificacion) + '</div>'+ 
+								'</div>' + 
+								'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getIconoNotificacion(notificacion.tipo) + '</p>' + 
+							'</div>' + 
+						'</div>';
+			});
+			$('#acciones > .panel-body').append(html);
+		}; fillAcciones();

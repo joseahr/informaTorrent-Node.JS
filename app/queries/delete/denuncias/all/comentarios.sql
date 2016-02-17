@@ -1,0 +1,1 @@
+delete from comentarios where id_denuncia = $1

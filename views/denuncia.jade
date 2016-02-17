@@ -34,7 +34,6 @@ block panel-lateral
 					if denuncia.tags_
 						each tag in denuncia.tags_
 							| ##{tag.tag}  
-				button#fb-share-button.btn.btn-default Facebook
 				div(style="clear: both; margin-top: 20px;") 
 					h4(style="margin-top: 10px") Descripción
 					div(style="word-wrap: break-word;") !{denuncia.descripcion}
@@ -116,9 +115,13 @@ block script
 			id_usuario: '#{denuncia.id_usuario}'
 		};
 		$('#form_add_comentario').submit(function(){
-			alert('click');
-			num_denuncias_io.emit('new_comentario_added', {denuncia: denuncia});
-			return true;
+			//alert('click');
+			var xhr = new XMLHttpRequest();
+			xhr.open('POST','/app/denuncia/#{denuncia.gid}/addComentario' , true);
+			xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); // Especificamos cabecera
+			xhr.send(JSON.stringify({contenido: tinyMCE.activeEditor.getBody().textContent})); // Enviamos petición
+			//num_denuncias_io.emit('new_comentario_added', {denuncia: denuncia});
+			return false;
 		});
 		var geojsonDenuncia = !{denuncia.geometria}; // geometría del servidor
 		// solo podemos acceder a ella desde este tipo de scripts que tienen un punto al final

@@ -1,0 +1,1 @@
+delete from tags where id_denuncia = $1

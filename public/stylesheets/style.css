@@ -1,4 +1,17 @@
+.imagen_con_menu:hover > .menu_encima_de_imagen {
+	opacity: unset;
+    -webkit-transition: all 0.4s ease;
+    -o-transition: all 0.4s ease;
+    transition: all 0.4s ease;
+}
 
+.menu_encima_de_imagen {
+    position: absolute;
+    left: 20;
+    right: 20;
+    bottom: 50;
+    opacity: 0;
+}
 
 .media img+span.badge {
     position: relative;

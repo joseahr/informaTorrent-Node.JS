@@ -97,24 +97,27 @@ ContPg.prototype.addComentario = function(req, res){
 	var user_id = req.user._id;
 	var id_denuncia = req.params.id_denuncia;
 	
-	var datos = JSON.stringify({contenido : contenido});
 	
 	if (!contenido || !user_id || !id_denuncia) return res.status(500).send('Fallo insertando comentario');
 	
 	console.log(consultas.añadir_comentario);
 	
 	db.none(consultas.añadir_comentario, [user_id, id_denuncia, contenido])
-		.then (function(){
+		.then(function(){
 			return db.one(consultas.denuncia_por_id, id_denuncia);
 		})
 		.then(function(denuncia_){
 			denuncia = denuncia_;
+			denuncia.tipo = denuncia.geometria.type;
+			denuncia.coordenadas = denuncia.geometria.coordinates;
+			denuncia.geometria = undefined;
+			var datos = JSON.stringify({contenido : contenido});
 			if(denuncia.id_usuario == user_id){
-				res.redirect('back');
-				var err = new Error('Notificación no enviada. Mismo usuario, prop de la denunc');
-				err.same_user = true;
+				var err = new Error();
+				err.mismo_user = true;
+				throw err;
 			}
-			return db.one(consultas.notificar_denuncia_comentada, 
+			else return db.one(consultas.notificar_denuncia_comentada, 
 					[id_denuncia, user_id, denuncia.id_usuario, datos]);
 		})
 		.then(function(notificacion_){
@@ -124,16 +127,16 @@ ContPg.prototype.addComentario = function(req, res){
 					clients[denuncia.id_usuario][socketId].emit('denuncia_comentada', 
 						{denuncia: denuncia, from: req.user, noti: notificacion});
 				}
-				res.redirect('back');
 			}
 			else {
 				console.log('el usuario de la denuncia comentada está conectado');
-				res.redirect('back');
 			}
+			res.send({success: true, contenido: contenido});
 		})
 		.catch(function(error){
 			console.log(error);
-			res.status(500).send(error);
+			if(error.mismo_user) res.send({success: true, contenido: contenido});
+			else res.status(500).send(error);
 		});
 
 };
@@ -144,6 +147,7 @@ ContPg.prototype.addComentario = function(req, res){
 
 ContPg.prototype.saveDenuncia = function(req, res){
 	
+	
 	var errormsg = '';
 	
 	var usuarios_cerca = [];
@@ -152,7 +156,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 	var titulo = req.body.titulo.replace(/["' # $ % & + ` -]/g, " ");
 	var contenido = req.body.contenido.replace(/["' # $ % & + ` -]/g, " ");
 	var wkt = req.body.wkt;
-	
+		
 	var user_id = validator.escape(req.user._id); // id_usuario
 	var tempDirID = req.body.tempDir; // nombre del directorio temporal donde se guardan las imágenes
 	
@@ -169,6 +173,8 @@ ContPg.prototype.saveDenuncia = function(req, res){
 	// Si hay algún error en los datos devolvemos la denuncia
 	if(errormsg.length > 0)
 		return res.send({type: 'error', msg: errormsg});
+	
+	var tabla = wkt.match(/LINESTRING/g) ? 'denuncias_lineas' : (wkt.match(/POLYGON/g) ? 'denuncias_poligonos': 'denuncias_puntos');
 	
 	dbCarto.one(consultas.comprobar_geometria(wkt) , wkt)
 		.then(function(geom_check){
@@ -213,7 +219,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 				// t = this = contexto bdd
 				var q = []; // consultas a ejecutar --> añadir imagenes y tags
 				
-				let denuncia = yield this.one(consultas.añadir_denuncia, [titulo, contenido, wkt, user_id]);
+				let denuncia = yield this.one(consultas.añadir_denuncia(wkt), [titulo, contenido, wkt, user_id]);
 				
 				denuncia_io = denuncia;
 				
@@ -235,6 +241,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 			
 			// Buscar usuarios cerca, emitir notificacion
 			console.log(denuncia_io + ' new denuncia addedd');
+			denuncia_io.wkt = wkt;
 			for(var socketId in global.clients[req.user._id]){
 				global.clients[req.user._id][socketId].broadcast.emit('new_denuncia', {denuncia: denuncia_io});
 				global.clients[req.user._id][socketId].emit('new_denuncia', {denuncia: denuncia_io});
@@ -266,6 +273,14 @@ ContPg.prototype.saveDenuncia = function(req, res){
 		})
 		.then(function(usuario){
 			from = usuario;
+			console.log(denuncia_io.gid);
+			return db.one(consultas.denuncia_por_id, denuncia_io.gid);
+		})
+		.then(function(denuncia_){
+			denuncia_.tipo = denuncia_.geometria.type;
+			denuncia_.coordenadas = denuncia_.geometria.coordinates;
+			denuncia_.geometria = undefined;
+			denuncia_io = denuncia_;
 			return db.tx(function (t){
 				var q = [];
 				usuarios_cerca.forEach(function(user){
@@ -275,6 +290,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 				});
 				return t.batch(q); // Devuelve una lista de promesas que ddeben evaluarse
 			});
+
 		})
 		.then(function(notificaciones){
 			console.log('notificaciones');
@@ -283,7 +299,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 					console.log(socketId);
 					console.log('El usuario ' + notificacion.id_usuario_from + ' ha publicado una denuncia carca de la ubicación del usuario ' + notificacion.id_usuario_to);
 					clients[notificacion.id_usuario_to][socketId].emit('denuncia_cerca', 
-						{denuncia: denuncia_io, from: from, noti: notificacion, imagenes: imagenes});	
+						{denuncia: denuncia_io, from: from, noti: notificacion});	
 				}
 			});
 			res.send({
@@ -306,14 +322,23 @@ ContPg.prototype.saveDenuncia = function(req, res){
 ContPg.prototype.getProfile = function(req, res) {
 	// En cualquier otro caso renderizamos
 	console.log('mi PErfil');
-
+	var denuncias_user = [];
 	db.query(consultas.obtener_denuncias_usuario, req.user._id)
 		.then (function(denuncias){
+			
+			denuncias.forEach(function(denuncia){
+				denuncia.descripcion = denuncia.descripcion.replace(/\n/g, "<br />");
+				//denuncia.geometria = JSON.stringify(denuncia.geometria);
+				denuncia.tipo = JSON.parse(denuncia.geometria).type;
+				denuncia.coordenadas = JSON.parse(denuncia.geometria).coordinates;
+				console.log(denuncia.tipo, 'tipo', denuncia.coordenadas, 'coordenadas', denuncia.geometria.type, 'geometria');
+				denuncia.geometria = undefined;
+			});
 			res.render('profile', { misDenuncias: denuncias });
 		})
 		.catch (function(error){
 			res.status(500);
-			res.send(error);
+			res.send(error.toString());
 		});
 
 };
@@ -330,6 +355,9 @@ ContPg.prototype.getDenunciasPage = function(req, res){
 		console.log('pagina no numerica');
 	}
 	if(page <= 0) page = 1;
+	
+	var denuncias = [];
+	
 	db.query(consultas.numero_denuncias)
 		.then(function(num_denuncias){
 			numDenuncias = num_denuncias[0].numdenun;
@@ -340,7 +368,6 @@ ContPg.prototype.getDenunciasPage = function(req, res){
 			
 		})
 		.then (function(denuncias){
-			
 			res.render('denuncias',{denuncias : JSON.stringify(denuncias), 
 				   user : req.user,
 				   page: page,
@@ -358,14 +385,16 @@ ContPg.prototype.getDenunciasPage = function(req, res){
  * Ruta /app/denuncia/:id_denuncia
  */
 ContPg.prototype.getDenunciaPage = function(req,res){
-	
-	db.query(consultas.denuncia_por_id, req.params.id_denuncia)
+
+	var id_denuncia = req.params.id_denuncia;
+
+	db.one(consultas.denuncia_por_id, id_denuncia)
 		.then(function(denuncia){
-			if (denuncia.length == 0) throw new Error('Denuncia no encontrada');
+			if (!denuncia) throw new Error('Denuncia no encontrada');
 			//console.log(denuncia);
-			denuncia[0].geometria = JSON.stringify(denuncia[0].geometria);
+			denuncia.geometria = JSON.stringify(denuncia.geometria);
 			//denuncia.descripcion = denuncia.descripcion.replace(/\n?\r\n/g, '<br />' );
-			res.render('denuncia', {denuncia: denuncia[0], user: req.user});
+			res.render('denuncia', {denuncia: denuncia, user: req.user});
 		})
 		.catch(function(error){
 			res.status(500);
@@ -381,19 +410,15 @@ ContPg.prototype.deleteImagenDenuncia = function(req, res){
 		return res.status(500).send('no hay path');
 	}
 	else {
-		var path = '/files/denuncias/' + req.query.path;
+		var path = req.query.path;
 		
 		db.query(consultas.eliminar_imagen_denuncia, path)
 			.then(function(result){
-				if (result.rowCount > 0){
-					exec('rm -r ' + config.UPLOADDIR + '/' + req.query.path, function(error){
-						if (error) throw error;
-						else res.send('Imagen "' + path + '" eliminada correctamente.');
-					});
-				}
-				else {
-					res.send('No se encontró la imagen "' + path + '"');
-				}
+				console.log(result);
+				exec('rm -r ' + './public' + req.query.path, function(error){
+					if (error) throw error;
+					else res.send('Imagen "' + path + '" eliminada correctamente.');
+				});
 			})
 			.catch(function(error){
 				res.status(500).send(error);
@@ -411,14 +436,14 @@ ContPg.prototype.getEdit = function(req, res){
 	else{
 		console.log('editar');
 		
-		db.query(consultas.denuncia_por_id, id)
+		db.one(consultas.denuncia_por_id, id)
 			.then(function(denuncia){
-				if(denuncia.length == 0) throw new Error('No existe la denuncia');
-				if(denuncia[0].id_usuario != req.user._id) throw new Error('Permiso denegado. Usted no puede editar esta denuncia.')
+				if(!denuncia) throw new Error('No existe la denuncia');
+				if(denuncia.id_usuario != req.user._id) throw new Error('Permiso denegado. Usted no puede editar esta denuncia.')
 				//console.log(denuncia[0]);
-				denuncia[0].tags_ = JSON.stringify(denuncia[0].tags_);
-				console.log(denuncia[0]);
-				res.render('editar.jade', {denuncia: denuncia[0]});
+				denuncia.tags_ = JSON.stringify(denuncia.tags_);
+				console.log(denuncia);
+				res.render('editar.jade', {denuncia: denuncia});
 			})
 			.catch(function(error){
 				res.status(500).send(error);
@@ -459,8 +484,18 @@ ContPg.prototype.deleteDenuncia = function(req, res){
 					}); 
 				});
 			} // hay imágenes, las eliminamos
+			var tipo = JSON.parse(denuncia[0].geometria).type;
 			
-			return db.none(consultas.eliminar_denuncia_por_id, id);
+			return db.tx(function (t){
+				var q = [];
+				q.push(db.none(consultas.eliminar_denuncia_por_id(tipo), id));
+				q.push(db.none(consultas.delete_all_likes, id));
+				q.push(db.none(consultas.delete_all_tags, id));
+				q.push(db.none(consultas.delete_all_comentarios, id));
+				q.push(db.none(consultas.delete_all_imagenes, id));
+				return t.batch(q); // Devuelve una lista de promesas que ddeben evaluarse
+			});
+			
 		})
 		.then(function(){
 			res.status(200).send('La denuncia con id: ' + id + ' se ha eliminado correctamente');
@@ -503,7 +538,14 @@ ContPg.prototype.updateDenuncia = function(req, res){
 	if(errormsg.length > 0)
 		return res.send({type: 'error', msg: errormsg});
 	
-	dbCarto.one(consultas.comprobar_geometria(wkt), wkt)
+	var tipo = wkt.match(/LINESTRING/g) ? 'LineString' : (wkt.match(/POLYGON/g) ? 'Polygon': 'Point');
+	var denuncia;
+	
+	db.one(consultas.denuncia_por_id, id)
+		.then(function(d){
+			denuncia = d;
+			return dbCarto.one(consultas.comprobar_geometria(wkt), wkt);
+		})
 		.then(function(geom_check){
 			if (geom_check.st_contains == false)
 				throw new Error('La geometría debe estar dentro de Torrent.');
@@ -512,43 +554,39 @@ ContPg.prototype.updateDenuncia = function(req, res){
 			else if(wkt.match(/POLYGON/g) && geom_check.st_area > 10000)
 				throw new Error('La geometría poligonal no debe superar un area mayor de 10.000 metros cuadrados.');
 			
+			var files = fs.readdirSync(config.TEMPDIR + "/" + tempDirID);
 			
-			dir.files(config.TEMPDIR + "/" + tempDirID, function(err, files) {
-				// Recorremos el directorio temporal en busca de imágenes añadidas a la denuncia.
-				// Almacenamos el path (TODO: almacenar también la descripción) en una lista
-				// para luego introducir esos path en la bdd
-				  if (err) {
-					  console.log(err);
-				  }
-				  
-				  // Para cada imagen subida la movemos del directorio temporal 
-				  // a la carpeta final
-				  files.forEach(function(ruta) {
-					  
-				    console.log('img: ' + path.basename(ruta));
-				    
-					  var from = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
-					  var to = path.join(config.UPLOADDIR, tempDirID +"-" + path.basename(ruta));
-					  
-					 // Movemos la imagen desde la carpeta temporal hasta la carpeta final
-					 fs.rename(from, to, function(err_) {
-						 if(err_) console.log(err_);
-						 
-						 imagenes.push("/files/denuncias/" + path.basename(to)); 
-						 console.log('imgs list(' + imagenes.length + '): ' + imagenes);
-					  
-					 });
-				  });
+			files.forEach(function(ruta, index, that) {
+			    console.log('img: ' + path.basename(ruta));
+			    
+				 var from = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
+				 var to = path.join(config.UPLOADDIR, tempDirID +"-" + path.basename(ruta));
+				 imagenes.push("/files/denuncias/" + path.basename(to)); 
+				 // Movemos la imagen desde la carpeta temporal hasta la carpeta final
+				 fs.renameSync(from, to);
 			});
-			
-			
-			return db.task(function * (t){
+				
+			return db.task(function (t){
 				// t = this = contexto bdd
 				var q = []; // consultas a ejecutar --> añadir imagenes y tags
-				
-				q.push(t.none(consultas.actualizar_denuncia, [titulo, contenido, wkt, id]));
-				
+				var tipo_ant = JSON.parse(denuncia.geometria).type;
+				var fecha = denuncia.fecha;
+				console.log(tipo);
+				// Ha cambiado la geometría de la denuncia ¿?
+				if (tipo != tipo_ant){
+					// Eliminamos la denuncia de la tabla en la que esté
+					q.push(t.none(consultas.eliminar_denuncia_por_id(tipo_ant), id));
+					// Insertamos la denuncia en la tabla que le corresponda a la nueva geometria
+					q.push(t.none(consultas.actualizar_denuncia_otra_tabla(tipo), 
+							[titulo, contenido, wkt, user_id, id, fecha]));
+				}
+				else {
+					// Si no ha cambiado actualizamos el registro simplemente
+					q.push(t.none(consultas.actualizar_denuncia(tipo), [titulo, contenido, wkt, id]));
+				}
+				console.log('imagenes' + imagenes);
 				imagenes.forEach(function(path){
+					console.log('imagenes--' + path);
 					q.push(t.none(consultas.añadir_imagen_denuncia, [path, id, user_id]));
 				});
 				
@@ -632,7 +670,7 @@ ContPg.prototype.updateProfile = function(req, res){
 	db.query(consultas.usuario_por_username, aux)
 		.then(function(usuario){
 			if(usuario[0]) throw new Error('El nombre de usuario ya existe');
-			return db.none(consultas.actualizar_info_usuario, [user.passwors, JSON.stringify(user.profile), user._id]);
+			return db.none(consultas.actualizar_info_usuario, [user.password, JSON.stringify(user.profile), user._id]);
 		})
 		.then(function(){
 			res.status(200).send({error: false, msg: 'Perfil actualizado correctamente'});
@@ -718,9 +756,9 @@ ContPg.prototype.postChangeLoc = function(req, res){
 	
 	console.log(wkt + " WKTTTTTTTTTTTTT");
 	
-	dbCarto.query(consultas.comprobar_geometria(wkt))
+	dbCarto.one(consultas.comprobar_geometria(wkt), wkt)
 		.then(function(check_geom){
-			if(!check_geom[0].st_contains) throw new Error('La geometría debe estar en torrent');
+			if(!check_geom.st_contains) throw new Error('La geometría debe estar en torrent');
 			
 			return db.none(consultas.actualizar_loc_pref, [wkt, req.body.distancia, req.user._id]);
 			

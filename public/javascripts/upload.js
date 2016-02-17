@@ -1,4 +1,4 @@
-var random = '';
+var random = (Math.random()*1e32).toString(36);
 var json = {}; // Objeto que se pasará al cuerpo de la petición XHR
 
 // Nos conectamos a Socket.io
@@ -8,9 +8,11 @@ socket.on('connect', function() {
 	// Almacenamos la sessionId que nos genera socket.io
 	// Lo utilizaremos para eliminar la carpeta temporal en caso 
 	// de que el usuario se desconecte
-	random = socket.io.engine.id;
+	//random = socket.io.engine.id;
 	//alert(random);
 	//$("#file-dropzone").attr('action', "http://localhost:3000/app/fileUpload/" + random);
+	
+	socket.emit('crear_carpeta_temporal', {random: random});
 	
 	$("#file-dropzone").addClass('dropzone');
 	
@@ -57,7 +59,7 @@ $(function(){
 	
 		var titulo = $('#titulo').val(); // Obtenemos el titulo del array anterior
 
-		var contenido = (tinymce.activeEditor) ? tinymce.activeEditor.getContent() : $('textarea').val();
+		var contenido = (tinymce.activeEditor) ? tinyMCE.activeEditor.getBody().textContent : $('textarea').val();
 
 		json.titulo = titulo;
 		json.contenido = contenido;

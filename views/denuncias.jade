@@ -97,7 +97,7 @@ block script
 			'<img src="' + imagenes + '" class="col-lg-12" style="max-height: 200px;">' +
 			'<p class="text-center" style="background: rgba(255,255,255,0.3);background-size: 100% 100%;position: absolute; top: 5px; left:30px; right: 30px; color: #000"><b>' + d.titulo + '</b></p>' +
 			'</img>' + 
-			'<img style="max-height: 200px;" src="http://192.168.1.13:8080/geoserver/jahr/wms?service=WMS&version=1.1.0&request=GetMap&layers=jahr:OI.OrthoimageCoverage,jahr:denuncias&styles=&bbox=' + extension + '&width=' + width + '&height=' + height + '&srs=EPSG:4258&format=image/png&cql_filter=1=1;gid=&#39;' + d.gid + '&#39;" class="col-md-12"></img>' +
+			'<img style="max-height: 200px;" src="http://192.168.1.14:8080/geoserver/jahr/wms?service=WMS&version=1.1.0&request=GetMap&layers=jahr:OI.OrthoimageCoverage,jahr:denuncias&styles=&bbox=' + extension + '&width=' + width + '&height=' + height + '&srs=EPSG:4258&format=image/png&cql_filter=1=1;gid=&#39;' + d.gid + '&#39;" class="col-md-12"></img>' +
 			'</a></div>';
 			$('#denuncias').append(html);
 		});

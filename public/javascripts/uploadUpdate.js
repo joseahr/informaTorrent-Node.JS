@@ -1,4 +1,4 @@
-var random = '';
+var random = (Math.random()*1e32).toString(36);
 
 // Nos conectamos a Socket.io
 var socket = io.connect("http://" + ip + ":3000/app/denuncias/nueva");
@@ -8,7 +8,9 @@ socket.on('connect', function() {
 	// Almacenamos la sessionId que nos genera socket.io
 	// Lo utilizaremos para eliminar la carpeta temporal en caso
 	// de que el usuario se desconecte
-	random = socket.io.engine.id;
+	//random = socket.io.engine.id;
+	
+	socket.emit('crear_carpeta_temporal', {random: random});
 	
 	$("#file-dropzone").addClass('dropzone');
 	
@@ -33,9 +35,10 @@ socket.on('connect', function() {
 	    	dropzone = this;
 	    	this.on('removedfile', function(file){
 	    		console.log(file);
+	    		console.log(file.path);
 	    		if(file.path)
 		    	    $.ajax({
-		 	           url:'/app/deleteImagen?path=' + file.name,
+		 	           url:'/app/deleteImagen?path=' + file.path,
 		 	           type:'GET', // Método GET
 		 	           data:{},
 		 	           success:function(res){
@@ -93,7 +96,7 @@ $(function() {
 		
 			var titulo = $('#titulo').val(); // Obtenemos el titulo del array anterior
 
-			var contenido = (tinymce.activeEditor) ? tinymce.activeEditor.getContent() : $('textarea').val();
+			var contenido = (tinymce.activeEditor) ? tinyMCE.activeEditor.getBody().textContent : $('textarea').val();
 
 			json.titulo = titulo;
 			json.contenido = contenido;

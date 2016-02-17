@@ -47,24 +47,24 @@ block script
 			data.query.forEach(function(denuncia){
 			
 				//alert(JSON.stringify(denuncia));
-				var feature, type = JSON.parse(denuncia.geom).type;
+				var feature, type = JSON.parse(denuncia.geometria).type;
 				//alert('tipo ' + type);
 				if(type == 'Point'){
 			    	feature = new ol.Feature({
-			    		  geometry: new ol.geom.Point(JSON.parse(denuncia.geom).coordinates),
+			    		  geometry: new ol.geom.Point(JSON.parse(denuncia.geometria).coordinates),
 			    		  name: 'Denuncia - Punto'
 			    	});
 			    	
 			    }
 			    else if(type == 'LineString'){
 			    	feature = new ol.Feature({
-			    		geometry: new ol.geom.LineString(JSON.parse(denuncia.geom).coordinates),
+			    		geometry: new ol.geom.LineString(JSON.parse(denuncia.geometria).coordinates),
 			    		name: 'Denuncia - Polígono'
 			    	});
 			    }
 			    else if(type == 'Polygon'){
 			    	feature = new ol.Feature({
-			    		geometry: new ol.geom.Polygon(JSON.parse(denuncia.geom).coordinates),
+			    		geometry: new ol.geom.Polygon(JSON.parse(denuncia.geometria).coordinates),
 			    		name: 'Denuncia - Polígono'
 			    	});
 			    }

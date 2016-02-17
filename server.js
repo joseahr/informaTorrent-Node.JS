@@ -85,10 +85,10 @@ function middle_datos (req, res, next){
 		id_usuario: id_usuario
 	};
 	
-	db.query(queries.obtener_datos_app) // consultamos los datos de la app
+	db.one(queries.obtener_datos_app) // consultamos los datos de la app
 		.then (function(datos_app){
 			
-			variables_locales.datos_app = datos_app[0]; // obtenemos datos app
+			variables_locales.datos_app = datos_app; // obtenemos datos app
 			
 			if (! req.user) throw new Error('no estás loggeado'); // Si no hay usuario conectado --> Continuamos adelante
 											   // ya que no consultamos notificaciones ni acciones	
@@ -98,6 +98,18 @@ function middle_datos (req, res, next){
 		})
 		.then(function(notificaciones){
 			// obtenemos notificaciones
+			
+			notificaciones.forEach(function(n){
+				console.log(n.denuncia_punto, n.denuncia_linea, n.denuncia_poligono, 'tipossss');
+				if(n.denuncia_punto) n.denuncia = n.denuncia_punto[0];
+				else if(n.denuncia_linea) n.denuncia = n.denuncia_linea[0];
+				else n.denuncia = n.denuncia_poligono[0];
+				
+				n.denuncia.tipo = n.denuncia.geometria.type;
+				n.denuncia.coordenadas = n.denuncia.geometria.coordinates;
+				n.denuncia.geometria = undefined;
+			});
+			
 			variables_locales.mis_notificaciones = notificaciones; // ls pasamos al objeto res.locals
 			
 			return db.query(queries.obtener_acciones, req.user._id); // consultamos acciones
@@ -105,6 +117,16 @@ function middle_datos (req, res, next){
 		})
 		.then (function(acciones){
 			// obtenemos acciones
+			acciones.forEach(function(n){
+				if(n.denuncia_punto) n.denuncia = n.denuncia_punto[0];
+				else if(n.denuncia_linea) n.denuncia = n.denuncia_linea[0];
+				else n.denuncia = n.denuncia_poligono[0];
+				
+				n.denuncia.tipo = n.denuncia.geometria.type;
+				n.denuncia.coordenadas = n.denuncia.geometria.coordinates;
+				n.denuncia.geometria = undefined;
+			});
+			
 			variables_locales.mis_acciones = acciones;
 			res.locals = variables_locales;
 			next(); // siguiente ruta o middleware
@@ -142,6 +164,41 @@ var dir = require('node-dir'),
 
 require('./config/config_passport_pg')(passport, db, queries); // pass passport for configuration
 require('./app/controllers/sockets.js')(io, path, mkdirp, exec, configUploadImagenes, validator, db, queries, pgp); // SOCKET.IO LADO DEL SERVIDOR
+
+/*
+ * Tarea que va a hacer cada hora en busca de archivos en la carpeta temporal desfasados
+ */
+var tarea = require('node-schedule');
+var regla = new tarea.RecurrenceRule();
+
+regla.minute = 38;
+
+var limpiador_directorio = tarea.scheduleJob(regla, function(){
+	console.log('ejecutando limpieza de carpeta temporal ');
+	fs.readdir(configUploadImagenes.TEMPDIR, function(error, files){
+		if(error) console.log('error recorriendo dir : ', error);
+		files.forEach(function(file){
+			console.log(file);
+			var estadisticas = fs.lstatSync(path.join(configUploadImagenes.TEMPDIR, file)); 
+			//console.log('estadisticas : ', estadisticas, 'ctime', estadisticas.ctime);
+			var ahora = new Date().getTime();
+			var fecha_archivo_mas_una_hora = new Date(estadisticas.ctime).getTime() + 3600000;
+			
+			if(ahora >= fecha_archivo_mas_una_hora){
+				// Borrar archivo que está en carpeta temporal mas de una hora
+				console.log('archivo/directorio viejo ' + file);
+				exec("rm -r '" + path.join(configUploadImagenes.TEMPDIR, file) + "'", function(error_){
+					if(error_) console.log(error_);
+					else console.log(' archivo ' + file + ' eliminado por ser viejo ' + estadisticas.ctime);
+				});
+				
+			} else {
+				console.log('archivo/directorio aun joven para eliminar ' + file + ' XD' + ' ctime ' + estadisticas.ctime);
+			}
+			
+		});
+	});
+});
 
 //Multer - Subida de Imágenes
 var multer = require('multer');

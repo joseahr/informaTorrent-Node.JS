@@ -1,6 +1,16 @@
 var helper = require('../queries/helper.js');
 module.exports = {
 		
+		insertar_notificacion : helper.insert.usuarios.notificaciones.otras,
+		
+		delete_all_tags : helper.delete.denuncias.all.tags,
+		
+		delete_all_likes : helper.delete.denuncias.all.likes,
+		
+		delete_all_comentarios : helper.delete.denuncias.all.comentarios,
+		
+		delete_all_imagenes : helper.delete.denuncias.all.imagenes,
+		
 		obtener_info_tabla_geoportal : helper.select.geoportal.info_tabla,
 		
 		obtener_datos_app : helper.select.app.datos,
@@ -20,7 +30,14 @@ module.exports = {
 				return helper.select.denuncias.comprobar_geometria_poligonal;
 		},
 		
-		añadir_denuncia : helper.insert.denuncias.nueva,
+		añadir_denuncia : function(wkt){
+			if (wkt.match(/POINT/g))
+				return helper.insert.denuncias.punto;
+			else if(wkt.match(/LINESTRING/g))
+				return helper.insert.denuncias.linea;
+			else if(wkt.match(/POLYGON/g))
+				return helper.insert.denuncias.poligono;			
+		},
 		
 		añadir_imagen_denuncia : helper.insert.denuncias.imagen,
 			
@@ -50,10 +67,33 @@ module.exports = {
   			
   		denuncias_visor : helper.select.denuncias.visor,
 	  	
-	  	eliminar_denuncia_por_id : helper.delete.denuncias.por_id,
+	  	eliminar_denuncia_por_id : function(tipo){
+			if (tipo.match(/Point/g))
+				return helper.delete.denuncias.punto;
+			else if(tipo.match(/LineString/g))
+				return helper.delete.denuncias.linea;
+			else if(tipo.match(/Polygon/g))
+				return helper.delete.denuncias.poligono;
+		},
 	  	
-	  	actualizar_denuncia : helper.update.denuncias.por_id,
+	  	actualizar_denuncia : function(tipo){
+			if (tipo.match(/Point/g))
+				return helper.update.denuncias.punto;
+			else if(tipo.match(/LineString/g))
+				return helper.update.denuncias.linea;
+			else if(tipo.match(/Polygon/g))
+				return helper.update.denuncias.poligono;
+		},
 			
+	  	actualizar_denuncia_otra_tabla : function(tipo){
+			if (tipo.match(/Point/g))
+				return helper.insert.denuncias.punto_con_id;
+			else if(tipo.match(/LineString/g))
+				return helper.insert.denuncias.linea_con_id;
+			else if(tipo.match(/Polygon/g))
+				return helper.insert.denuncias.poligono_con_id;
+		},
+
 		usuario_por_email : helper.select.usuarios.por_email,
 		
 		usuario_por_email_o_username : helper.select.usuarios.por_email_o_username,
@@ -84,7 +124,14 @@ module.exports = {
 		
 		notificar_denuncia_comentada : helper.insert.usuarios.notificaciones.denuncia_comentada,
 			
-		denuncia_vista : helper.update.denuncias.vista,
+		denuncia_vista : function(tipo){
+			if (tipo.match(/Point/g))
+				return helper.update.denuncias.vista_punto;
+			else if(tipo.match(/LineString/g))
+				return helper.update.denuncias.vista_linea;
+			else if(tipo.match(/Polygon/g))
+				return helper.update.denuncias.vista_poligono;
+		},
 		
 		check_like_denuncia : helper.select.denuncias.me_gusta,
 		

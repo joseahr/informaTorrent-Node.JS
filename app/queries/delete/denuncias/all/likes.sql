@@ -1,0 +1,1 @@
+delete from likes where id_denuncia = $1

@@ -12,7 +12,7 @@ var mis_consultas = {
 		denuncias : {
 			comprobar_geometria_puntual : sql('select', 'denuncias/comprobar_geometria_puntual.sql'),
 			comprobar_geometria_lineal : sql('select', 'denuncias/comprobar_geometria_lineal.sql'),
-			comprobar_geometria_puntual : sql('select', 'denuncias/comprobar_geometria_poligonal.sql'),
+			comprobar_geometria_poligonal : sql('select', 'denuncias/comprobar_geometria_poligonal.sql'),
 			num_total : sql('select', 'denuncias/num_total.sql'),
 			por_id : sql('select', 'denuncias/por_id.sql'),
 			por_pagina : sql('select', 'denuncias/por_pagina.sql'),
@@ -44,21 +44,31 @@ var mis_consultas = {
 			comentario : sql('insert', 'denuncias/comentario.sql'),
 			imagen : sql('insert', 'denuncias/imagen.sql'),
 			like : sql('insert', 'denuncias/like.sql'),
-			nueva : sql('insert', 'denuncias/nueva.sql'),
-			tag : sql('insert', 'denuncias/tag.sql')
+			tag : sql('insert', 'denuncias/tag.sql'), 
+			punto : sql('insert', 'denuncias/punto.sql'),
+			linea : sql('insert', 'denuncias/linea.sql'),
+			poligono : sql('insert', 'denuncias/poligono.sql'),
+			punto_con_id : sql('insert', 'denuncias/punto_con_id.sql'),
+			linea_con_id : sql('insert', 'denuncias/linea_con_id.sql'),
+			poligono_con_id : sql('insert', 'denuncias/poligono_con_id.sql'),
 		},
 		usuarios : {
 			crear : sql('insert', 'usuarios/crear.sql'),
 			notificaciones : {
 				denuncia_cerca : sql('insert', 'usuarios/notificaciones/denuncia_cerca.sql'),
-				denuncia_comentada : sql('insert', 'usuarios/notificaciones/denuncia_comentada.sql')
+				denuncia_comentada : sql('insert', 'usuarios/notificaciones/denuncia_comentada.sql'),
+				otras : sql('insert', 'usuarios/notificaciones/otras.sql'),
 			}
 		}
 	},
 	update : {
 		denuncias : {
-			por_id :sql('update', 'denuncias/por_id.sql'),
-			vista : sql('update', 'denuncias/vista.sql')
+			punto :sql('update', 'denuncias/punto.sql'),
+			linea :sql('update', 'denuncias/linea.sql'),
+			poligono :sql('update', 'denuncias/poligono.sql'),
+			vista_punto : sql('update', 'denuncias/vista_punto.sql'),
+			vista_linea : sql('update', 'denuncias/vista_linea.sql'),
+			vista_poligono : sql('update', 'denuncias/vista_poligono.sql'),
 		},
 		usuarios : {
 			contraseña_perfil : sql('update', 'usuarios/contraseña_perfil.sql'),
@@ -78,7 +88,15 @@ var mis_consultas = {
 		denuncias : {
 			imagen : sql('delete', 'denuncias/imagen.sql'),
 			like : sql('delete', 'denuncias/like.sql'),
-			por_id : sql('delete', 'denuncias/por_id.sql')
+			punto : sql('delete', 'denuncias/punto.sql'),
+			linea : sql('delete', 'denuncias/linea.sql'),
+			poligono : sql('delete', 'denuncias/poligono.sql'),
+			all : {
+				tags : sql('delete', 'denuncias/all/tags.sql'),
+				likes : sql('delete', 'denuncias/all/likes.sql'),
+				comentarios : sql('delete', 'denuncias/all/comentarios.sql'),
+				imagenes : sql('delete', 'denuncias/all/imagenes.sql'),
+			} 
 		}
 	}
 }
