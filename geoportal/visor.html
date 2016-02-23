@@ -178,8 +178,6 @@
 <!-- LayerSwitcher JS -->
 <script src="/javascripts/plugins/ol3-layerswitcher/src/ol3-layerswitcher.js"></script>
 
-<script src="/javascripts/openlayers/botones_mapa.js"/>
-
 <!-- Estilos Features -->
 <script src="/javascripts/openlayers/style.js"></script>
 
@@ -204,49 +202,10 @@ $(function(){
 	$('.dropdown-toggle').dropdown();
 });
 
-var helpTooltipElement, helpMsg;
-
-function createHelpTooltip() {
-    if (helpTooltipElement) {
-      helpTooltipElement.parentNode.removeChild(helpTooltipElement);
-    }
-    helpTooltipElement = document.createElement('div');
-    helpTooltipElement.className = 'tooltip hidden';
-    helpTooltip = new ol.Overlay({
-      element: helpTooltipElement,
-      offset: [15, 0],
-      positioning: 'center-left'
-    });
-    map.addOverlay(helpTooltip);
-}
-
-var pointerMoveHandler = function(evt) {
-	  if (evt.dragging || !info) {
-	    return;
-	  }
-	  /** @type {string} */
-	  var helpMsg = '<i class="fa fa-info-circle"></i> Click para obtener información';
-	
-	  helpTooltipElement.innerHTML = helpMsg;
-	  helpTooltip.setPosition(evt.coordinate);
-	
-	  $(helpTooltipElement).removeClass('hidden');
-	};
-
-var info = false;
 // MousePosition Control --> ol.control.MousePosition
 var mousePositionControl = new ol.control.MousePosition({
     coordinateFormat: ol.coordinate.toStringHDMS,
 });
-
-// GET FEATURE INFO
-var popup = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
-  element: document.getElementById('popup'),
-  autoPan: true,
-  autoPanAnimation: {
-    duration: 250
-  }
-}));
 
 // Mapa --> ol.Map
 var map = new ol.Map({
@@ -257,13 +216,8 @@ var map = new ol.Map({
 	           new ol.control.LayerSwitcher({tipLabel: 'Leyenda'}), // LayerSwitcher
 	           new ol.control.ScaleLine(), // ScaleLine
 	           new ol.control.ZoomSlider(), // ZoomSlider
-	           new app.GetFeatureInfo(),
-	           new app.Move(),
-	           new app.CloseHeader(),
-	           new app.CQL()
 	]),
 	target: 'map',
-	overlays : [popup],
 	view: new ol.View({
 		projection: proj,
 		zoom: 3,
@@ -289,93 +243,19 @@ map.addControl(new ol.control.OverviewMap({
 
 ignBase.setVisible(false);
 
-// GET FEATURE INFO
-var div = $('<div>');
-var hayInfo = false;
-
-map.on('singleclick', function(evt){
-
-	if (!info) {$('.ol-popup').addClass('hidden'); return;}
-
-	$('.ol-popup').removeClass('hidden');
-
-	$('#popup-content').empty();
-
-	div = $('<div>');
-	
-	div.css('overflow-x', 'scroll');
-	
-	var coordinate = evt.coordinate;
-	
-	div.append('<p>' + ol.coordinate.toStringHDMS(coordinate) + '</p>');
-	
-	groupCartoTorrentWMS.getLayers().forEach(function(layer){
-		console.log(layer);
-		var url;
-		var append = '';
-		if(layer.getSource() instanceof ol.source.TileWMS && layer.getVisible() == true)
-		{
-			url = layer.getSource().getGetFeatureInfoUrl(coordinate, 
-									map.getView().getResolution(), 
-									proj, {'INFO_FORMAT': 'text/html'});
-			$.get(url, function(data){ 
-				  hayInfo = true;
-	    		  $(div).append(data);
-	    		  $('table.featureInfo').addClass('table table-responsive auto');
-	    		  $('table.featureInfo tbody tr th').addClass('info auto');
-			});
-			
-		}
-
-	});
-	if (hayInfo){
-		var button_mas_info = document.createElement('button');
-		button_mas_info.className = 'btn btn-default';
-		button_mas_info.innerHTML = 'VER INFORMACIÓN'
-		button_mas_info.addEventListener('click', function(event){
-	    	BootstrapDialog.show({
-	    		title: 'Operación GetFeatureInfo',
-	    		message: $(div),
-	    		buttons: [{
-	    			label: 'Cerrar',
-	    			action: function(dialog){dialog.close();}
-	    		}]
-	    	});
-		});
-		
-    	$('#popup-content').append(button_mas_info);
-    	popup.setPosition(coordinate);
-    	hayInfo = false;
-
-	}
-
-});
-
-$('#popup-closer').click(function() {
-	  popup.setPosition(undefined);
-	  $(this).blur();
-	  return false;
-});
-
-map.on('pointermove', pointerMoveHandler);
-createHelpTooltip();
-
-// FIN MAPA
-
 $('[data-toggle="tab"]').popover({
     trigger: 'hover',
     'placement': 'top'
 });
+</script>
 
-map.getViewport().addEventListener('mouseout', function(evt){
-    $(helpTooltipElement).addClass('hidden');
-}, false);
-
-
-</script>    
-<script src="/javascripts/openlayers/get_feature_info.js" />
-
-
+<script src="/javascripts/openlayers/controles/cql.js"></script>
+<script src="/javascripts/openlayers/controles/get_feature_info.js"></script>
+<script src="/javascripts/openlayers/controles/close_header.js"></script>
+<script src="/javascripts/openlayers/controles/draw.js"></script>
+<script type="text/javascript">
+	map.addControl(new app.GetFeatureInfo());
+</script>
 
 </body>
 </html>

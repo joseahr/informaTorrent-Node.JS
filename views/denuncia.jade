@@ -123,7 +123,7 @@ block script
 			//num_denuncias_io.emit('new_comentario_added', {denuncia: denuncia});
 			return false;
 		});
-		var geojsonDenuncia = !{denuncia.geometria}; // geometría del servidor
+		var geojsonDenuncia = JSON.parse('!{JSON.stringify(denuncia.geometria)}'); // geometría del servidor
 		// solo podemos acceder a ella desde este tipo de scripts que tienen un punto al final
 		map.addControl(new app.InfoDenuncia());
 		map.addControl(new app.ImagenesDenuncia());

@@ -1,44 +1,8 @@
-      var info = false;
-      
-      var helpTooltipElement, helpMsg;
-        function createHelpTooltip() {
-        if (helpTooltipElement) {
-           helpTooltipElement.parentNode.removeChild(helpTooltipElement);
-        }
-        helpTooltipElement = document.createElement('div');
-        helpTooltipElement.className = 'tooltip hidden';
-        helpTooltip = new ol.Overlay({
-          element: helpTooltipElement,
-          offset: [15, 0],
-          positioning: 'center-left'
-        });
-        map.addOverlay(helpTooltip);
-      }
-      
-      var pointerMoveHandler = function(evt) {
-        if (evt.dragging || !info) {
-          return;
-        }
-        /** @type {string} */
-        var helpMsg = '<i class="fa fa-info-circle"></i> Click para obtener información';
-        helpTooltipElement.innerHTML = helpMsg;
-        helpTooltip.setPosition(evt.coordinate);
-        $(helpTooltipElement).removeClass('hidden');
-      };
-      
+
       // MousePosition Control --> ol.control.MousePosition
       var mousePositionControl = new ol.control.MousePosition({
         coordinateFormat: ol.coordinate.toStringHDMS,
       });
-      
-      // GET FEATURE INFO
-      var popup = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
-        element: document.getElementById('popup'),
-        autoPan: true,
-        autoPanAnimation: {
-          duration: 250
-        }
-      }));
       
       // Mapa --> ol.Map
       var map = new ol.Map({
@@ -49,10 +13,6 @@
           new ol.control.LayerSwitcher({tipLabel: 'Leyenda'}), // LayerSwitcher
           new ol.control.ScaleLine(), // ScaleLine
           new ol.control.ZoomSlider(), // ZoomSlider
-          new app.GetFeatureInfo(),
-          new app.Move(),
-          new app.CloseHeader(),
-          new app.Draw_()
         ]),
         target: 'map',
         overlays : [popup],
@@ -90,14 +50,7 @@
       }));
       
       ignBase.setVisible(false);
-      
-      map.on('pointermove', pointerMoveHandler);
-      createHelpTooltip();
       // FIN MAPA
-      
-      map.getViewport().addEventListener('mouseout', function(evt){
-        $(helpTooltipElement).addClass('hidden');
-      }, false);
       
       $('#map').click(function(e){
           //alert('hideee');

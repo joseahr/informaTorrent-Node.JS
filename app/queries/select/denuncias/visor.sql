@@ -26,4 +26,5 @@ SELECT *,
 		WHERE c.id_usuario = u._id and c.id_denuncia = denuncias_poligonos.gid ORDER BY fecha DESC) com),
 	(SELECT json_agg(img) AS imagenes FROM  (SELECT * FROM imagenes WHERE id_denuncia = denuncias_poligonos.gid) img),
 	ST_AsGeoJSON(the_geom) as geometria
-FROM denuncias_poligonos)x WHERE fecha > current_timestamp - interval '1 DAY' order by fecha DESC
+FROM denuncias_poligonos)x 
+WHERE x.fecha > (current_timestamp - interval '1 DAY') order by fecha DESC

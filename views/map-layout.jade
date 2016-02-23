@@ -33,85 +33,39 @@ html
     link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.1/css/bootstrap-datepicker.css")
     
     block link
-  body.no-trans
-    // header start
-    // ================
+  body(style="margin-top: -10px;")
     - var nuevas = 0;
     if locals.user
       each noti in locals.mis_notificaciones
         if noti.vista == false
-          - nuevas ++;
-    header.header.fixed.clearfix.navbar.navbar-fixed-top
-      .container
-        .row
-          .col-md-4
-            // header-left start
-            // ================
-            .header-left.clearfix
-              // logo
-              .logo.smooth-scroll
-                a(href='#banner')
-                  span.fa-stack.fa-lg
-                    i.fa.fa-circle.fa-stack-2x
-                    i.fa.fa-bullhorn.fa-stack-1x.fa-inverse
-              // name-and-slogan
-              .site-name-and-slogan.smooth-scroll
-                .site-name
-                  a(href='/') Informa Torrent
-                .site-slogan Tu portal de denuncias
-            // header-left end
-          .col-md-8
-            // header-right start
-            // ================
-            .header-right.clearfix
-              // main-navigation start
-              // ================
-              .main-navigation.animated
-                // navbar start
-                // ================
-                nav.navbar.navbar-default(role='navigation')
-                  .container-fluid
-                    // Toggle get grouped for better mobile display
-                    .navbar-header
-                      button.navbar-toggle(type='button', data-toggle='collapse', data-target='#navbar-collapse-1')
-                        span.sr-only Abrir Menú
-                        span.icon-bar
-                        span.icon-bar
-                        span.icon-bar
-                    // Collect the nav links, forms, and other content for toggling
-                    #navbar-collapse-1.collapse.navbar-collapse.scrollspy.smooth-scroll
-                      ul.nav.navbar-nav.navbar-right(style="height: 100%;")
-                        li(style="height: 100%")
-                          a(href='/app/#banner' style="height: 100%") Inicio
-                        if(!locals.user)
-                          li(style="height: 100%")
-                            a(href="/app/#iniciar" style="height: 100%") Iniciar Sesión
-                          li(style="height: 100%")
-                            a(href='/app/#registrarse' style="height: 100%") Registrarse
-                          li(style="height: 100%")
-                            a(href='/app/#olvidaste' style="height: 100%") ¿Olvidaste contraseña?
-                        else
-                          li(style="height: 100%")
-                            a(href='/app/visor' style="height: 100%") Visor Tiempo Real
-                          li(style="height: 100%")
-                            a(href='/app/denuncias?page=1' style="height: 100%") Denuncias
-                          li(style="height: 100%")
-                            a(href='#' style="height: 100%" data-toggle="dropdown") #{locals.user.profile.username}
-                              img.img-responsive-img-thumbnail.img-circle.pull-left(src="#{locals.user.profile.picture}" style="height: 40px; width: 40px; margin: -10 5 0 0px;")
-                              span.caret
-                              ul.dropdown-menu.dropdown(style="width: 100%; background: #E7E7E7")
-                                li
-                                  a(href="/app/profile#headingOne")
-                                    | Notificaciones
-                                    span(style="float: right; margin-top: -20px;").badge #{nuevas}
-                                li.dropdown
-                                  a(href="/app/profile") Mi perfil
-                                li.dropdown
-                                  a(href="/app/denuncias/nueva") Nueva denuncia
-                                li
-                                  a(href="/app/logout") Cerrar Sesión
-                // navbar end
-              // main-navigation end
+          - nuevas ++;    
+    ul
+      li(style="position: absolute; top: 25px; left: 50px;z-index: 1;background: rgba(250,250,250,0.7); border-radius: 5px; padding: 5 30 5 5px;")
+        a(href='#' style="height: 100%; z-index: 1;" data-toggle="dropdown")
+          if(user)
+            img.img-responsive-img-thumbnail.img-circle.pull-left(src="#{locals.user.profile.picture}" style="height: 40px; width: 40px; margin: 0 5 0 0px;")
+            span(style="margin-left: -15px; margin-top: 25px;").badge #{nuevas}
+          else
+            img.img-responsive-img-thumbnail.img-circle.pull-left(src="#{locals.user.profile.picture}" style="height: 40px; width: 40px; margin: 0 5 0 0px;")          
+          i.fa.fa-chevron-down(style="font-size: 2em; position: absolute; top: 10px; right: 5px;")
+        ul.dropdown-menu.dropdown(style="width: 100%; background: rgba(250,250,250,0.7);")
+          li
+            a(href="/app") Inicio
+          li
+            a(href="/app/visor") Visor en tiempo real
+          li
+            a(href="/app/denuncias?page=1") Denuncias
+          if user
+            li
+              a(href="/app/perfil#notificaciones")
+                | Notificaciones
+                span(style="margin-left: 5px;").badge #{nuevas}
+            li.dropdown
+              a(href="/app/perfil") Mi perfil
+            li.dropdown
+              a(href="/app/denuncias/nueva") Nueva denuncia
+            li
+              a(href="/app/logout") Cerrar Sesión
     // header-right end
     // header end
     // section start
@@ -123,7 +77,7 @@ html
         a#popup-closer.ol-popup-closer(href='#')
         #popup-content
       // Popup info denuncias
-      #popup-visor.ol-popup(style="z-index: 3; height: 350px; width: 350px;")
+      #popup-visor.ol-popup.hidden(style="z-index: 3; height: 350px; width: 350px;")
         a#popup-visor-closer.ol-popup-closer(href='#')
         #popup-visor-content(style="width: 100%; max-height: 300px; overflow-x: hidden; overflow-y: scroll; word-wrap: break-word;")
       #numdenun.ol-unselectable.ol-control(data-toggle="left" title="Denuncias" data-content="Denuncias totales" style="position: fixed; bottom: 11.125em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;z-index: 1;")
@@ -135,180 +89,186 @@ html
       #numusu.ol-unselectable.ol-control(data-toggle="left" title="Usuarios" data-content="Usuarios conectados" style="position: fixed; bottom: 16.875em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px; z-index:1;")
         i.fa.fa-user(style="margin-right: 5px;")
     // section end
-    block panel-lateral
+  block panel-lateral
     
-    // Plugins Javascript situados al final de la página, así el contenido carga antes
-    // JQuery y Bootstrap
-    script.
-      var usuario_id = '#{locals.user ? locals.user._id : undefined}';
-    script(src='http://code.jquery.com/jquery-1.11.1.min.js')
-    script(src='//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js')
-    // Modernizr
-    script(type='text/javascript', src='/javascripts/plugins/modernizr.js')
-    // Jquery appear
-    script(type='text/javascript', src='/javascripts/plugins/jquery.appear.js')
-    // JS Principal
-    script(type='text/javascript', src='/javascripts/template.js')
-    // FitText.js
-    script(type='text/javascript', src='/javascripts/plugins/jquery.fittext.js')
-    // Bootstrap Dialog JS (Nakupanda)
-    script(type='text/javascript', src='/javascripts/plugins/bootstrap-dialog.js')
-    // Highlight JS
-    script(src='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/highlight.min.js')
-    // Abrir cerrar header efecto movil mapa
-    script(src='/javascripts/close_header_mobile_map.js')
-    // Proj4.js
-    script(src='https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.12/proj4.js')
-    // OpenLayers.js
-    script(src='/javascripts/plugins/ol3/ol.js')
-    // LayerSwitcher JS
-    script(src='/javascripts/plugins/ol3-layerswitcher/src/ol3-layerswitcher.js')
-    // Botones Mapa
-    script(type='text/javascript', src='/javascripts/openlayers/botones_mapa.js')
-    // Estilos Features
-    script(src='/javascripts/openlayers/style.js')
-    // proyección
-    script(src='/javascripts/openlayers/proj.js')
-    // Capas
-    script(src='/javascripts/openlayers/capas.js')
-    // SOCKET.IO
-    script(src="https://cdn.socket.io/socket.io-1.3.7.js")
-    // Bootstrap Select JS
-    script(src="/javascripts/plugins/bootstrap-select/js/bootstrap-select.js")
-    script.
-      var ip = '#{ip}';
-      var id_usuario = '#{id_usuario}';
-    // FUNCIONALIDADES SOCKET.IO
-    script(src="/javascripts/client-sockets.js")
-        
-    script(type='text/javascript').
-      $("h1, h2").each(function(){
-        var fontSize = $(this).css('font-size');
-        console.log(fontSize);
-        $(this).fitText(1.1, {maxFontSize: fontSize});
-      });
+  // Plugins Javascript situados al final de la página, así el contenido carga antes
+  // JQuery y Bootstrap
+  script.
+    var usuario_id = '#{locals.user ? locals.user._id : undefined}';
+  script(src='http://code.jquery.com/jquery-1.11.1.min.js')
+  script(src='//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js')
+  // Modernizr
+  script(type='text/javascript', src='/javascripts/plugins/modernizr.js')
+  // Jquery appear
+  script(type='text/javascript', src='/javascripts/plugins/jquery.appear.js')
+  // JS Principal
+  script(type='text/javascript', src='/javascripts/template.js')
+  // FitText.js
+  script(type='text/javascript', src='/javascripts/plugins/jquery.fittext.js')
+  // Bootstrap Dialog JS (Nakupanda)
+  script(type='text/javascript', src='/javascripts/plugins/bootstrap-dialog.js')
+  // Highlight JS
+  script(src='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/highlight.min.js')
+  // Abrir cerrar header efecto movil mapa
+  script(src='/javascripts/close_header_mobile_map.js')
+  // Proj4.js
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.12/proj4.js')
+  // OpenLayers.js
+  script(src='/javascripts/plugins/ol3/ol.js')
+  // LayerSwitcher JS
+  script(src='/javascripts/plugins/ol3-layerswitcher/src/ol3-layerswitcher.js')
+  // Estilos Features
+  script(src='/javascripts/openlayers/style.js')
+  // proyección
+  script(src='/javascripts/openlayers/proj.js')
+  // Capas
+  script(src='/javascripts/openlayers/capas.js')
+  // SOCKET.IO
+  script(src="https://cdn.socket.io/socket.io-1.3.7.js")
+  // Bootstrap Select JS
+  script(src="/javascripts/plugins/bootstrap-select/js/bootstrap-select.js")
+  script.
+    var ip = '#{ip}';
+    var id_usuario = '#{id_usuario}';
+  // FUNCIONALIDADES SOCKET.IO
+  script(src="/javascripts/client-sockets.js")
       
-      var info = false;
-      
-      var helpTooltipElement, helpMsg;
-        function createHelpTooltip() {
-        if (helpTooltipElement) {
-           helpTooltipElement.parentNode.removeChild(helpTooltipElement);
-        }
-        helpTooltipElement = document.createElement('div');
-        helpTooltipElement.className = 'tooltip hidden';
-        helpTooltip = new ol.Overlay({
-          element: helpTooltipElement,
-          offset: [15, 0],
-          positioning: 'center-left'
-        });
-        map.addOverlay(helpTooltip);
+  script(type='text/javascript').
+    $("h1, h2").each(function(){
+      var fontSize = $(this).css('font-size');
+      console.log(fontSize);
+      $(this).fitText(1.1, {maxFontSize: fontSize});
+    });
+    
+    var info = false;
+    
+    var helpTooltipElement, helpMsg;
+      function createHelpTooltip() {
+      if (helpTooltipElement) {
+         helpTooltipElement.parentNode.removeChild(helpTooltipElement);
       }
-      
-      var pointerMoveHandler = function(evt) {
-        if (evt.dragging || !info) {
-          return;
-        }
-        /** @type {string} */
-        var helpMsg = '<i class="fa fa-info-circle"></i> Click para obtener información';
-        helpTooltipElement.innerHTML = helpMsg;
-        helpTooltip.setPosition(evt.coordinate);
-        $(helpTooltipElement).removeClass('hidden');
-      };
-      
-      // MousePosition Control --> ol.control.MousePosition
-      var mousePositionControl = new ol.control.MousePosition({
-        coordinateFormat: ol.coordinate.toStringHDMS,
+      helpTooltipElement = document.createElement('div');
+      helpTooltipElement.className = 'tooltip hidden';
+      helpTooltip = new ol.Overlay({
+        element: helpTooltipElement,
+        offset: [15, 0],
+        positioning: 'center-left'
       });
-      
-      // GET FEATURE INFO
-      var popup = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
-        element: document.getElementById('popup'),
-        autoPan: true,
-        autoPanAnimation: {
-          duration: 250
-        }
-      }));
-      
-      // Mapa --> ol.Map
-      var map = new ol.Map({
-        controls: ol.control.defaults({
-          attribution: false // No atribución
-        }).extend([mousePositionControl, // MousePosition
-          new ol.control.FullScreen(), // FullScreen
-          new ol.control.LayerSwitcher({tipLabel: 'Leyenda'}), // LayerSwitcher
-          new ol.control.ScaleLine(), // ScaleLine
-          new ol.control.ZoomSlider(), // ZoomSlider
-          new app.GetFeatureInfo(),
-          new app.Move(),
-          new app.CloseHeader()
-        ]),
-        target: 'map',
-        overlays : [popup],
-        view: new ol.View({
-          projection: proj,
-          zoom: 3,
-          center: ol.proj.fromLonLat([-0.47343, 39.42811], 'EPSG:4258'),
-          minZoom: 0,
-          maxZoom: 10
-          // Importante poner nuestra proyección, aunque es un parámetro opcional HAY QUE PONERLO!
-        })
+      map.addOverlay(helpTooltip);
+    }
+    
+    var pointerMoveHandler = function(evt) {
+      if (evt.dragging || !info) {
+        return;
+      }
+      /** @type {string} */
+      var helpMsg = '<i class="fa fa-info-circle"></i> Click para obtener información';
+      helpTooltipElement.innerHTML = helpMsg;
+      helpTooltip.setPosition(evt.coordinate);
+      $(helpTooltipElement).removeClass('hidden');
+    };
+    
+    // MousePosition Control --> ol.control.MousePosition
+    var mousePositionControl = new ol.control.MousePosition({
+      coordinateFormat: ol.coordinate.toStringHDMS,
+    });
+    
+    // GET FEATURE INFO
+    var popup = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
+      element: document.getElementById('popup'),
+      autoPan: true,
+      autoPanAnimation: {
+        duration: 250
+      }
+    }));
+    
+    // Mapa --> ol.Map
+    var map = new ol.Map({
+      controls: ol.control.defaults({
+        attribution: false // No atribución
+      }).extend([mousePositionControl, // MousePosition
+        new ol.control.FullScreen(), // FullScreen
+        new ol.control.LayerSwitcher({tipLabel: 'Leyenda'}), // LayerSwitcher
+        new ol.control.ScaleLine(), // ScaleLine
+        new ol.control.ZoomSlider(), // ZoomSlider
+      ]),
+      target: 'map',
+      overlays : [popup],
+      view: new ol.View({
+        projection: proj,
+        zoom: 3,
+        center: ol.proj.fromLonLat([-0.47343, 39.42811], 'EPSG:4258'),
+        minZoom: 0,
+        maxZoom: 10
+        // Importante poner nuestra proyección, aunque es un parámetro opcional HAY QUE PONERLO!
+      })
+    });
+    
+    ortoPNOA.setVisible(true);
+    manzanas.setVisible(false);
+    caminos.setVisible(false);
+    viales.setVisible(false);
+    nom_viales.setVisible(false);
+    
+    var groupCartoTorrentWMS = new ol.layer.Group({
+      title: 'Cartografía de Torrent WMS',
+      layers: [municipio, manzanas, viales, caminos, nom_viales, portales]
+    });
+    
+    map.addLayer(groupCapasBase); // Añadimos grupo de Capas 1
+    //map.addLayer(groupCartoTorrentWMST); // Añadimos grupo de Capas 2
+    map.addLayer(groupCartoTorrentWMS); // Añadimos grupo de Capas 2
+    
+    // Añadimos Control OverviewMap
+    map.addControl(new ol.control.OverviewMap({ 
+      layers: [new ol.layer.Tile(ignBase.getProperties())],
+      view: new ol.View({ // Importante añadir la View con nuestra proyección
+        projection: proj
+      })
+    }));
+    
+    ignBase.setVisible(false);
+    
+    map.on('pointermove', pointerMoveHandler);
+    createHelpTooltip();
+    // FIN MAPA
+    
+    map.getViewport().addEventListener('mouseout', function(evt){
+      $(helpTooltipElement).addClass('hidden');
+    }, false);
+  // Botones mapa 
+  script(type='text/javascript', src='/javascripts/openlayers/controles/close_header.js')
+  script(type='text/javascript', src='/javascripts/openlayers/controles/comentarios_denuncia.js')
+  script(type='text/javascript', src='/javascripts/openlayers/controles/draw.js')
+  script(type='text/javascript', src='/javascripts/openlayers/controles/get_feature_info.js')
+  script(type='text/javascript', src='/javascripts/openlayers/controles/imagenes_denuncia.js')
+  script(type='text/javascript', src='/javascripts/openlayers/controles/info_denuncia.js')
+  script(type='text/javascript', src='/javascripts/openlayers/controles/lateral.js')
+  script(type='text/javascript', src='/javascripts/openlayers/controles/like_denuncia.js')
+  script(type='text/javascript', src='/javascripts/openlayers/controles/move.js')
+  script(type='text/javascript', src='/javascripts/openlayers/controles/query_denuncias.js')
+  script(type='text/javascript', src='/javascripts/openlayers/controles/tracking.js')
+  // Block Script
+  block script
+  script.
+    map.addControl(new app.GetFeatureInfo());
+    map.addControl(new app.Move());
+    map.addControl(new app.CloseHeader());
+    map.addControl(new app.Tracking());
+    $(function(){
+      $('.dropdown-toggle').dropdown();
+      $('[data-toggle="left"]').popover({
+        trigger: 'hover',
+        placement: 'left'
       });
-      
-      ortoPNOA.setVisible(true);
-      manzanas.setVisible(false);
-      caminos.setVisible(false);
-      viales.setVisible(false);
-      nom_viales.setVisible(false);
-      
-      var groupCartoTorrentWMS = new ol.layer.Group({
-        title: 'Cartografía de Torrent WMS',
-        layers: [municipio, manzanas, viales, caminos, nom_viales, portales]
+    
+      $('[data-toggle="right"]').popover({
+        trigger: 'hover',
+        placement: 'right'
       });
-      
-      map.addLayer(groupCapasBase); // Añadimos grupo de Capas 1
-      //map.addLayer(groupCartoTorrentWMST); // Añadimos grupo de Capas 2
-      map.addLayer(groupCartoTorrentWMS); // Añadimos grupo de Capas 2
-      
-      // Añadimos Control OverviewMap
-      map.addControl(new ol.control.OverviewMap({ 
-        layers: [new ol.layer.Tile(ignBase.getProperties())],
-        view: new ol.View({ // Importante añadir la View con nuestra proyección
-          projection: proj
-        })
-      }));
-      
-      ignBase.setVisible(false);
-      
-      map.on('pointermove', pointerMoveHandler);
-      createHelpTooltip();
-      // FIN MAPA
-      
-      map.getViewport().addEventListener('mouseout', function(evt){
-        $(helpTooltipElement).addClass('hidden');
-      }, false);
-    // Obtener posición
-    script(src="/javascripts/openlayers/tracking.js")
-    // GetFeatureInfo
-    script(src="/javascripts/openlayers/get_feature_info.js")
-    // Block Script
-    block script
-    script.
-      
-      $(function(){
-        $('.dropdown-toggle').dropdown();
-        $('[data-toggle="left"]').popover({
-          trigger: 'hover',
-          placement: 'left'
-        });
-      
-        $('[data-toggle="right"]').popover({
-          trigger: 'hover',
-          placement: 'right'
-        });
-      });   
-      $('#map').click(function(e){
-        //alert('hideee');
-        $('[data-toggle="right"], [data-toggle="left"]').popover('hide');
-      });
-       
+    });   
+    $('#map').click(function(e){
+      //alert('hideee');
+      $('[data-toggle="right"], [data-toggle="left"]').popover('hide');
+    });
+     

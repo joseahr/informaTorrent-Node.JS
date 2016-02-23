@@ -41,7 +41,9 @@ block panel-lateral
 block script
 	script.
 		var denuncia_id = '#{denuncia.gid}';
-		var json = {type: JSON.parse('!{denuncia.geometria}').type, coordinates: JSON.parse('!{denuncia.geometria}').coordinates};
+		var json = {type: JSON.parse('!{JSON.stringify(denuncia.geometria)}').type, 
+			coordinates: JSON.parse('!{JSON.stringify(denuncia.geometria)}').coordinates};
+		console.log(JSON.stringify(json));
 		var imagenes = JSON.parse('!{JSON.stringify(denuncia.imagenes)}');
 		var tags = JSON.parse('!{denuncia.tags_}');
 	// TAGS
@@ -108,4 +110,4 @@ block script
 		});
 		
 		map.addControl(new app.Lateral());
-		map.addControl(new app.Draw_());
+		map.addControl(new app.Draw());

@@ -1,0 +1,252 @@
+// Eliminar una denuncia
+function eliminar(id){
+	//alert(id);
+	BootstrapDialog.show({
+		title: 'Eliminar denuncia ID ' + id,
+		message: '¿Estás seguro de eliminar esta denuncia?',
+		type: BootstrapDialog.TYPE_INFO,
+		buttons: [
+			{label: 'Aceptar', action: function(dialog){
+				$.get('/app/eliminar?id=' + id,
+				function(res){
+					dialog.close();
+					$('#' + id).remove();
+					$('#has_realizado').html((parseInt($('#has_realizado').html()) -1) + ' ');
+					BootstrapDialog.alert(res);
+				});
+			}}, 
+			{label: 'Cancelar', action: function(dialog){dialog.close();}}
+		]
+	});
+}
+
+// Obtener Imagen miniatura de geoserver
+function getGeoserverMiniatura(denuncia, width){
+	
+	tipo = denuncia.tipo;
+	coords = denuncia.coordenadas;
+	//alert(coords + ' ' + tipo);
+	var extension = [];
+	var tabla = '';
+	if(tipo == 'Point'){
+		extension = new ol.geom.Point(coords).getExtent();
+		tabla = 'denuncias_puntos';
+	}
+	if(tipo == 'LineString'){
+		extension = new ol.geom.LineString(coords).getExtent();
+		tabla = 'denuncias_lineas';
+	}
+	if(tipo == 'Polygon'){
+		extension = new ol.geom.Polygon(coords).getExtent();
+		tabla = 'denuncias_poligonos';
+	}
+	//alert(extension);
+	extension[0] = extension[0] - 0.001; //Xmin
+	extension[1] = extension[1] - 0.001; //Ymin
+	extension[2] = extension[2] + 0.001; //Xmax
+	extension[3] = extension[3] + 0.001; //Ymax
+		
+	var dif = Math.abs(extension[2] - extension[0]) / Math.abs(extension[3] - extension[1]) ;
+	var height = Math.round(width / dif);
+	return "http://192.168.1.14:8080/geoserver/jahr/wms?service=WMS&version=1.1.0&request=GetMap" +
+		"&layers=jahr:OI.OrthoimageCoverage,jahr:" + tabla + "&styles=&bbox=" + 
+		extension + "&width=" + width + "&height=" + height + 
+		"&srs=EPSG:4258&format=image/png&cql_filter=1=1;gid='" + denuncia.gid + "'";
+
+}							
+
+function getFechaFormatted(fecha){
+	var dia = fecha.getDate();
+	var mes = fecha.getMonth() + 1;
+	var año = fecha.getFullYear();
+	var hora = fecha.getHours();
+	var minutos = fecha.getMinutes();
+	var segundos = fecha.getSeconds();
+	if (dia < 10) dia = '0' + dia;
+	if(mes < 10) mes = '0' + mes;
+	if(hora < 10) hora = '0' + hora;
+	if(minutos < 10) minutos = '0' + minutos;
+	if(segundos<10) segundos = '0' + segundos;
+	return dia + '-' + mes + '-' + año + '  ' + hora + ':' + minutos + ':' + segundos;
+}
+
+function getIconoNotificacion(noti){
+	var tipo = noti.tipo;
+	var html='IR A DENUNCIA ' + '<a target="_blank" href="/app/denuncia/' + noti.denuncia.gid + '"><span class="fa-stack fa-lg">' +
+			   		'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB"></i>' +
+			   		'<i class="fa fa-angle-right fa-stack-1x fa-inverse"></i>' +
+			   '</span></a>';
+	if(tipo == 'DENUNCIA_CERCA'){
+		return html + '<span class="fa-stack fa-lg">' +
+			   		'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB"></i>' +
+			   		'<i class="fa fa-map-marker fa-stack-1x fa-inverse"></i>' +
+			   '</span>';
+	}
+	else if(tipo == 'COMENTARIO_DENUNCIA'){
+		return html + '<span class="fa-stack fa-lg">' +
+			   		'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB"></i>' +
+			   		'<i class="fa fa-comments fa-stack-1x fa-inverse"></i>' +
+			   '</span>';
+	}
+	else if(tipo == 'LIKE_DENUNCIA'){
+		return html + '<span class="fa-stack fa-lg">' +
+			   		'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB"></i>' +
+			   		'<i class="fa fa-thumbs-o-up fa-stack-1x fa-inverse"></i>' +
+			   '</span>';			
+	}
+	else if(tipo === 'NO_LIKE_DENUNCIA'){
+		return html + '<span class="fa-stack fa-lg">' +
+			   		'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB"></i>' +
+			   		'<i class="fa fa-thumbs-o-up fa-stack-1x fa-inverse"></i>' +
+			   		'<i class="fa fa-ban fa-stack-2x text-danger"></i>' +
+			   '</span>';			
+	}
+}
+
+function getInfoNotificacion(noti){
+	var id_usuario_from = noti.id_usuario_from;
+	var username = noti.profile_from.username;
+	if(noti.tipo == 'DENUNCIA_CERCA'){
+		return '<p><a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
+				'publicó una denuncia cerca de tu ubicación</p><p>Distancia : ' + noti.datos.distancia.toFixed(3) + ' metros</p>' +
+				'<div style="word-break: break-all">Denuncia : ' + noti.denuncia.titulo + '</div>';
+	}
+	else if(noti.tipo == 'COMENTARIO_DENUNCIA'){
+		return '<p><a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
+				'comentó: <i>"' + noti.datos.contenido.substring(0,20)  + '..."</i> en tu denuncia</p>' + 
+				'<div style="word-break: break-all">Denuncia : ' + noti.denuncia.titulo + '</div>';
+	}
+	else if(noti.tipo == 'LIKE_DENUNCIA'){
+		return '<p><a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
+				'ha indicado que le gusta tu denuncia</p>' + 
+				'<div style="word-break: break-all">Denuncia : ' + noti.denuncia.titulo + '</div>';			
+	}
+	else if(noti.tipo === 'NO_LIKE_DENUNCIA'){
+		return '<p><a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
+				'ha indicado que ya no le gusta tu denuncia</p>' + 
+				'<div style="word-break: break-all">Denuncia : ' + noti.denuncia.titulo + '</div>';			
+	}		
+}
+
+function getInfoAccion(noti){
+	var id_usuario_to = noti.id_usuario_to;
+	var username = noti.profile_to.username;
+	if(noti.tipo == 'DENUNCIA_CERCA'){
+		return '<p>Has publicado una denuncia cerca de <a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a></p>' +
+				'<p>Distancia : ' + noti.datos.distancia.toFixed(3) + ' metros</p>' +
+				'<div style="word-break: break-all">Denuncia : ' + noti.denuncia.titulo + '</div>';
+	}
+	else if(noti.tipo == 'COMENTARIO_DENUNCIA'){
+		return '<p>Comentaste: <i>"' + noti.datos.contenido.substring(0,20)  + '..."</i> en la denuncia de ' +
+			'<a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a></p>' + 
+			'<div style="word-break: break-all">Denuncia : ' + noti.denuncia.titulo + '</div>';
+	}
+	else if(noti.tipo == 'LIKE_DENUNCIA'){
+		return '<p>Te ha gustado la denuncia de <a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a></p>' +
+			'<div style="word-break: break-all">Denuncia : ' + noti.denuncia.titulo + '</div>';		
+	}
+	else if(noti.tipo === 'NO_LIKE_DENUNCIA'){
+		return '<p>Indicaste que ya no te gusta la denuncia de <a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a></p>' +
+			'<div style="word-break: break-all">Denuncia : ' + noti.denuncia.titulo + '</div>';			
+	}		
+}
+
+function getDenunciaRow(denuncia){
+	var contenido = denuncia.descripcion.substring(0, 50) + '...';
+	var comentarios = denuncia.comentarios ? denuncia.comentarios.length : 0;
+	var tags = denuncia.tags_ ? denuncia.tags_.length : 0;
+	var imagenes = denuncia.imagenes ? denuncia.imagenes.length : 0;
+	var likes = denuncia.likes ? denuncia.likes.length : 0;
+	var fecha = new Date(denuncia.fecha);
+	var id = denuncia.gid;
+	return '<div class="row" id="' + denuncia.gid + '">' + 
+			'<p style="position:relative; top:35px; left: 5px; text-align:left; z-index:2; font-size: 0.85em; padding-left: 20px;"><i class="fa fa-clock-o"></i> ' + getFechaFormatted(fecha) + '</p>' + 									
+			'<div class="thumbnail container-fluid" style="margin: 10 5 5 5px; padding-top: 10px; overflow-x: hidden;">' + 
+				'<div class="col-lg-12 container imagen_con_menu">' + 
+					'<h2 style="background:rgba(255,255,255,0.4); margin: 0px; position: absolute; top: 20px; right: 0px; left:0px; z-index:1; font-size: 1.5em; color: #000; font-weight: bold;">' + denuncia.titulo + '</h2>' +
+					'<img class="img img-responsive" src="' + getGeoserverMiniatura(denuncia, 1200) + '" style="border-top-right-radius: 10px;border-top-left-radius: 10px; float:left; max-height: 300px; margin-top: 20px; padding: 0px; width: 100%;">' +
+					'<div class="menu_encima_de_imagen text-center">' + 
+						'<a target="_blank" href="/app/denuncia/' + id + '"><button type="button" class="btn btn-block btn-info" style="background: rgba(10,50,250,0.25); border:0px;"><i class="fa fa-eye">  IR A LA DENUNCIA</i></button></a>' +
+						'<a target="_blank" href="/app/editar?id=' + id + '"><button type="button" class="btn btn-block btn-warning" style="background: rgba(200,200,10,0.25); border:0px;"><i class="fa fa-edit"> EDITAR DENUNCIA</i></button></a>' +
+						'<a><button id="' + id + '" onclick="eliminar(this.id)" type="button" class="btn btn-block btn-danger" style="background: rgba(250,50,10,0.25); border:0px;"><i class="fa fa-trash"> ELIMINAR DENUNCIA</i></button></a>' +
+					'</div>' +
+					'<div class="panel-footer col-lg-12" style="clear:both;">' +
+						'<i class="fa fa-eye"> ' + denuncia.veces_vista + '&nbsp;&nbsp;</i>' +
+						'<i class="fa fa-thumbs-up"> ' + likes + '&nbsp;&nbsp;</i>' +
+						'<i class="fa fa-comments"> ' + comentarios + '&nbsp;&nbsp;</i>' +
+						'<i class="fa fa-image"> ' + imagenes + '&nbsp;&nbsp;</i>' +
+						'<i class="fa fa-tags"> ' + tags + '  </i>' +
+					'</div>'+
+				'</div>' + 
+			'</div>' + 
+		'</div>';
+}
+
+function fillDenuncias (denuncias){
+	
+	var html = '';
+	
+	denuncias.forEach(function(denuncia){
+		console.log(denuncia.likes);
+		html += getDenunciaRow(denuncia);
+	});
+	
+	$('#mis_denuncias > .panel-body').append(html);
+	
+};
+
+function getNotificacionRow(notificacion){
+	var fecha = new Date(notificacion.fecha);
+	
+	var color = notificacion.vista ? 'fff' : 'fff8e7';
+	
+	return '<div class="row">' + 
+			'<div class="thumbnail container-fluid noti" style="margin: 5px; padding: 10 0 5 0px; overflow-x: hidden; background-color:' + color + ';" id_noti="' + notificacion.id_noti + '" vista="' + notificacion.vista + '" onclick="noti(this)">' + 
+			'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getFechaFormatted(fecha) + ' <i class="fa fa-clock-o"></i> </p>' + 																
+			'<div class="media" style="margin : 0 20 0 20px;">' + 
+				'<a class="media-left" style="width:100px;">' + 
+					'<img onclick="window.open(&#39;/app/usuarios/' + notificacion.id_usuario_from + '&#39;)" src="' + notificacion.profile_from.picture + '" style="width: 100px; height: 100px;" class=" media-object img-circle img-thumbnail">' +
+					'<img onclick="window.open(&#39;/app/denuncia/' + notificacion.denuncia.gid + '&#39;)" src="' + getGeoserverMiniatura(notificacion.denuncia, 100) + '" style="width: 100px; height: 100px;" class=" media-object img-thumbnail">' +
+				'</a>' + 
+				'<div class="media-body" style="padding: 30 20 30 20px; text-align: left; word-wrap: break-word; break-word: keep-all;">' + getInfoNotificacion(notificacion) + '</div>'+ 
+			'</div>' + 
+			'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getIconoNotificacion(notificacion) + '</p>' + 
+		'</div>' + 
+		'</div>';
+}
+
+function fillNotificaciones(notificaciones){
+	var html = '';
+	notificaciones.forEach(function(notificacion){
+		console.log(JSON.stringify(notificacion));
+		
+		html += getNotificacionRow(notificacion);
+	});
+	$('#notificaciones > .panel-body').append(html);
+};
+
+function getAccionRow(notificacion){
+	var fecha = new Date(notificacion.fecha);
+	return '<div class="row">' + 
+			'<div class="thumbnail container-fluid" style="margin: 5px; padding: 10 0 5 0px; overflow-x: hidden; background-color:#fff;">' + 
+			'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getFechaFormatted(fecha) + ' <i class="fa fa-clock-o"></i> </p>' + 																
+			'<div class="media" style="margin : 0 20 0 20px;">' + 
+				'<a class="media-left" style="width:100px;">' + 
+					'<img onclick="window.open(&#39;/app/usuarios/' + notificacion.id_usuario_to + '&#39;)" src="' + notificacion.profile_to.picture + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-circle img-thumbnail">' +
+					'<img onclick="window.open(&#39;/app/denuncia/' + notificacion.denuncia.gid + '&#39;)" src="' + getGeoserverMiniatura(notificacion.denuncia, 100) + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-thumbnail">' +
+				'</a>' +  
+				'<div class="media-body" style="padding: 30 20 30 20px; text-align: left;word-wrap: break-word; break-word: keep-all;">' + getInfoAccion(notificacion) + '</div>'+ 								
+			'</div>' + 
+			'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getIconoNotificacion(notificacion) + '</p>' + 
+		'</div>' + 
+		'</div>';
+}
+
+function fillAcciones(acciones){
+	var html = '';
+	acciones.forEach(function(notificacion){
+
+		html += getAccionRow(notificacion);
+	});
+	$('#acciones > .panel-body').append(html);
+};

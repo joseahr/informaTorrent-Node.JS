@@ -100,7 +100,6 @@ function middle_datos (req, res, next){
 			// obtenemos notificaciones
 			
 			notificaciones.forEach(function(n){
-				console.log(n.denuncia_punto, n.denuncia_linea, n.denuncia_poligono, 'tipossss');
 				if(n.denuncia_punto) n.denuncia = n.denuncia_punto[0];
 				else if(n.denuncia_linea) n.denuncia = n.denuncia_linea[0];
 				else n.denuncia = n.denuncia_poligono[0];
@@ -108,6 +107,7 @@ function middle_datos (req, res, next){
 				n.denuncia.tipo = n.denuncia.geometria.type;
 				n.denuncia.coordenadas = n.denuncia.geometria.coordinates;
 				n.denuncia.geometria = undefined;
+				console.log(n.denuncia, 'tipossss');
 			});
 			
 			variables_locales.mis_notificaciones = notificaciones; // ls pasamos al objeto res.locals
@@ -118,6 +118,7 @@ function middle_datos (req, res, next){
 		.then (function(acciones){
 			// obtenemos acciones
 			acciones.forEach(function(n){
+				
 				if(n.denuncia_punto) n.denuncia = n.denuncia_punto[0];
 				else if(n.denuncia_linea) n.denuncia = n.denuncia_linea[0];
 				else n.denuncia = n.denuncia_poligono[0];
@@ -125,6 +126,7 @@ function middle_datos (req, res, next){
 				n.denuncia.tipo = n.denuncia.geometria.type;
 				n.denuncia.coordenadas = n.denuncia.geometria.coordinates;
 				n.denuncia.geometria = undefined;
+				console.log(n.denuncia, 'tipossss');
 			});
 			
 			variables_locales.mis_acciones = acciones;
@@ -294,7 +296,7 @@ app.get('/servicios', function(req, res){
 app.get('/app/getInfoTabla', function(req, res){
 	var nombre_tabla = req.query.tabla || '';
 	console.log(nombre_tabla);
-	if (nombre_tabla == 'denuncias')
+	if (nombre_tabla.match(/denuncias/g))
 		db.query(queries.obtener_info_tabla_geoportal, nombre_tabla)
 			.then(function(info){
 				res.send({cols: info});

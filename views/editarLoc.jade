@@ -6,7 +6,7 @@ block script
 	script.
 		//alert(!{loc_pref}.coordinates);
 		
-		map.addControl(new app.Draw_(false, true));
+		map.addControl(new app.Draw(false, true));
 		
 		if('!{loc_pref}' != ''){
 			feature = new ol.Feature({

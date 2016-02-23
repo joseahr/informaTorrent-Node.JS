@@ -2,7 +2,16 @@
  * Variables de las capas de los visores
  */
 
-var ip = 'http://localhost:8080'
+var ip = 'http://192.168.1.14:8080'
+
+var resolutions = new Array(22),
+	matrixIds = new Array(22),
+	resInicial = 0.703125;
+
+for (var i=0; i < 22; i++){
+	matrixIds[i] = "EPSG:4326:" + i;
+	resolutions[i] = resInicial/Math.pow(2,i);
+}
 
 // Capa vacía --> Cuando no queremos que haya mapa base
 var layerVectorVacia = new ol.layer.Vector({
@@ -122,15 +131,41 @@ var portales = new ol.layer.Tile({
 
 
 // Denuncias
-var denuncias = new ol.layer.Tile({
-	title: 'Denuncias',
+var denuncias_puntos = new ol.layer.Tile({
+	title: 'Denuncias Puntual',
 	visible: true,
 	source: new ol.source.TileWMS({
 		url: ip + '/geoserver/jahr/wms',
 		params: {'FORMAT': format, 
              	 'VERSION': '1.1.0',
              	 tiled: true,
-             	 LAYERS: 'jahr:denuncias',
+             	 LAYERS: 'jahr:denuncias_puntos',
+             	 STYLES: '',
+		}
+	})
+});
+var denuncias_lineas = new ol.layer.Tile({
+	title: 'Denuncias Lineal',
+	visible: true,
+	source: new ol.source.TileWMS({
+		url: ip + '/geoserver/jahr/wms',
+		params: {'FORMAT': format, 
+             	 'VERSION': '1.1.0',
+             	 tiled: true,
+             	 LAYERS: 'jahr:denuncias_lineas',
+             	 STYLES: '',
+		}
+	})
+});
+var denuncias_poligonos = new ol.layer.Tile({
+	title: 'Denuncias Poligonal',
+	visible: true,
+	source: new ol.source.TileWMS({
+		url: ip + '/geoserver/jahr/wms',
+		params: {'FORMAT': format, 
+             	 'VERSION': '1.1.0',
+             	 tiled: true,
+             	 LAYERS: 'jahr:denuncias_poligonos',
              	 STYLES: '',
 		}
 	})
@@ -141,7 +176,7 @@ var denuncias = new ol.layer.Tile({
 var denunciasHeatMap = new ol.layer.Heatmap({
   title: 'Zonas más conflictivas',
   source: new ol.source.Vector({
-    url: 'http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=jahr:denuncias&maxFeatures=1000000&outputFormat=application/json',
+    url: 'http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=jahr:denuncias_puntos,denuncias_lineas,denuncias_poligonos&outputFormat=application/json',
     format: new ol.format.GeoJSON({
       extractStyles: false
     })
@@ -284,12 +319,12 @@ var portalesWMST = new ol.layer.Tile({
 });
 
 // Denuncias
-var denunciasWMST = new ol.layer.Tile({
-	title: 'Denuncias',
+var denuncias_puntos_WMST = new ol.layer.Tile({
+	title: 'Denuncias Puntual',
 	visible: false,
 	source: new ol.source.WMTS({
 		url: ip + '/geoserver/gwc/service/wmts',
-		layer:'jahr:denuncias',
+		layer:'jahr:denuncias_puntos',
 		matrixSet: 'EPSG:4326',
 		format: 'image/png',
 		projection: proj,
@@ -301,7 +336,39 @@ var denunciasWMST = new ol.layer.Tile({
 	}),
 });
 
+var denuncias_lineas_WMST = new ol.layer.Tile({
+	title: 'Denuncias Lineal',
+	visible: false,
+	source: new ol.source.WMTS({
+		url: ip + '/geoserver/gwc/service/wmts',
+		layer:'jahr:denuncias_lineas',
+		matrixSet: 'EPSG:4326',
+		format: 'image/png',
+		projection: proj,
+		tileGrid: new ol.tilegrid.WMTS({
+			origin : [-180, 90],
+			resolutions : resolutions,
+			matrixIds : matrixIds
+		})
+	}),
+});
 
+var denuncias_poligonos_WMST = new ol.layer.Tile({
+	title: 'Denuncias Polígonos',
+	visible: false,
+	source: new ol.source.WMTS({
+		url: ip + '/geoserver/gwc/service/wmts',
+		layer:'jahr:denuncias_poligonos',
+		matrixSet: 'EPSG:4326',
+		format: 'image/png',
+		projection: proj,
+		tileGrid: new ol.tilegrid.WMTS({
+			origin : [-180, 90],
+			resolutions : resolutions,
+			matrixIds : matrixIds
+		})
+	}),
+});
 
 
 /*
@@ -349,10 +416,12 @@ var groupCapasBase = new ol.layer.Group({
 // orto, municipio, manzanas, viales, caminos, nom_viales, portales
 var groupCartoTorrentWMS = new ol.layer.Group({
 	title: 'Cartografía de Torrent WMS',
-	layers: [orto, municipio, manzanas, viales, caminos, nom_viales, portales, denuncias, denunciasHeatMap]
+	layers: [orto, municipio, manzanas, viales, caminos, nom_viales, portales, 
+	         denuncias_puntos, denuncias_lineas, denuncias_poligonos, denunciasHeatMap]
 });
 var groupCartoTorrentWMST = new ol.layer.Group({
 	title: 'Cartografía de Torrent WMS Teselado',
 	layers: [ortoWMST, municipioWMST, manzanasWMST, vialesWMST, 
-	         caminosWMST, nom_vialesWMST, portalesWMST, denunciasWMST]
+	         caminosWMST, nom_vialesWMST, portalesWMST, 
+	         denuncias_puntos_WMST, denuncias_lineas_WMST, denuncias_poligonos_WMST]
 }); 

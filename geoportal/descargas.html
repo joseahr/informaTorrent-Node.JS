@@ -141,7 +141,9 @@
 	 			<option value="jahr:caminos">Caminos</option>
 	 			<option value="jahr:portales">Portales</option>
 	 			<option value="jahr:nombres_viales">Etiquetado Calles</option>
-	 			<option value="jahr:denuncias">Denuncias</option>
+	 			<option value="jahr:denuncias_puntos">Denuncias Puntual</option>
+	 			<option value="jahr:denuncias_lineas">Denuncias Lineal</option>
+	 			<option value="jahr:denuncias_poligonos">Denuncias Polígonal</option>
 		   	</select>
 		</div>
 	</div>
@@ -184,8 +186,6 @@
 <!-- LayerSwitcher JS -->
 <script src="/javascripts/plugins/ol3-layerswitcher/src/ol3-layerswitcher.js"></script>
 
-<script src="/javascripts/openlayers/botones_mapa.js"/>
-
 <!-- Estilos Features -->
 <script src="/javascripts/openlayers/style.js"></script>
 
@@ -213,44 +213,6 @@ $("h1, h2").each(function(){
 	$(this).fitText(1.1, {maxFontSize: fontSize});
 });
 
-var helpTooltipElement, helpMsg;
-
-function createHelpTooltip() {
-    if (helpTooltipElement) {
-      helpTooltipElement.parentNode.removeChild(helpTooltipElement);
-    }
-    helpTooltipElement = document.createElement('div');
-    helpTooltipElement.className = 'tooltip hidden';
-    helpTooltip = new ol.Overlay({
-      element: helpTooltipElement,
-      offset: [15, 0],
-      positioning: 'center-left'
-    });
-    map.addOverlay(helpTooltip);
-}
-
-var pointerMoveHandler = function(evt) {
-	  if (!hasbbox) {
-	    return;
-	  }
-	  
-	  $(helpTooltipElement).removeClass('hidden');
-	  
-	  if(evt.dragging){
-		  helpTooltipElement.innerHTML = 'Suelta para acabar el BBOX';
-		  helpTooltip.setPosition(evt.coordinate);
-		  return;
-	  }
-	  
-	  /** @type {string} */
-	  var helpMsg = 'Click para empezar a dibujar BBOX';
-	
-	  helpTooltipElement.innerHTML = helpMsg;
-	  helpTooltip.setPosition(evt.coordinate);
-	
-	  
-};
-
 //MousePosition Control --> ol.control.MousePosition
 var mousePositionControl = new ol.control.MousePosition({
     coordinateFormat: ol.coordinate.toStringHDMS,
@@ -265,9 +227,6 @@ var map = new ol.Map({
 	           new ol.control.LayerSwitcher({tipLabel: 'Leyenda'}), // LayerSwitcher
 	           new ol.control.ScaleLine(), // ScaleLine
 	           new ol.control.ZoomSlider(), // ZoomSlider
-	           new app.Move(),
-	           new app.CloseHeader(),
-	           new app.BBOX()
 	]),
 	target: 'map',
 	view: new ol.View({
@@ -295,60 +254,16 @@ map.addControl(new ol.control.OverviewMap({
 
 ignBase.setVisible(false);
 
-
-var boundingBox;
-
-boundingBox = new ol.interaction.DragBox({
-    condition: ol.events.condition.always, // default
-    className: 'line-dragbox'
-});
-
-map.addInteraction(boundingBox);
-
-boundingBox.on('boxend', function(e){
-	 $(helpTooltipElement).addClass('hidden');
-	console.log('boxend');
-	
-	BootstrapDialog.show({
-		type: BootstrapDialog.TYPE_INFO,
-		title: 'DESCARGA DE CARTOGRAFÍA INTERACTIVA',
-		message: '<p>¿Desea descargar la cartografía seleccionada?</p><p>Capa: ' + $('#capas_mapa').val() + '</p>' +
-				 '<p> BBOX: [' + boundingBox.getGeometry().getExtent() + ']</p>',
-		buttons: [{
-		label: 'Cerrar',
-		action: function(dialog){dialog.close();}},
-		{label: 'SHP',
-		action: function(dialog){
-			dialog.close();
-			window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
-			'&request=GetFeature&typeName=' + $('#capas_mapa').val() + '&outputFormat=shape-zip&bbox=' + boundingBox.getGeometry().getExtent());
-		}},
-		{label: 'GeoJSON',
-		 action: function(dialog){
-			 dialog.close();
-			 window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
-			 '&request=GetFeature&typeName=' + $('#capas_mapa').val() + '&outputFormat=application/json&bbox=' + boundingBox.getGeometry().getExtent());
-		 }},
-		 {label: 'GML 3.2',
-		  action: function(dialog){
-			  dialog.close();
-			  window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
-			  '&request=GetFeature&typeName=' + $('#capas_mapa').val() + '&outputFormat=application%2Fgml%2Bxml%3B+version%3D3.2&bbox=' + boundingBox.getGeometry().getExtent());
-		  }}],
-	});
-
-});
-
-
-map.on('pointermove', pointerMoveHandler);
-createHelpTooltip();
-
-
 // FIN MAPA
-var hasbbox = true;
 
 
 </script>
 
+<script src="/javascripts/openlayers/controles/download_bbox.js"></script>
+<script src="/javascripts/openlayers/controles/close_header.js"></script>
+<script src="/javascripts/openlayers/controles/draw.js"></script>
+<script type="text/javascript">
+	map.addControl(new app.BBOX());
+</script>
 </body>
 </html>

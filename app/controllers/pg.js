@@ -204,13 +204,8 @@ ContPg.prototype.saveDenuncia = function(req, res){
 					  var to = path.join(config.UPLOADDIR, tempDirID +"-" + path.basename(ruta));
 					  
 					 // Movemos la imagen desde la carpeta temporal hasta la carpeta final
-					 fs.rename(from, to, function(err_) {
-						 if(err_) console.log(err_);
-						 
-						 imagenes.push("/files/denuncias/" + path.basename(to)); 
-						 console.log('imgs list(' + imagenes.length + '): ' + imagenes);
-					  
-					 });
+					 fs.renameSync(from, to);
+					 imagenes.push("/files/denuncias/" + path.basename(to)); 
 				  });
 			});
 			
@@ -392,7 +387,7 @@ ContPg.prototype.getDenunciaPage = function(req,res){
 		.then(function(denuncia){
 			if (!denuncia) throw new Error('Denuncia no encontrada');
 			//console.log(denuncia);
-			denuncia.geometria = JSON.stringify(denuncia.geometria);
+			//denuncia.geometria = JSON.stringify(denuncia.geometria);
 			//denuncia.descripcion = denuncia.descripcion.replace(/\n?\r\n/g, '<br />' );
 			res.render('denuncia', {denuncia: denuncia, user: req.user});
 		})
@@ -565,11 +560,11 @@ ContPg.prototype.updateDenuncia = function(req, res){
 				 // Movemos la imagen desde la carpeta temporal hasta la carpeta final
 				 fs.renameSync(from, to);
 			});
-				
+			console.log(wkt, 'wktttt');	
 			return db.task(function (t){
 				// t = this = contexto bdd
 				var q = []; // consultas a ejecutar --> añadir imagenes y tags
-				var tipo_ant = JSON.parse(denuncia.geometria).type;
+				var tipo_ant = denuncia.geometria.type;
 				var fecha = denuncia.fecha;
 				console.log(tipo);
 				// Ha cambiado la geometría de la denuncia ¿?
@@ -593,7 +588,6 @@ ContPg.prototype.updateDenuncia = function(req, res){
 				tags_.forEach(function(tag){
 					q.push(t.none(consultas.añadir_tag_denuncia, [id, tag]));
 				});
-				
 				return t.batch(q);
 				
 			});

@@ -2,15 +2,6 @@
  * Proyección ETRS89, resoluciones para nuestro servicio Teselado
  */
 
-var resolutions = new Array(22);
-var matrixIds = new Array(22);
-var resInicial = 0.703125;
-
-for (var i=0; i < 22; i++){
-	matrixIds[i] = "EPSG:4326:" + i;
-	resolutions[i] = resInicial/Math.pow(2,i);
-}
-
 // EPSG: 4258 ETRS89 --> http://epsg.io
 proj4.defs("EPSG:4258","+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs");
 //Obtenemos la proyección definida

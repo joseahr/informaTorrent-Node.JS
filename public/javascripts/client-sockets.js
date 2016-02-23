@@ -45,8 +45,10 @@ num_denuncias_io.on('num_usuarios_conectados', function(data){
 });
 
 num_denuncias_io.on('denuncia_no_likeada', function(data){
-	alert('data denuncia: ' + JSON.stringify(data.denuncia) + 
-			  'from: ' + JSON.stringify(data.from) + ' noti: ' + JSON.stringify(data.noti));
+	data.noti = data.noti[1];
+	data.noti.profile_from = data.from.profile;
+	data.noti.denuncia = data.denuncia;
+	console.log(JSON.stringify(data));
 	var nuevas = parseInt($('.noti_up:eq(1)').text()) + 1;
 	$('.noti_up').empty();
 	$('.noti_up').append(nuevas);
@@ -54,25 +56,7 @@ num_denuncias_io.on('denuncia_no_likeada', function(data){
 	$('.noti_tot').empty();
 	$('.noti_tot').append(not_tot);
 	
-	var html = '<div class="row noti" style="margin: 0 5 10 5px; background: rgba(0,50,187,0.1); padding:5%;" id_noti="' + data.noti.id_noti + '" vista="false" onclick="noti(this)">' + 
-				'<div class="col-lg-12 btn btn-danger" style="margin-bottom: 10px" id_noti_panel="' + data.noti.id_noti + '">NUEVA</div>' +
-				'<div class="col-xs-2">'+
-				'<a target="_blank" href="/app/usuarios/' + data.from._id + '">' + 
-				'<img class="img-responsive img-thumbnail img-circle" src="' + data.from.profile.picture + '">' + 
-				'</a>' +
-				'<span class="fa-stack fa-lg">'+
-				'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB;"/>' +
-				'<i class="fa fa-thumbs-o-up fa-stack-1x fa-inverse"/>' +
-				'<i class="fa fa-ban fa-stack-2x text-danger"></i>' +
-				'</span>' + 
-				'</div>' + // col-xs-2
-				'<div class="col-xs-10">'+ 
-				'<div class="col-lg-12"><p class="lead">'+ new Date().getDate() + '/' + (new Date().getMonth() + 1) + '/' + new Date().getFullYear() + ' ' + new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds() + '</p></div>' +
-				'<p class="lead"><span> A <a target="_blank" href="/app/usuarios/' + data.from._id + '">' + 
-				data.from.profile.username + '</a>'
-				+ '</span> ya no le gusta tu <span><a href="/app/denuncia/'+ data.denuncia.gid +'">denuncia </a></span></p>'
-				'</div>' +
-		'</div>';
+	var html =  getNotificacionRow(data.noti);
 	$('#notificaciones > .panel-body').prepend($(html));
 	
 	
@@ -89,8 +73,10 @@ num_denuncias_io.on('denuncia_no_likeada', function(data){
 
 ///////
 num_denuncias_io.on('denuncia_likeada', function(data){
-	alert('data denuncia: ' + JSON.stringify(data.denuncia) + 
-			  'from: ' + JSON.stringify(data.from) + ' noti: ' + JSON.stringify(data.noti));
+	data.noti = data.noti[1];
+	data.noti.profile_from = data.from.profile;
+	data.noti.denuncia = data.denuncia;
+	console.log(JSON.stringify(data));
 	var nuevas = parseInt($('.noti_up:eq(1)').text()) + 1;
 	$('.noti_up').empty();
 	$('.noti_up').append(nuevas);
@@ -98,24 +84,7 @@ num_denuncias_io.on('denuncia_likeada', function(data){
 	$('.noti_tot').empty();
 	$('.noti_tot').append(not_tot);
 	
-	var html = '<div class="row noti" style="margin: 0 5 10 5px; background: rgba(0,50,187,0.1); padding:5%;" id_noti="' + data.noti.id_noti + '" vista="false" onclick="noti(this)">' + 
-				'<div class="col-lg-12 btn btn-danger" style="margin-bottom: 10px" id_noti_panel="' + data.noti.id_noti + '">NUEVA</div>' +
-				'<div class="col-xs-2">'+
-				'<a target="_blank" href="/app/usuarios/' + data.from._id + '">' + 
-				'<img class="img-responsive img-thumbnail img-circle" src="' + data.from.profile.picture + '">' + 
-				'</a>' +
-				'<span class="fa-stack fa-lg">'+
-				'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB;"/>' +
-				'<i class="fa fa-thumbs-o-up fa-stack-1x fa-inverse"/>' +
-				'</span>' + 
-				'</div>' + // col-xs-2
-				'<div class="col-xs-10">'+ 
-				'<div class="col-lg-12"><p class="lead">'+ new Date().getDate() + '/' + (new Date().getMonth() + 1) + '/' + new Date().getFullYear() + ' ' + new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds() + '</p></div>' +
-				'<p class="lead"><span> A <a target="_blank" href="/app/usuarios/' + data.from._id + '">' + 
-				data.from.profile.username + '</a>'
-				+ '</span> le gusta tu <span><a href="/app/denuncia/'+ data.denuncia.gid +'">denuncia </a></span></p>'
-				'</div>' +
-		'</div>';
+	var html = getNotificacionRow(data.noti);
 	$('#notificaciones > .panel-body').prepend($(html));
 	
 	
@@ -124,7 +93,7 @@ num_denuncias_io.on('denuncia_likeada', function(data){
 		message: $(html),
 		buttons: [{label: 'Cerrar', action: function(dialog){dialog.close()}}],
 		onshown: function(dialog){
-			setTimeout(function(){dialog.close()}, 1500);
+			//setTimeout(function(){dialog.close()}, 1500);
 		}
 	});
 });
@@ -132,8 +101,10 @@ num_denuncias_io.on('denuncia_likeada', function(data){
 ///////
 
 num_denuncias_io.on('denuncia_cerca', function(data){
-	alert('data denuncia: ' + JSON.stringify(data.denuncia) + 
-			  'from: ' + JSON.stringify(data.from) + ' noti: ' + JSON.stringify(data.noti));
+	console.log(JSON.stringify(data));
+	//data.noti = data.noti[1];
+	data.noti.profile_from = data.from.profile;
+	data.noti.denuncia = data.denuncia;
 	var nuevas = parseInt($('.noti_up:eq(1)').text()) + 1;
 	$('.noti_up').empty();
 	$('.noti_up').append(nuevas);
@@ -141,24 +112,7 @@ num_denuncias_io.on('denuncia_cerca', function(data){
 	$('.noti_tot').empty();
 	$('.noti_tot').append(not_tot);
 	
-	var html = '<div class="row noti" style="margin: 0 5 10 5px; background: rgba(0,50,187,0.1); padding:5%;" id_noti="' + data.noti.id_noti + '" vista="false" onclick="noti(this)">' + 
-				'<div class="col-lg-12 btn btn-danger" style="margin-bottom: 10px" id_noti_panel="' + data.noti.id_noti + '">NUEVA</div>' +
-				'<div class="col-xs-2">'+
-				'<a target="_blank" href="/app/usuarios/' + data.from._id + '">' + 
-				'<img class="img-responsive img-thumbnail img-circle" src="' + data.from.profile.picture + '">' + 
-				'</a>' +
-				'<span class="fa-stack fa-lg">'+
-				'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB;"/>' +
-				'<i class="fa fa-map-marker fa-stack-1x fa-inverse"/>' +
-				'</span>' + 
-				'</div>' + // col-xs-2
-				'<div class="col-xs-10">'+ 
-				'<div class="col-lg-12"><p class="lead">'+ new Date().getDate() + '/' + (new Date().getMonth() + 1) + '/' + new Date().getFullYear() + ' ' + new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds() + '</p></div>' +
-				'<p class="lead"><span><a target="_blank" href="/app/usuarios/' + data.from._id + '">' + 
-				data.from.profile.username + '</a>'
-				+ '</span> ha publicado una <span><a href="/app/denuncia/'+ data.denuncia.gid +'">denuncia </a></span> cerca de tu ubicación (' + data.noti.distancia + ' metros)</p>'
-				'</div>' +
-		'</div>';
+	var html = getNotificacionRow(data.noti);
 	$('#notificaciones > .panel-body').prepend($(html));
 	
 	
@@ -173,8 +127,11 @@ num_denuncias_io.on('denuncia_cerca', function(data){
 });
 
 num_denuncias_io.on('denuncia_comentada', function(data){
-	alert('data denuncia: ' + JSON.stringify(data.denuncia) + 
-		  'from: ' + JSON.stringify(data.from) + ' noti: ' + JSON.stringify(data.noti));
+	console.log(JSON.stringify(data));
+
+	data.noti.denuncia = data.denuncia;
+	data.noti.profile_from = data.from.profile;
+	
 	var nuevas = parseInt($('.noti_up:eq(1)').text()) + 1;
 	$('.noti_up').empty();
 	$('.noti_up').append(nuevas);
@@ -182,24 +139,7 @@ num_denuncias_io.on('denuncia_comentada', function(data){
 	$('.noti_tot').empty();
 	$('.noti_tot').append(not_tot);
 	
-	var html = '<div class="row noti" style="margin: 0 5 10 5px; background: rgba(0,50,187,0.1); padding:5%;" id_noti="' + data.noti.id_noti + '" vista="false" onclick="noti(this)">' + 
-				'<div class="col-lg-12 btn btn-danger" style="margin-bottom: 10px" id_noti_panel="' + data.noti.id_noti + '">NUEVA</div>' +
-				'<div class="col-xs-2">'+
-				'<a target="_blank" href="/app/usuarios/' + data.from._id + '">' + 
-				'<img class="img-responsive img-thumbnail img-circle" src="' + data.from.profile.picture + '">' + 
-				'</a>' +
-				'<span class="fa-stack fa-lg">'+
-				'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB;"/>' +
-				'<i class="fa fa-comments fa-stack-1x fa-inverse"/>' +
-				'</span>' + 
-				'</div>' + // col-xs-2
-				'<div class="col-xs-10">'+ 
-				'<div class="col-lg-12"><p class="lead">'+ new Date().getDate() + '/' + (new Date().getMonth() + 1) + '/' + new Date().getFullYear() + ' ' + new Date().getHours() + ':' + new Date().getMinutes() + ':' + new Date().getSeconds() + '</p></div>' +
-				'<p class="lead"><span><a target="_blank" href="/app/usuarios/' + data.from._id + '">' + 
-				data.from.profile.username + '</a>'
-				+ '</span> ha comentado una <span><a href="/app/denuncia/'+ data.denuncia.gid +'">denuncia tuya</a></span> </p>'
-				'</div>' +
-		'</div>';
+	var html = getNotificacionRow(data.noti);
 	$('#notificaciones > .panel-body').prepend($(html));
 	
 	
@@ -208,7 +148,7 @@ num_denuncias_io.on('denuncia_comentada', function(data){
 		message: $(html),
 		buttons: [{label: 'Cerrar', action: function(dialog){dialog.close()}}],
 		onshown: function(dialog){
-			setTimeout(function(){dialog.close()}, 1500);
+			//setTimeout(function(){dialog.close()}, 1500);
 		}
 	});
 	

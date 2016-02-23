@@ -1,11 +1,7 @@
-var select = new ol.interaction.Select();
-
-map.addInteraction(select); // Seleccionar feature
-
 /*
  *  Cargamos la denuncia en el mapa
  */
-var json = JSON.parse(geojsonDenuncia);
+var json = geojsonDenuncia;
 var type = json.type;
 
 var feature;
