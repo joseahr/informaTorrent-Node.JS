@@ -5,7 +5,7 @@ var app = window.app;
 /**
  * Control Creado para abrir el panel lateral imágenes denuncia
  */
-app.ImagenesDenuncia = function(opt_options) {
+app.ImagenesDenuncia = function(opt_options, denuncia) {
 
   var options = opt_options || {};
 
@@ -14,28 +14,44 @@ app.ImagenesDenuncia = function(opt_options) {
 
   var this_ = this;
   
+  var message;
+
+  if(!denuncia.imagenes){
+  	message = '<h4>Esta denuncia no contiene imágenes</h4>';
+  } else {
+  	message = '<div id="carousel-example-generic" class="carousel slide" data-ride="carousel">' + 
+  				'<ol class="carousel-indicators">';
+  	denuncia.imagenes.forEach(function(imagen, index){
+  		if(index == 0) message += '<li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>';
+  		else message += '<li data-target="#carousel-example-generic" data-slide-to="' + index + '"></li>';
+  	});
+
+  	message += '</ol><div class="carousel-inner" role="listbox">';
+
+  	denuncia.imagenes.forEach(function(imagen, index){
+  		if(index == 0) message += '<div class="item active"><img src="' + imagen.path + '" style="object-fit: cover; width: 100%; height: 100%;"></div>';
+  		else message += '<div class="item"><img src="' + imagen.path + '" style="object-fit: cover; width: 100%; height: 100%;"></div>';
+  	});
+
+  	message += '</div>' + '<a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">' +
+    	'<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>' +
+    	'<span class="sr-only">Previous</span>' + 
+  	'</a>' + 
+  	'<a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">' + 
+    	'<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>' +
+    	'<span class="sr-only">Next</span>' +
+  	'</a>' +
+  	'</div>';
+  }
+
   function imagenes_ (){
-	  
-	  $('.carousel').carousel({
-	      interval: false
+	  BootstrapDialog.show({
+	  	title: 'Imágenes',
+	  	message: message,
+	  	onshown : function(){
+	  		$('#carousel').carousel();
+	  	}
 	  });
-	  
-	  var panel = 'imagenes';
-	  
-	  $('.btn-map').css('z-index', '0');
-	  $('#' + panel + ' > .cd-panel-container').css('z-index','5');
-	  $('#' + panel + ' > .cd-panel-header').css('display', 'block');
-	  $('#' + panel + ' > .cd-panel-header').css('z-index','6');
-	  $('#' + panel).addClass('is-visible');
-		
-	  if ($('header').css('display') == 'block'){
-		  $('header').css('display', 'none');
-		  $('#show_menu').removeClass('btn-danger');
-		  $('#show_menu').addClass('btn-default');
-		  $('#show_menu').empty();
-		  $('#show_menu').append('<i class="fa fa-navicon" style="color: #fff"></i>');
-		  $('header').addClass('fadeOutLeft');
-	  }
   }
 
   button.addEventListener('click', imagenes_, false);

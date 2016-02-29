@@ -113,7 +113,7 @@ function getInfoNotificacion(noti){
 	}
 	else if(noti.tipo == 'COMENTARIO_DENUNCIA'){
 		return '<p><a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
-				'comentó: <i>"' + noti.datos.contenido.substring(0,20)  + '..."</i> en tu denuncia</p>' + 
+				'comentó: <div style="word-break: break-all">"' + noti.datos.contenido.substring(0,20)  + '..."</div> en tu denuncia</p>' + 
 				'<div style="word-break: break-all">Denuncia : ' + noti.denuncia.titulo + '</div>';
 	}
 	else if(noti.tipo == 'LIKE_DENUNCIA'){
@@ -164,7 +164,7 @@ function getDenunciaRow(denuncia){
 			'<div class="thumbnail container-fluid" style="margin: 10 5 5 5px; padding-top: 10px; overflow-x: hidden;">' + 
 				'<div class="col-lg-12 container imagen_con_menu">' + 
 					'<h2 style="background:rgba(255,255,255,0.4); margin: 0px; position: absolute; top: 20px; right: 0px; left:0px; z-index:1; font-size: 1.5em; color: #000; font-weight: bold;">' + denuncia.titulo + '</h2>' +
-					'<img class="img img-responsive" src="' + getGeoserverMiniatura(denuncia, 1200) + '" style="border-top-right-radius: 10px;border-top-left-radius: 10px; float:left; max-height: 300px; margin-top: 20px; padding: 0px; width: 100%;">' +
+					'<img class="img img-responsive" src="' +  getGeoserverMiniatura(denuncia, 1200) + '" style="border-top-right-radius: 10px;border-top-left-radius: 10px; float:left;height: auto; max-height: 300px; object-fit: cover; margin-top: 20px; padding: 0px; width: 100%;"></img>' +
 					'<div class="menu_encima_de_imagen text-center">' + 
 						'<a target="_blank" href="/app/denuncia/' + id + '"><button type="button" class="btn btn-block btn-info" style="background: rgba(10,50,250,0.25); border:0px;"><i class="fa fa-eye">  IR A LA DENUNCIA</i></button></a>' +
 						'<a target="_blank" href="/app/editar?id=' + id + '"><button type="button" class="btn btn-block btn-warning" style="background: rgba(200,200,10,0.25); border:0px;"><i class="fa fa-edit"> EDITAR DENUNCIA</i></button></a>' +

@@ -18,6 +18,13 @@ app.Tracking = function(opt_options) {
   
   var accuracyFeature = new ol.Feature(); // Feature precisión
   
+  geolocation.on('error', function(e){
+    BootstrapDialog.show({
+      title: 'Error tratando de geolocalizar tu dispositivo',
+      message: 'Revise y active las opciones de geolocalización de su dispositivo'
+    });
+  });
+
   geolocation.on('change:accuracyGeometry', function() {
     accuracyFeature.setGeometry(geolocation.getAccuracyGeometry());
   }); // Manejador - Se dispara cuando cambia la precisión
@@ -81,18 +88,20 @@ app.Tracking = function(opt_options) {
   function show (){ // Manejador del control
 	  // Cuando hacemos click sobre el control
       show_position = !show_position;
-      console.log(show_position);
-      geolocation.setTracking(show_position);
-      featuresOverlay.setVisible(show_position);
+      alert(show_position);
       
       if(show_position){
         $(button).empty();
         $(button).append('<i class="fa fa-eye-slash" >');
         panTo = 0;
+        geolocation.setTracking(true);
+        featuresOverlay.setVisible(true);
       }
       else {
         $(button).empty();
         $(button).append('<i class="fa fa-eye" >');
+        geolocation.setTracking(false);
+        featuresOverlay.setVisible(false);
       }
   }
 

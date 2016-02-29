@@ -44,28 +44,41 @@ html
         a(href='#' style="height: 100%; z-index: 1;" data-toggle="dropdown")
           if(user)
             img.img-responsive-img-thumbnail.img-circle.pull-left(src="#{locals.user.profile.picture}" style="height: 40px; width: 40px; margin: 0 5 0 0px;")
-            span(style="margin-left: -15px; margin-top: 25px;").badge #{nuevas}
+            span(style="margin-left: -15px; margin-top: 25px;").badge.noti_up #{nuevas}
           else
-            img.img-responsive-img-thumbnail.img-circle.pull-left(src="#{locals.user.profile.picture}" style="height: 40px; width: 40px; margin: 0 5 0 0px;")          
+            img.img-responsive-img-thumbnail.img-circle.pull-left(src="http://appstudio.windows.com/Content/img/temp/icon-user.png" style="height: 40px; width: 40px; margin: 0 5 0 0px;")          
           i.fa.fa-chevron-down(style="font-size: 2em; position: absolute; top: 10px; right: 5px;")
         ul.dropdown-menu.dropdown(style="width: 100%; background: rgba(250,250,250,0.7);")
           li
-            a(href="/app") Inicio
+            a(href="/app") 
+              i.fa.fa-home 
+              |  Inicio
           li
-            a(href="/app/visor") Visor en tiempo real
+            a(href="/app/visor") 
+              i.fa.fa-globe
+              |  Visor tiempo real
           li
-            a(href="/app/denuncias?page=1") Denuncias
+            a(href="/app/denuncias?page=1") 
+              i.fa.fa-list
+              |  Denuncias
           if user
             li
               a(href="/app/perfil#notificaciones")
-                | Notificaciones
-                span(style="margin-left: 5px;").badge #{nuevas}
+                i.fa.fa-inbox
+                |  Notificaciones
+                span(style="margin-left: 5px;").badge.noti_up #{nuevas}
             li.dropdown
-              a(href="/app/perfil") Mi perfil
+              a(href="/app/perfil") 
+                i.fa.fa-user
+                |  Mi perfil
             li.dropdown
-              a(href="/app/denuncias/nueva") Nueva denuncia
+              a(href="/app/denuncias/nueva") 
+                i.fa.fa-plus
+                |  Nueva denuncia
             li
-              a(href="/app/logout") Cerrar Sesión
+              a(href="/app/logout") 
+                i.fa.fa-sign-out
+                |  Cerrar sesión
     // header-right end
     // header end
     // section start
@@ -103,6 +116,8 @@ html
   script(type='text/javascript', src='/javascripts/plugins/jquery.appear.js')
   // JS Principal
   script(type='text/javascript', src='/javascripts/template.js')
+  // Útiles para denuncias, notificaciones, acciones
+  script(type='text/javascript', src='/javascripts/utils.js')
   // FitText.js
   script(type='text/javascript', src='/javascripts/plugins/jquery.fittext.js')
   // Bootstrap Dialog JS (Nakupanda)
@@ -140,47 +155,10 @@ html
       $(this).fitText(1.1, {maxFontSize: fontSize});
     });
     
-    var info = false;
-    
-    var helpTooltipElement, helpMsg;
-      function createHelpTooltip() {
-      if (helpTooltipElement) {
-         helpTooltipElement.parentNode.removeChild(helpTooltipElement);
-      }
-      helpTooltipElement = document.createElement('div');
-      helpTooltipElement.className = 'tooltip hidden';
-      helpTooltip = new ol.Overlay({
-        element: helpTooltipElement,
-        offset: [15, 0],
-        positioning: 'center-left'
-      });
-      map.addOverlay(helpTooltip);
-    }
-    
-    var pointerMoveHandler = function(evt) {
-      if (evt.dragging || !info) {
-        return;
-      }
-      /** @type {string} */
-      var helpMsg = '<i class="fa fa-info-circle"></i> Click para obtener información';
-      helpTooltipElement.innerHTML = helpMsg;
-      helpTooltip.setPosition(evt.coordinate);
-      $(helpTooltipElement).removeClass('hidden');
-    };
-    
     // MousePosition Control --> ol.control.MousePosition
     var mousePositionControl = new ol.control.MousePosition({
       coordinateFormat: ol.coordinate.toStringHDMS,
     });
-    
-    // GET FEATURE INFO
-    var popup = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
-      element: document.getElementById('popup'),
-      autoPan: true,
-      autoPanAnimation: {
-        duration: 250
-      }
-    }));
     
     // Mapa --> ol.Map
     var map = new ol.Map({
@@ -193,7 +171,6 @@ html
         new ol.control.ZoomSlider(), // ZoomSlider
       ]),
       target: 'map',
-      overlays : [popup],
       view: new ol.View({
         projection: proj,
         zoom: 3,
@@ -228,14 +205,7 @@ html
     }));
     
     ignBase.setVisible(false);
-    
-    map.on('pointermove', pointerMoveHandler);
-    createHelpTooltip();
-    // FIN MAPA
-    
-    map.getViewport().addEventListener('mouseout', function(evt){
-      $(helpTooltipElement).addClass('hidden');
-    }, false);
+
   // Botones mapa 
   script(type='text/javascript', src='/javascripts/openlayers/controles/close_header.js')
   script(type='text/javascript', src='/javascripts/openlayers/controles/comentarios_denuncia.js')

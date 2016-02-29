@@ -176,7 +176,7 @@ var denuncias_poligonos = new ol.layer.Tile({
 var denunciasHeatMap = new ol.layer.Heatmap({
   title: 'Zonas más conflictivas',
   source: new ol.source.Vector({
-    url: 'http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=jahr:denuncias_puntos,denuncias_lineas,denuncias_poligonos&outputFormat=application/json',
+    url: ip + '/geoserver/jahr/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=jahr:denuncias_centroides&outputFormat=application/json',
     format: new ol.format.GeoJSON({
       extractStyles: false
     })

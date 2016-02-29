@@ -35,7 +35,7 @@ var mis_consultas = {
 			por_id_facebook : sql('select', 'usuarios/por_id_facebook.sql'),
 			por_id_twitter : sql('select', 'usuarios/por_id_twitter.sql'),
 			por_id : sql('select', 'usuarios/por_id.sql'),
-			por_reset_token : sql('select', 'usuarios/por_reset_toke.sql'),
+			por_reset_token : sql('select', 'usuarios/por_reset_token.sql'),
 			por_username : sql('select', 'usuarios/por_username.sql')
 		}
 	},

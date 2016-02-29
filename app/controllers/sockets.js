@@ -130,7 +130,7 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 		socket.on('alguien_vio_una_denuncia', function(data){
 			db.one(consultas.denuncia_por_id, data.id_denuncia)
 				.then(function(denuncia){
-					var tipo = JSON.parse(denuncia.geometria).type;
+					var tipo = denuncia.geometria.type;
 					return db.none(consultas.denuncia_vista(tipo), data.id_denuncia)
 				})
 				.then(function(){

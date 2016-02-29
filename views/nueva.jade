@@ -11,32 +11,6 @@ block link
 		    line-height: 2 !important;
 		}
 	// CSS DROPZONE
-// Panel lateral - rellenar denuncia
-block panel-lateral
-	.cd-panel.from-right
-		.cd-panel-header
-			h1(style="margin-top: 2%; color: #55ACEE !important; font-size: 20px;") NUEVA DENUNCIA
-			a.cd-panel-close(href='#0') Close
-		.cd-panel-container
-			.cd-panel-content 
-				form.form-horizontal
-					.input-group(style={'margin-top':'5px'})
-						span.input-group-addon Título
-						input#titulo.form-control.btn-default(type='text', name="titulo", placeholder='Añade un título')
-					.space
-					h4 Añade una descripción
-					textarea#contenido(name="contenido" rows='3' style={'height':'300px'}).form-control
-					.space
-					h4 Imágenes
-					div(id="file-dropzone" style={background:'#55ACEE', border:'1px dashed'})
-						.dz-message.text-center(style={color:'#fff'}) Arrastra imágenes o haz click aquí.
-					.space
-					h4 Tags
-					input.col-lg-12(id="tags" type="text" name="tags" placeholder="Introduce tags")
-					.col-lg-12.input-group.space(style={'margin-top':'5px', 'margin-bottom':'15px'})
-						span.input-group-addon
-							i.fa.fa-send.fa-fw
-						input#submitDenuncia.form-control.btn-success(type="button", value="Denunciar")
 // block script
 block script
 	// TAGS
@@ -50,45 +24,5 @@ block script
 	script(src="/javascripts/openlayers/olnueva.js")
 	// JS CONFIG SUBIR IMÁGENES
 	script(type="text/javascript").
-		// TAGS
-		function iniciarTags(){
-			$('#tags').tagsinput({
-				maxTags: 5,
-				maxChars: 8,
-				trimValue: true,
-				onTagExists: function(item, $tag) {
-					$tag.hide().fadeIn();
-					alert('Tag repetido');
-				}
-			});
-			
-		}
-		
-		function iniciarEditor(){
-			tinymce.init({
-				selector: 'textarea',
-				plugins: ['advlist autolink link lists charmap print preview hr anchor pagebreak',
-				'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking',
-				'save table contextmenu directionality emoticons template paste textcolor'],
-				theme: 'modern',
-				language_url: '/langs/es.js',
-				min_width: 300,
-				resize: false
-			});
-		}
-				
-		//clode the lateral panel
-		$('.cd-panel').on('click', function(event){
-			if( $(event.target).is('.cd-panel') || $(event.target).is('.cd-panel-close') ) { 
-				//$('.cd-panel-header').hide();
-				
-				$('.cd-panel').removeClass('is-visible');
-				$('.cd-panel-container').css('z-index','0');
-				$('.cd-panel-header').css('z-index','0');
-				$('.btn-map').css('z-index', '2');
-				event.preventDefault();
-			}
-		});
-		
-		map.addControl(new app.Lateral());
+		map.addControl(new app.Lateral({titulo: 'Añadir nueva denuncia'}));
 		map.addControl(new app.Draw());
