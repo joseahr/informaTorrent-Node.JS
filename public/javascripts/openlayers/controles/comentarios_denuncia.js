@@ -25,7 +25,7 @@ app.ComentariosDenuncia = function(opt_options, denuncia, user) {
   if(denuncia.comentarios){
 	comentarios_html = '<h4>Contiene ' + denuncia.comentarios.length + ' comentarios</h4>';
   } else {
-  	if(user) comentarios_html = '<h4>Esta denuncia no contiene comentarios. ¡Sé el primero en opinar!</h4>';
+  	if(user) comentarios_html = '<h4>Esta denuncia no contiene comentarios. <br>¡Sé el primero en opinar!</h4>';
   	else comentarios_html = '<h4> Esta denuncia no contiene comentarios.</h4>';
   }
   if (denuncia.comentarios)
@@ -39,18 +39,25 @@ app.ComentariosDenuncia = function(opt_options, denuncia, user) {
 	  	  								'</a>' +
 	  	  							'</div>' + 
 	  	  							'<div class="col-xs-8" style="text-align: right">' + fecha + ' <i class="fa fa-clock-o"></i></div>' +
-	  	  							'<div class="col-xs-8" style="margin: 15 0 5 0px; word-break: break-all;">' + coment.contenido + '</div>' +
+	  	  							'<div class="col-xs-8" style="margin: 15 0 5 0px; word-break: break-all;">' + decodeURIComponent(coment.contenido) + '</div>' +
 	  	  						'</div>';
 
 	  });
 
-  function comentarios_ (){	
-	  
-	  BootstrapDialog.show({
+	form += comentarios_html;
+
+	var aux = true;
+
+	var dialog = new BootstrapDialog({
 	  	title: 'Comentarios',
-	  	message: form + comentarios_html,
+	  	message: $(form),
+	  	autodestroy : false,
 	  	onshown : function(dialog){
-	  		//alert('eee');
+	  		if(aux){
+	  			aux = false;
+	  		} else {
+	  			return;
+	  		}
 	  		tinymce.init({
 			  selector: 'textarea',
 			  plugins: ['advlist autolink link lists charmap print preview hr anchor pagebreak',
@@ -61,9 +68,32 @@ app.ComentariosDenuncia = function(opt_options, denuncia, user) {
 			  min_width: 300,
 			  resize: false
 	  		});
+	  		$('#form_add_comentario').submit(function(){
+				//alert('click');
+				/*var a = tinyMCE.html.Entities.encodeAllRaw(tinyMCE.activeEditor.getContent());
+				var j = JSON.parse(JSON.stringify({a : a}));
+				alert(JSON.stringify(tinyMCE.html.Entities.decode(j.a)));
+				return false;*/
+				var contenido = tinyMCE.activeEditor.getContent().replace(/'/g, " ");
+				//alert(contenido);
+				var xhr = new XMLHttpRequest();
+				xhr.open('POST','/app/denuncia/' + denuncia.gid + '/addComentario' , true);
+				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); // Especificamos cabecera
+				xhr.send(JSON.stringify({contenido: encodeURIComponent(contenido)})); // Enviamos petición
+				$(this).find('.input-group').hide();
+				xhr.onload = function(){
+					//var res = JSON.parse(xhr.responseText);
+					window.location.replace('/app/denuncia/' + denuncia.gid);
+				}
+				return false;
+			});
+
 	  	},
-	  });
-  }
+  	});
+
+  	function comentarios_ (){	
+	  	dialog.open();
+  	}
 
   button.addEventListener('click', comentarios_, false);
 

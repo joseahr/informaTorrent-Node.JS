@@ -76,29 +76,12 @@ block script
 		var denuncias = !{denuncias};
 		var tipo, coords, extension;
 		denuncias.forEach(function(d){
-			tipo = JSON.parse(d.geometria).type;
-			coords = JSON.parse(d.geometria).coordinates;
-			
-			if(tipo == 'Point') extension = new ol.geom.Point(coords).getExtent();
-			if(tipo == 'LineString') extension = new ol.geom.LineString(coords).getExtent();
-			if(tipo == 'Polygon') extension = new ol.geom.Polygon(coords).getExtent();
-			//alert(extension);
-			extension[0] = extension[0] - 0.0015; //Xmin
-			extension[1] = extension[1] - 0.0015; //Ymin
-			extension[2] = extension[2] + 0.0015; //Xmax
-			extension[3] = extension[3] + 0.0015; //Ymax
-			
-			var width = 1200;
-			var dif = Math.abs(extension[2] - extension[0]) / Math.abs(extension[3] - extension[1]) ;
-			var height = Math.round(width / dif);
-			
+			d.tipo = JSON.parse(d.geometria).type;
+			d.coordenadas = JSON.parse(d.geometria).coordinates;
 			var imagenes = d.imagenes ? d.imagenes[0].path : '';
-			var html = '<a href="/app/denuncia/' + d.gid + '"><div style="padding:10px;" class="col-md-4">' + 
-			'<img src="' + imagenes + '" class="col-lg-12" style="max-height: 200px;">' +
-			'<p class="text-center" style="background: rgba(255,255,255,0.3);background-size: 100% 100%;position: absolute; top: 5px; left:30px; right: 30px; color: #000"><b>' + d.titulo + '</b></p>' +
-			'</img>' + 
-			'<img style="max-height: 200px;" src="http://192.168.1.14:8080/geoserver/jahr/wms?service=WMS&version=1.1.0&request=GetMap&layers=jahr:OI.OrthoimageCoverage,jahr:denuncias&styles=&bbox=' + extension + '&width=' + width + '&height=' + height + '&srs=EPSG:4258&format=image/png&cql_filter=1=1;gid=&#39;' + d.gid + '&#39;" class="col-md-12"></img>' +
-			'</a></div>';
+			var html = '<div style="padding:10 20 10 20px; text-align: center;" class="col-md-4">' + 
+				getDenunciaRow(d, true) +
+			'</div>';
 			$('#denuncias').append(html);
 		});
 	

@@ -1,0 +1,1 @@
+delete from notificaciones where id_denuncia = $1

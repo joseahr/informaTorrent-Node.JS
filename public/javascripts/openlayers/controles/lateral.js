@@ -8,20 +8,29 @@ app.Lateral = function(opt_options) {
 
   var options = opt_options || {};
 
+  var TIPO_MENU = options.tipo; // Editar o Nueva
+
   var titulo = options.titulo;
+
+  var denuncia = options.denuncia;
+
+  var denuncia_titulo = denuncia ? denuncia.titulo : '',
+  	  denuncia_contenido = denuncia ? denuncia.descripcion : '',
+  	  post = denuncia ? '/app/denuncias/editar?id=' + denuncia.gid : '/app/denuncias/nueva/save';
 
   var button = document.createElement('button');
   button.innerHTML = '<i class="fa fa-list-alt"></i>';
   
   var this_ = this;
+
   
   var message = '<form class="form-horizontal">' + 
   					'<div style="margin-top:5px" class="input-group"><span class="input-group-addon">Título</span>' + 
-    					'<input id="titulo" type="text" name="titulo" placeholder="Añade un título" class="form-control btn-default"/>' +
+    					'<input id="titulo" type="text" name="titulo" placeholder="Añade un título" class="form-control btn-default" value="' + denuncia_titulo + '"/>' +
   					'</div>' +
   					'<div class="space"></div>' +
   					'<h4>Añade una descripción</h4>' +
-  					'<textarea id="contenido" name="contenido" rows="3" style="height:300px" class="form-control"></textarea>' +
+  					'<textarea id="contenido" name="contenido" rows="3" style="height:300px" class="form-control">' + denuncia_contenido + '</textarea>' +
   					'<div class="space"></div>' +
   					'<h4>Imágenes</h4>' +
   					'<div id="file-dropzone" style="background:#55ACEE;border:1px dashed">' +
@@ -35,33 +44,38 @@ app.Lateral = function(opt_options) {
     					'<input id="submitDenuncia" type="button" value="Denunciar" class="form-control btn-success"/>' +
   					'</div>' +
 				'</form>';
-  var aux = true;
+  	var aux = true;
 
-  var tags;
+ 	var aux = 0;
 
-  var contenido = '';
-
-  function lateral_ (){
-  	BootstrapDialog.show({
+  	var dialog = new BootstrapDialog({
   		title : titulo,
   		message: $(message),
   		autodestroy : false,
-  		onhide : function(dialog){
+  		/*onhide : function(dialog){
   			tags = $('#tags').tagsinput('items');
-  			contenido = tinyMCE.activeEditor.getBody().textContent;
-  			message = dialog.getModalBody().children().children();
-  		},
+  		},*/
   		onshown : function(){
-  			$('.mce-tinymce').replaceWith('<textarea id="contenido" name="contenido" rows="3" style="height:300px" class="form-control">' + contenido + '</textarea>');
+  			if(aux == 0){
+  				aux ++;
+  				console.log('aux', aux);
+  			}
+  			else return;
+  			$('.mce-tinymce').replaceWith('<textarea id="contenido" name="contenido" rows="3" style="height:300px" class="form-control"></textarea>');
   			tinymce.init({
 				selector: 'textarea',
 				plugins: ['advlist autolink link lists charmap print preview hr anchor pagebreak',
 				'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking',
 				'save table contextmenu directionality emoticons template paste textcolor'],
 				theme: 'modern',
+				remove_redundant_brs : true,
+				autodestroy : false,
 				language_url: '/langs/es.js',
 				min_width: 300,
-				resize: false
+				resize: false,
+				oninit : function(){
+					//this.setContent(contenido);
+				}
 			});
 
 			$("#file-dropzone").addClass('dropzone');
@@ -85,16 +99,52 @@ app.Lateral = function(opt_options) {
 			    dictCancelUploadConfirmation: 'Cancelada subida de imagen',
 			    dictRemoveFile: 'Eliminar imagen',
 			    init : function(){
+
+			    	var dropzone = this; 
+
+			    	if(denuncia && denuncia.imagenes){
+						denuncia.imagenes.forEach(function(imagen){
+				    		dropzone.emit("addedfile", imagen);
+				            dropzone.emit("thumbnail", imagen, imagen.path);
+				            dropzone.emit("complete", imagen);
+				    	});
+				    	var l = denuncia.imagenes.length;
+						dropzone.options.maxFiles = dropzone.options.maxFiles - l;
+						console.log(dropzone.options.maxFiles);
+			    	}
+
 			    	this.on('removedfile', function(file){
-			    		
-			    	    $.ajax({
-			 	           url:'/app/deleteFile/'+ random + '/' + file.name,
-			 	           type:'GET', // Método GET
-			 	           data:{},
-			 	           success:function(res){
-			 	        	   
-			 	           }
-			    	    });
+			    		if(denuncia){
+			    			if(file.path)
+					    	    $.ajax({
+					 	           url:'/app/deleteImagen?path=' + file.path,
+					 	           type:'GET', // Método GET
+					 	           data:{},
+					 	           success:function(res){
+					 	        	   // Aquí debería ir un mensaje :/
+						    			dropzone.options.maxFiles = dropzone.options.maxFiles + 1;
+						    			console.log(dropzone.options.maxFiles);
+					 	           }
+					    	    });
+				    		else
+					    	    $.ajax({
+					 	           url:'/app/deleteFile/'+ random + '/' + file.name,
+					 	           type:'GET', // Método GET
+					 	           data:{},
+					 	           success:function(res){
+					 	        	   // Aquí debería ir un mensaje :/
+					 	           }
+					    	    });
+			    		}
+			    		else
+				    	    $.ajax({
+				 	           url:'/app/deleteFile/'+ random + '/' + file.name,
+				 	           type:'GET', // Método GET
+				 	           data:{},
+				 	           success:function(res){
+				 	        	   
+				 	           }
+				    	    });
 
 			    	});
 
@@ -109,12 +159,17 @@ app.Lateral = function(opt_options) {
 					alert('Tag repetido');
 				}
 			});
-
-			if(tags){
-				tags.forEach(function(tag){
-					$('#tags').tagsinput('add', tag);
-				});
-			}
+  			if (denuncia)
+				try {
+					//alert(tags);
+					//var data = JSON.parse('!{JSON.stringify(denuncia.tags_)}');
+					denuncia.tags.forEach(function(tag){
+						$('#tags').tagsinput('add', tag.tag);
+					});
+				}
+				catch (e) {
+					//alert(e);
+				}
 
 			$('#submitDenuncia').click( function(event){
 						
@@ -122,13 +177,16 @@ app.Lateral = function(opt_options) {
 			
 				var titulo = $('#titulo').val(); // Obtenemos el titulo del array anterior
 
-				var contenido = (tinymce.activeEditor) ? tinyMCE.activeEditor.getBody().textContent : $('textarea').val();
+				var contenido = (tinyMCE.activeEditor) ? encodeURIComponent(tinyMCE.activeEditor.getContent().replace(/'/g, " ")) : $('textarea').val();
 
 				json.titulo = titulo;
 				json.contenido = contenido;
 				json.tempDir = random;
 				json.wkt = wkt;
-				
+
+				//alert(JSON.stringify(json));
+				//return;
+
 				// Añadimos los tags a la lista
 				var tags = $('#tags').tagsinput('items');
 
@@ -144,12 +202,15 @@ app.Lateral = function(opt_options) {
 				var xhr = new XMLHttpRequest(); // Petición XMLHttpRequest
 				
 				
-				xhr.open('POST', '/app/denuncias/nueva/save/' , true); // Método POST
+				xhr.open('POST', post , true); // Método POST
 				
 				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); // Especificamos cabecera
 
 				xhr.send(JSON.stringify(json)); // Enviamos petición
 
+				var self = this;
+
+				$(self).parent().hide();
 				
 				// Recibimos respuesta del servidor
 				xhr.onload = function(){
@@ -160,9 +221,10 @@ app.Lateral = function(opt_options) {
 					// Mostramos si ha habido error subiendo la denuncia
 					if(res.type == 'error'){
 						// Mostramos un Bootstrap Dialog
+						$(self).parent().css('display', '');
 						BootstrapDialog.show({
 							type: BootstrapDialog.TYPE_DANGER,
-							title: 'Error',
+							title: 'Error añadiendo denuncia',
 							message: res.msg,
 							buttons: [{
 							label: 'Cerrar',
@@ -171,13 +233,12 @@ app.Lateral = function(opt_options) {
 					}
 					else
 					{
-						num_denuncias_io.emit('new_denuncia_added', res.denuncia);
 						//console.log(res.denuncia);
 						// Ha habido éxito subiendo la denuncia
 
 						BootstrapDialog.show({
 							type: BootstrapDialog.TYPE_SUCCESS,
-							title: 'Subido Correctamente',
+							title: 'Denuncia añadiendo denuncia',
 							message: res.msg,
 							closable: false,
 							buttons: [{
@@ -193,6 +254,9 @@ app.Lateral = function(opt_options) {
 
   		}
   	});
+
+  function lateral_ (){
+  	dialog.open();
   }
 
   button.addEventListener('click', lateral_, false);

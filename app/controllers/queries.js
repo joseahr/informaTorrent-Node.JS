@@ -8,6 +8,8 @@ module.exports = {
 		delete_all_likes : helper.delete.denuncias.all.likes,
 		
 		delete_all_comentarios : helper.delete.denuncias.all.comentarios,
+
+		delete_all_notificaciones : helper.delete.denuncias.all.notificaciones,
 		
 		delete_all_imagenes : helper.delete.denuncias.all.imagenes,
 		

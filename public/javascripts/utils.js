@@ -151,7 +151,14 @@ function getInfoAccion(noti){
 	}		
 }
 
-function getDenunciaRow(denuncia){
+function icono(clase, color){
+	return '<span class="fa-stack fa-lg" style="color: ' + color + '">' +
+  				'<i class="fa fa-circle fa-stack-2x"></i>' +
+  				'<i class="fa ' + clase + ' fa-stack-1x fa-inverse"></i>' +
+			'</span>';
+}
+
+function getDenunciaRow(denuncia, tabla){
 	var contenido = denuncia.descripcion.substring(0, 50) + '...';
 	var comentarios = denuncia.comentarios ? denuncia.comentarios.length : 0;
 	var tags = denuncia.tags_ ? denuncia.tags_.length : 0;
@@ -159,16 +166,36 @@ function getDenunciaRow(denuncia){
 	var likes = denuncia.likes ? denuncia.likes.length : 0;
 	var fecha = new Date(denuncia.fecha);
 	var id = denuncia.gid;
+
+	var clas = '';
+
+	var menu;
+
+	if (!tabla) {
+		clas = 'thumbnail';
+		menu = '<a target="_blank" href="/app/denuncia/' + id + '" style="margin: 0px auto;">' + icono('fa-eye', '#55acee') + '</a>' +
+				'<a target="_blank" href="/app/editar?id=' + id + '" style="margin: 0px auto;">' + icono('fa-edit', '#ec971f') + '</a>' +
+				'<a id="' + id + '" onclick="eliminar(this.id)" href="#" style="margin: 0px auto;">' + icono('fa-trash', '#d9534f') + '</a>';
+	}
+	else {
+		menu = '<a target="_blank" href="/app/denuncia/' + id + '" style="margin: 0px auto;">' + icono('fa-eye', '#55acee') + '</a>' +
+				'<a target="_blank" href="/app/usuarios/' + denuncia.usuario[0]._id + '" style="margin: 0px auto;">' + 
+					'<span class="fa-stack fa-lg" style="color: #ec971f">' +
+  						'<img src="' + denuncia.usuario[0].profile.picture + '" style="padding: 2px; object-fit: cover; width: 40px; height: 40px;" class="fa fa-circle fa-stack-2x img-circle"></img>' +
+					'</span>' +
+				'</a>';
+	}
+
 	return '<div class="row" id="' + denuncia.gid + '">' + 
-			'<p style="position:relative; top:35px; left: 5px; text-align:left; z-index:2; font-size: 0.85em; padding-left: 20px;"><i class="fa fa-clock-o"></i> ' + getFechaFormatted(fecha) + '</p>' + 									
-			'<div class="thumbnail container-fluid" style="margin: 10 5 5 5px; padding-top: 10px; overflow-x: hidden;">' + 
+			'<div class="'+ clas +' container-fluid" style="margin: 10 5 5 5px; padding-top: 10px; overflow-x: hidden;">' + 
 				'<div class="col-lg-12 container imagen_con_menu">' + 
 					'<h2 style="background:rgba(255,255,255,0.4); margin: 0px; position: absolute; top: 20px; right: 0px; left:0px; z-index:1; font-size: 1.5em; color: #000; font-weight: bold;">' + denuncia.titulo + '</h2>' +
-					'<img class="img img-responsive" src="' +  getGeoserverMiniatura(denuncia, 1200) + '" style="border-top-right-radius: 10px;border-top-left-radius: 10px; float:left;height: auto; max-height: 300px; object-fit: cover; margin-top: 20px; padding: 0px; width: 100%;"></img>' +
+					'<img class="img img-responsive" src="' +  getGeoserverMiniatura(denuncia, 1200) + '" style="border-top-right-radius: 10px;border-top-left-radius: 10px; float:left;height: 300px; object-fit: cover; margin-top: 20px; padding: 0px; width: 100%;"></img>' +
 					'<div class="menu_encima_de_imagen text-center">' + 
-						'<a target="_blank" href="/app/denuncia/' + id + '"><button type="button" class="btn btn-block btn-info" style="background: rgba(10,50,250,0.25); border:0px;"><i class="fa fa-eye">  IR A LA DENUNCIA</i></button></a>' +
-						'<a target="_blank" href="/app/editar?id=' + id + '"><button type="button" class="btn btn-block btn-warning" style="background: rgba(200,200,10,0.25); border:0px;"><i class="fa fa-edit"> EDITAR DENUNCIA</i></button></a>' +
-						'<a><button id="' + id + '" onclick="eliminar(this.id)" type="button" class="btn btn-block btn-danger" style="background: rgba(250,50,10,0.25); border:0px;"><i class="fa fa-trash"> ELIMINAR DENUNCIA</i></button></a>' +
+						menu +
+					'</div>' +
+					'<div class="col-lg-12" style="clear:both; color: #fff; background : rgba(0,50,200,0.4)">' +
+						'<i class="fa fa-clock-o"></i> ' + getFechaFormatted(fecha) + 
 					'</div>' +
 					'<div class="panel-footer col-lg-12" style="clear:both;">' +
 						'<i class="fa fa-eye"> ' + denuncia.veces_vista + '&nbsp;&nbsp;</i>' +
@@ -227,6 +254,9 @@ function fillNotificaciones(notificaciones){
 
 function getAccionRow(notificacion){
 	var fecha = new Date(notificacion.fecha);
+
+	console.log(noti.id_denuncia);
+
 	return '<div class="row">' + 
 			'<div class="thumbnail container-fluid" style="margin: 5px; padding: 10 0 5 0px; overflow-x: hidden; background-color:#fff;">' + 
 			'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getFechaFormatted(fecha) + ' <i class="fa fa-clock-o"></i> </p>' + 																

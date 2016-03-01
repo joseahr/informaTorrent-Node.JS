@@ -102,12 +102,15 @@ function middle_datos (req, res, next){
 			notificaciones.forEach(function(n){
 				if(n.denuncia_punto) n.denuncia = n.denuncia_punto[0];
 				else if(n.denuncia_linea) n.denuncia = n.denuncia_linea[0];
-				else n.denuncia = n.denuncia_poligono[0];
+				else if(n.denuncia_poligono) n.denuncia = n.denuncia_poligono[0];
+				else if(n.denuncia_poligono) n.denuncia = n.denuncia_poligono[0];
 				
-				n.denuncia.tipo = n.denuncia.geometria.type;
-				n.denuncia.coordenadas = n.denuncia.geometria.coordinates;
-				n.denuncia.geometria = undefined;
-				console.log(n.denuncia, 'tipossss');
+				if(n.denuncia){
+					n.denuncia.tipo = n.denuncia.geometria.type;
+					n.denuncia.coordenadas = n.denuncia.geometria.coordinates;
+					n.denuncia.geometria = undefined;
+				}
+				//console.log(n.denuncia, 'tipossss');
 			});
 			
 			variables_locales.mis_notificaciones = notificaciones; // ls pasamos al objeto res.locals
@@ -121,12 +124,14 @@ function middle_datos (req, res, next){
 				
 				if(n.denuncia_punto) n.denuncia = n.denuncia_punto[0];
 				else if(n.denuncia_linea) n.denuncia = n.denuncia_linea[0];
-				else n.denuncia = n.denuncia_poligono[0];
+				else if(n.denuncia_poligono) n.denuncia = n.denuncia_poligono[0];
 				
-				n.denuncia.tipo = n.denuncia.geometria.type;
-				n.denuncia.coordenadas = n.denuncia.geometria.coordinates;
-				n.denuncia.geometria = undefined;
-				console.log(n.denuncia, 'tipossss');
+				if(n.denuncia){
+					n.denuncia.tipo = n.denuncia.geometria.type;
+					n.denuncia.coordenadas = n.denuncia.geometria.coordinates;
+					n.denuncia.geometria = undefined;
+				}
+				//console.log(n.denuncia, 'tipossss');
 			});
 			
 			variables_locales.mis_acciones = acciones;
@@ -173,7 +178,7 @@ require('./app/controllers/sockets.js')(io, path, mkdirp, exec, configUploadImag
 var tarea = require('node-schedule');
 var regla = new tarea.RecurrenceRule();
 
-regla.minute = 38;
+regla.minute = 0;
 
 var limpiador_directorio = tarea.scheduleJob(regla, function(){
 	console.log('ejecutando limpieza de carpeta temporal ');

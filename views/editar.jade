@@ -11,41 +11,26 @@ block link
 		    line-height: 2 !important;
 		}
 	// CSS DROPZONE
-// Panel lateral - rellenar denuncia
-block panel-lateral
-	.cd-panel.from-right
-		.cd-panel-header
-			h1(style="margin-top: 2%; color: #55ACEE !important; font-size: 20px;") NUEVA DENUNCIA
-			a.cd-panel-close(href='#0') Close
-		.cd-panel-container
-			.cd-panel-content 
-				form.form-horizontal
-					.input-group(style={'margin-top':'5px'})
-						span.input-group-addon Título
-						input#titulo.form-control.btn-default(type='text', name="titulo", placeholder='Añade un título')
-					.space
-					h4 Añade una descripción
-					textarea#contenido(name="contenido" rows='3' style={'height':'300px'}).form-control !{denuncia.descripcion}
-					.space
-					h4 Imágenes
-					div(id="file-dropzone" style={background:'#55ACEE', border:'1px dashed'})
-						.dz-message.text-center(style={color:'#fff'}) Arrastra imágenes o haz click aquí.
-					.space
-					h4 Tags
-					input.col-lg-12(id="tags" type="text" name="tags" placeholder="Introduce tags")
-					.col-lg-12.input-group.space(style={'margin-top':'5px', 'margin-bottom':'15px'})
-						span.input-group-addon
-							i.fa.fa-send.fa-fw
-						input#submitDenuncia.form-control.btn-success(type="button", value="Guardar Cambios")
 // block script
 block script
 	script.
+		var denuncia = {
+			titulo: '#{denuncia.titulo}',
+			descripcion: '#{denuncia.descripcion}',
+			gid: '#{denuncia.gid}',
+			fecha : '#{denuncia.fecha}',
+			id_usuario: '#{denuncia.id_usuario}',
+			usuario : JSON.parse('!{JSON.stringify(denuncia.usuario[0])}'),
+			veces_vista : '#{denuncia.veces_vista}',
+			likes : JSON.parse('!{JSON.stringify(denuncia.likes)}'),
+			comentarios : JSON.parse('!{JSON.stringify(denuncia.comentarios)}'),
+			imagenes : JSON.parse('!{JSON.stringify(denuncia.imagenes)}'),
+			tags : JSON.parse('!{denuncia.tags_}'),
+		};
 		var denuncia_id = '#{denuncia.gid}';
 		var json = {type: JSON.parse('!{JSON.stringify(denuncia.geometria)}').type, 
 			coordinates: JSON.parse('!{JSON.stringify(denuncia.geometria)}').coordinates};
 		console.log(JSON.stringify(json));
-		var imagenes = JSON.parse('!{JSON.stringify(denuncia.imagenes)}');
-		var tags = JSON.parse('!{denuncia.tags_}');
 	// TAGS
 	script(src="/javascripts/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.js")
 	// TinyMCE Editor
@@ -56,58 +41,5 @@ block script
 	// JS CONFIG SUBIR IMÁGENES
 	script(src="/javascripts/openlayers/oleditar.js")
 	script(type='text/javascript').
-		$('#titulo').val('#{denuncia.titulo}');
-		
-		function iniciarTags(){
-			$('#tags').tagsinput({
-				maxTags: 5,
-				maxChars: 8,
-				trimValue: true,
-				onTagExists: function(item, $tag) {
-					$tag.hide().fadeIn();
-					alert('Tag repetido');
-				}
-			});
-
-			try {
-				alert(tags);
-				//var data = JSON.parse('!{JSON.stringify(denuncia.tags_)}');
-				tags.forEach(function(tag){
-					$('#tags').tagsinput('add', tag.tag);
-				});
-			}
-			catch (e) {
-				alert(e);
-			}
-			
-			
-		}
-		
-		function iniciarEditor(){
-			tinymce.init({
-				selector: 'textarea',
-				plugins: ['advlist autolink link lists charmap print preview hr anchor pagebreak',
-				'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking',
-				'save table contextmenu directionality emoticons template paste textcolor'],
-				theme: 'modern',
-				language_url: '/langs/es.js',
-				min_width: 300,
-				resize: false
-			});
-		}
-				
-		//clode the lateral panel
-		$('.cd-panel').on('click', function(event){
-			if( $(event.target).is('.cd-panel') || $(event.target).is('.cd-panel-close') ) { 
-				//$('.cd-panel-header').hide();
-				
-				$('.cd-panel').removeClass('is-visible');
-				$('.cd-panel-container').css('z-index','0');
-				$('.cd-panel-header').css('z-index','0');
-				$('.btn-map').css('z-index', '2');
-				event.preventDefault();
-			}
-		});
-		
-		map.addControl(new app.Lateral());
+		map.addControl(new app.Lateral({titulo: 'Editar denuncia', denuncia : denuncia}));
 		map.addControl(new app.Draw());

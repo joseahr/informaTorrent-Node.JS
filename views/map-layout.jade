@@ -35,8 +35,8 @@ html
     block link
   body(style="margin-top: -10px;")
     - var nuevas = 0;
-    if locals.user
-      each noti in locals.mis_notificaciones
+    if locals.user && mis_notificaciones
+      each noti in mis_notificaciones
         if noti.vista == false
           - nuevas ++;    
     ul

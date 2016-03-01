@@ -154,7 +154,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 	var from;
 	var imagenes = []; // Lista de imágenes a guardar en la base de datos
 	var titulo = req.body.titulo.replace(/["' # $ % & + ` -]/g, " ");
-	var contenido = req.body.contenido.replace(/["' # $ % & + ` -]/g, " ");
+	var contenido = req.body.contenido;
 	var wkt = req.body.wkt;
 		
 	var user_id = validator.escape(req.user._id); // id_usuario
@@ -353,11 +353,13 @@ ContPg.prototype.getDenunciasPage = function(req, res){
 	
 	var denuncias = [];
 	
-	db.query(consultas.numero_denuncias)
+	db.one(consultas.numero_denuncias)
 		.then(function(num_denuncias){
-			numDenuncias = num_denuncias[0].numdenun;
+			console.log('num_denuncias', num_denuncias);
+			numDenuncias = num_denuncias.numdenuncias;
 			//if (Math.ceil(numDenuncias/10) > 0)
 			maxPages = Math.ceil(numDenuncias/10);
+			console.log('numDenuncias', numDenuncias, 'maxPages', maxPages);
 			if (page > maxPages) page = maxPages;
 			return db.query(consultas.obtener_denuncias_recientes_por_pagina, page);
 			
@@ -461,14 +463,14 @@ ContPg.prototype.deleteDenuncia = function(req, res){
 	
 	var id_user = req.user._id; // id del usuario
 	
-	db.query(consultas.denuncia_por_id, id)
+	db.oneOrNone(consultas.denuncia_por_id, id)
 		.then(function(denuncia){
-			if(!denuncia[0]) throw new Error('No existe denuncia');
-			if(id_user != denuncia[0].id_usuario) 
+			if(!denuncia) throw new Error('No existe denuncia');
+			if(id_user != denuncia.id_usuario) 
 				throw new Error('Usted no tiene permisos para eliminar esta denuncia');
 			
-			if (denuncia[0].imagenes){
-				denuncia[0].imagenes.forEach(function(img){
+			if (denuncia.imagenes){
+				denuncia.imagenes.forEach(function(img){
 					exec('rm -r ' + config.UPLOADDIR + "/" + path.basename(img.path), function ( errD, stdout, stderr ){
 						// Eliminamos las imágenes de la carpeta FINAL
 						if (errD) {
@@ -479,7 +481,7 @@ ContPg.prototype.deleteDenuncia = function(req, res){
 					}); 
 				});
 			} // hay imágenes, las eliminamos
-			var tipo = JSON.parse(denuncia[0].geometria).type;
+			var tipo = denuncia.geometria.type;
 			
 			return db.tx(function (t){
 				var q = [];
@@ -488,6 +490,7 @@ ContPg.prototype.deleteDenuncia = function(req, res){
 				q.push(db.none(consultas.delete_all_tags, id));
 				q.push(db.none(consultas.delete_all_comentarios, id));
 				q.push(db.none(consultas.delete_all_imagenes, id));
+				q.push(db.none(consultas.delete_all_notificaciones, id));
 				return t.batch(q); // Devuelve una lista de promesas que ddeben evaluarse
 			});
 			
@@ -513,7 +516,7 @@ ContPg.prototype.updateDenuncia = function(req, res){
 	
 	var imagenes = []; // Lista de imágenes a guardar en la base de datos
 	var titulo = req.body.titulo.replace(/["' # $ % & + ` -]/g, " ");
-	var contenido = req.body.contenido.replace(/["' # $ % & + ` -]/g, " ");
+	var contenido = req.body.contenido;
 	var wkt = req.body.wkt;
 	
 	var user_id = validator.escape(req.user._id); // id_usuario
@@ -561,9 +564,11 @@ ContPg.prototype.updateDenuncia = function(req, res){
 				 fs.renameSync(from, to);
 			});
 			console.log(wkt, 'wktttt');	
-			return db.task(function (t){
+			return db.task(function * (t){
 				// t = this = contexto bdd
-				var q = []; // consultas a ejecutar --> añadir imagenes y tags
+				var q = [];
+				let borrar = yield t.none(consultas.delete_all_tags, id);
+				console.log('borrar ', borrar);
 				var tipo_ant = denuncia.geometria.type;
 				var fecha = denuncia.fecha;
 				console.log(tipo);

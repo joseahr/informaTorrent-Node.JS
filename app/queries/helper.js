@@ -96,6 +96,7 @@ var mis_consultas = {
 				likes : sql('delete', 'denuncias/all/likes.sql'),
 				comentarios : sql('delete', 'denuncias/all/comentarios.sql'),
 				imagenes : sql('delete', 'denuncias/all/imagenes.sql'),
+				notificaciones : sql('delete', 'denuncias/all/notificaciones.sql'),
 			} 
 		}
 	}

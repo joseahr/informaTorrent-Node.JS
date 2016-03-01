@@ -36,7 +36,11 @@ block content
 													i.fa.fa-inbox
 													|  Notificaciones
 												div(style="position: absolute;top: 30%;left:1%;")
-													span.badge(style="background:#5BC0DE;float:left").noti_tot #{mis_notificaciones.length}
+													span.badge(style="background:#5BC0DE;float:left").noti_tot 
+														if mis_notificaciones
+															|  #{mis_notificaciones.length}
+														else 
+															|  0
 													span.badge(style="background:#D9534F;float:right").noti_up #{nuevas}
 									#notificaciones.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingOne')
 										.panel-body(style='text-align: center;')
@@ -50,8 +54,12 @@ block content
 									#mis_denuncias.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTwo')
 										.panel-body(style='text-align: center;')
 											p.lead ¡Has realizado 
-												span#has_realizado.lead #{misDenuncias.length} 
-												| denuncias!
+												span#has_realizado.lead 
+													if misDenuncias 
+														|  #{misDenuncias.length} 
+													else 
+														|  0
+												|  denuncias!
 								.panel.panel-default
 									// Notificaciones
 									#headingThree.panel-heading(role='tab')
@@ -62,8 +70,12 @@ block content
 									#acciones.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingThree')
 										.panel-body(style='text-align: center;')
 											p.lead ¡Has realizado 
-												span#has_realizado.lead #{mis_acciones.length} 
-												| acciones!
+												span#has_realizado.lead 
+													if mis_acciones
+														|  #{mis_acciones.length} 
+													else 
+														|  0
+												|  acciones!
 block script
 	// OpenLayers.js
 	script(src='/javascripts/plugins/ol3/ol.js')
