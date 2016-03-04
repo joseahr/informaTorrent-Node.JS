@@ -29,37 +29,37 @@ app.QueryDenuncias = function(opt_options) {
 		});
 		vector.getSource().clear();
 		var geojson = new ol.format.GeoJSON();
-		data.query.forEach(function(denuncia){
-		
-			//alert(JSON.stringify(denuncia));
-			var feature, type = JSON.parse(denuncia.geometria).type;
-			//alert('tipo ' + type);
+		data.query.forEach(function(denuncia){		
+			var feature, type = JSON.parse(denuncia.geometria).type, coordinates = JSON.parse(denuncia.geometria).coordinates;
+			
 			if(type == 'Point'){
 		    	feature = new ol.Feature({
-		    		  geometry: new ol.geom.Point(JSON.parse(denuncia.geometria).coordinates),
+		    		  geometry: new ol.geom.Point(coordinates),
 		    		  name: 'Denuncia - Punto'
 		    	});
 		    	
 		    }
 		    else if(type == 'LineString'){
 		    	feature = new ol.Feature({
-		    		geometry: new ol.geom.LineString(JSON.parse(denuncia.geometria).coordinates),
+		    		geometry: new ol.geom.LineString(coordinates),
 		    		name: 'Denuncia - Polígono'
 		    	});
 		    }
 		    else if(type == 'Polygon'){
 		    	feature = new ol.Feature({
-		    		geometry: new ol.geom.Polygon(JSON.parse(denuncia.geometria).coordinates),
+		    		geometry: new ol.geom.Polygon(coordinates),
 		    		name: 'Denuncia - Polígono'
 		    	});
 		    }
-		    
+			denuncia.tipo = type;
+			denuncia.coordenadas = coordinates;
 			feature.attributes = {
 				denuncia: denuncia
+				
 			};
 			
-			vector.getSource().addFeature(feature);			
-			
+			console.log(feature.attributes);
+			vector.getSource().addFeature(feature);
 		});
 		
 	});

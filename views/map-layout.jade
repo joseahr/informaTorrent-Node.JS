@@ -85,25 +85,19 @@ html
     // ================
     
     #map.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
-      // Popup Info
-      #popup.ol-popup
-        a#popup-closer.ol-popup-closer(href='#')
-        #popup-content
       // Popup info denuncias
-      #popup-visor.ol-popup.hidden(style="z-index: 3; height: 350px; width: 350px;")
+      #popup-visor.ol-popup.hidden(style="z-index: 3;width: 350px;")
         a#popup-visor-closer.ol-popup-closer(href='#')
-        #popup-visor-content(style="width: 100%; max-height: 300px; overflow-x: hidden; overflow-y: scroll; word-wrap: break-word;")
-      #numdenun.ol-unselectable.ol-control(data-toggle="left" title="Denuncias" data-content="Denuncias totales" style="position: fixed; bottom: 11.125em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;z-index: 1;")
-        i.fa.fa-bullhorn(style="margin-right: 5px;")
-        | #{locals.datos_app.num_denun_total}
-      #numdenunhoy.ol-unselectable.ol-control(data-toggle="left" title="Denuncias" data-content="Denuncias diarias" style="position: fixed; bottom: 14em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;z-index: 1;")
-        i.fa.fa-bullhorn(style="margin-right: 5px;")
-        | #{locals.datos_app.num_denun_hoy}
-      #numusu.ol-unselectable.ol-control(data-toggle="left" title="Usuarios" data-content="Usuarios conectados" style="position: fixed; bottom: 16.875em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px; z-index:1;")
-        i.fa.fa-user(style="margin-right: 5px;")
+        #popup-visor-content(style="width: 100%; overflow-x: hidden; word-wrap: break-word;")
     // section end
-  block panel-lateral
-    
+    div(style="position: fixed; bottom: 0px; left: 0; right: 0; height: 1.5em; background : rgba(0,0,0,0.5); color: #fff; padding: 0 30 0 30px")
+      i.fa.fa-bullhorn
+      |  HOY
+      span#numdenunhoy  !{locals.datos_app.num_denun_hoy}
+      |  | TOTAL
+      |  
+      span#numdenun  !{locals.datos_app.num_denun_total} 
+      span#numusu.pull-right    
   // Plugins Javascript situados al final de la página, así el contenido carga antes
   // JQuery y Bootstrap
   script.
@@ -207,7 +201,6 @@ html
     ignBase.setVisible(false);
 
   // Botones mapa 
-  script(type='text/javascript', src='/javascripts/openlayers/controles/close_header.js')
   script(type='text/javascript', src='/javascripts/openlayers/controles/comentarios_denuncia.js')
   script(type='text/javascript', src='/javascripts/openlayers/controles/draw.js')
   script(type='text/javascript', src='/javascripts/openlayers/controles/get_feature_info.js')
@@ -215,16 +208,14 @@ html
   script(type='text/javascript', src='/javascripts/openlayers/controles/info_denuncia.js')
   script(type='text/javascript', src='/javascripts/openlayers/controles/lateral.js')
   script(type='text/javascript', src='/javascripts/openlayers/controles/like_denuncia.js')
-  script(type='text/javascript', src='/javascripts/openlayers/controles/move.js')
+  script(type='text/javascript', src='/javascripts/openlayers/controles/tracking_denuncias_cerca.js')
   script(type='text/javascript', src='/javascripts/openlayers/controles/query_denuncias.js')
   script(type='text/javascript', src='/javascripts/openlayers/controles/tracking.js')
   // Block Script
   block script
   script.
-    map.addControl(new app.GetFeatureInfo());
-    map.addControl(new app.Move());
-    map.addControl(new app.CloseHeader());
     map.addControl(new app.Tracking());
+    map.addControl(new app.TrackingDenunciasCerca());
     $(function(){
       $('.dropdown-toggle').dropdown();
       $('[data-toggle="left"]').popover({

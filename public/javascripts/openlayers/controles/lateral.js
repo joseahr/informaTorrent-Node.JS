@@ -14,6 +14,8 @@ app.Lateral = function(opt_options) {
 
   var denuncia = options.denuncia;
 
+  var json = {};
+
   var denuncia_titulo = denuncia ? denuncia.titulo : '',
   	  denuncia_contenido = denuncia ? denuncia.descripcion : '',
   	  post = denuncia ? '/app/denuncias/editar?id=' + denuncia.gid : '/app/denuncias/nueva/save';

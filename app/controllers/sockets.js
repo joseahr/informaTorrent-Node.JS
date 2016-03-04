@@ -141,6 +141,20 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 				});
 		});
 		
+		socket.on('tengo_denuncias_cerca_?', function(data){
+			console.log(data);
+
+			if (!data) return;
+
+			var query = consultas.denuncias_sin_where.query + 
+				" st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(the_geom,25830)) < 20 " +
+				"order by fecha desc";
+			db.any(query, data)
+				.then(function(denuncias){
+					socket.emit('si_que_tengo_denuncias_cerca', denuncias);
+				});
+
+		});
 		
 		socket.on('te_pregunto_que_si_me_gusta_esta_puta_mierda_de_denuncia?', function(data){
 			console.log(data);
@@ -243,29 +257,6 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 		
 		
 	}); // io.of('/app/visor')
-
-	io.of('/app/denuncias/nueva').on('connection', function(socket){
-		//socket.join('sessionId');
-		console.log(socket.id + ' creando o editando denuncia');
-		
-		// Creamos una carpeta temporal dentro de public/files/temp/
-		// cuyo nombre es el identificador del socket
-		
-		socket.on('crear_carpeta_temporal', function(data){
-			mkdirp(path.join(config.TEMPDIR, data.random), function (err){
-				console.log(data.random);
-				if(err) console.log(err);
-			}); // Crea un directorio si no existe
-		});
-		
-		
-		socket.on('disconnect', function(){
-//			console.log(this.id + ' desconectado');
-//			exec( 'rm -r ' + config.TEMPDIR + "/" + this.id, function ( errD, stdout, stderr ){
-//				if (errD) console.log(errD);
-//			});
-		});
-	});
 	
 	/*
 	 * Función de filtro para consultar denuncias por sus atributos
@@ -307,7 +298,7 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 	    	cnd.push("fecha < date '" + filter.fecha_hasta[2] + "-" + filter.fecha_hasta[1] + "-" + filter.fecha_hasta[0] + "'");
 	    }
 	    console.log(cnd.join(' and '));
-	    return cnd.join(" and "); // returning the complete filter string; 
+	    return cnd.join(" and ");
 	}
 	
 	

@@ -12,7 +12,9 @@ var fs, // file System
 	dbCarto, 
 	consultas,
 	multer_imagen_perfil,
-	multer_temp_denuncia;
+	multer_temp_denuncia,
+	crypto = require('crypto'),
+	mkdirp = require('mkdirp');
 /*
  * Constructor
  */
@@ -36,7 +38,14 @@ function ContPg(fs_, path_, dir_, exec_, User_, validator_,
  * Renderizamos la página para añadir una denuncia
  */
 ContPg.prototype.renderNueva = function(req, res){
-	res.render('nueva');
+
+	crypto.randomBytes(25, function(ex, buf) {
+  		var token = buf.toString('hex');
+		mkdirp(path.join(config.TEMPDIR, token), function (err){
+			if(err) throw err;
+			res.render('nueva', {random : token});
+		}); // Crea un directorio si no existe
+	});
 }
 
 /*
@@ -186,28 +195,17 @@ ContPg.prototype.saveDenuncia = function(req, res){
 				throw new Error('La geometría poligonal no debe superar un area mayor de 10.000 metros cuadrados.');
 			
 			
-			dir.files(config.TEMPDIR + "/" + tempDirID, function(err, files) {
-				// Recorremos el directorio temporal en busca de imágenes añadidas a la denuncia.
-				// Almacenamos el path (TODO: almacenar también la descripción) en una lista
-				// para luego introducir esos path en la bdd
-				  if (err) {
-					  console.log(err);
-				  }
-				  
-				  // Para cada imagen subida la movemos del directorio temporal 
-				  // a la carpeta final
-				  files.forEach(function(ruta) {
-					  
-					  console.log('img: ' + path.basename(ruta));
+			var files = fs.readdirSync(config.TEMPDIR + "/" + tempDirID);
+			if (files)
+				files.forEach(function(ruta, index, that) {
+				    console.log('img: ' + path.basename(ruta));
 				    
-					  var from = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
-					  var to = path.join(config.UPLOADDIR, tempDirID +"-" + path.basename(ruta));
-					  
-					 // Movemos la imagen desde la carpeta temporal hasta la carpeta final
-					 fs.renameSync(from, to);
-					 imagenes.push("/files/denuncias/" + path.basename(to)); 
-				  });
-			});
+					var from = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
+					var to = path.join(config.UPLOADDIR, tempDirID +"-" + path.basename(ruta));
+					imagenes.push("/files/denuncias/" + path.basename(to)); 
+					// Movemos la imagen desde la carpeta temporal hasta la carpeta final
+					fs.renameSync(from, to);
+				});
 			
 			
 			return db.task(function * (t){
@@ -440,7 +438,14 @@ ContPg.prototype.getEdit = function(req, res){
 				//console.log(denuncia[0]);
 				denuncia.tags_ = JSON.stringify(denuncia.tags_);
 				console.log(denuncia);
-				res.render('editar.jade', {denuncia: denuncia});
+
+				crypto.randomBytes(25, function(ex, buf) {
+  					var token = buf.toString('hex');
+					mkdirp(path.join(config.TEMPDIR, token), function (err){
+						if(err) throw err;
+						res.render('editar.jade', {denuncia: denuncia, random : token});
+					}); // Crea un directorio si no existe
+				});
 			})
 			.catch(function(error){
 				res.status(500).send(error);
@@ -553,16 +558,16 @@ ContPg.prototype.updateDenuncia = function(req, res){
 				throw new Error('La geometría poligonal no debe superar un area mayor de 10.000 metros cuadrados.');
 			
 			var files = fs.readdirSync(config.TEMPDIR + "/" + tempDirID);
-			
-			files.forEach(function(ruta, index, that) {
-			    console.log('img: ' + path.basename(ruta));
-			    
-				 var from = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
-				 var to = path.join(config.UPLOADDIR, tempDirID +"-" + path.basename(ruta));
-				 imagenes.push("/files/denuncias/" + path.basename(to)); 
-				 // Movemos la imagen desde la carpeta temporal hasta la carpeta final
-				 fs.renameSync(from, to);
-			});
+			if (files)
+				files.forEach(function(ruta, index, that) {
+				    console.log('img: ' + path.basename(ruta));
+				    
+					var from = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
+					var to = path.join(config.UPLOADDIR, tempDirID +"-" + path.basename(ruta));
+					imagenes.push("/files/denuncias/" + path.basename(to)); 
+					// Movemos la imagen desde la carpeta temporal hasta la carpeta final
+					fs.renameSync(from, to);
+				});
 			console.log(wkt, 'wktttt');	
 			return db.task(function * (t){
 				// t = this = contexto bdd

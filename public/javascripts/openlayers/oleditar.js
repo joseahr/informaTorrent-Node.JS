@@ -21,26 +21,26 @@ function toWKT(){
 /**
 ************* CARGAR GEOMETRÍA DENUNCIA
 **/
-
-var type = json.type;
+var type = denuncia.geometria.type, 
+	coordenadas = denuncia.geometria.coordinates;
 
 var feature;
 
 if(type == 'Point'){
 	feature = new ol.Feature({
-		  geometry: new ol.geom.Point(json.coordinates),
+		  geometry: new ol.geom.Point(coordenadas),
 		  name: 'Denuncia - Punto'
 	});
 }
 else if(type == 'LineString'){
 	feature = new ol.Feature({
-		geometry: new ol.geom.LineString(json.coordinates),
+		geometry: new ol.geom.LineString(coordenadas),
 		name: 'Denuncia - Polígono'
 	});
 }
 else if(type == 'Polygon'){
 	feature = new ol.Feature({
-		geometry: new ol.geom.Polygon(json.coordinates),
+		geometry: new ol.geom.Polygon(coordenadas),
 		name: 'Denuncia - Polígono'
 	});
 }

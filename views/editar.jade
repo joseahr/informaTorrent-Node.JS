@@ -26,11 +26,9 @@ block script
 			comentarios : JSON.parse('!{JSON.stringify(denuncia.comentarios)}'),
 			imagenes : JSON.parse('!{JSON.stringify(denuncia.imagenes)}'),
 			tags : JSON.parse('!{denuncia.tags_}'),
+			geometria : JSON.parse('!{JSON.stringify(denuncia.geometria)}')
+
 		};
-		var denuncia_id = '#{denuncia.gid}';
-		var json = {type: JSON.parse('!{JSON.stringify(denuncia.geometria)}').type, 
-			coordinates: JSON.parse('!{JSON.stringify(denuncia.geometria)}').coordinates};
-		console.log(JSON.stringify(json));
 	// TAGS
 	script(src="/javascripts/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.js")
 	// TinyMCE Editor
@@ -43,3 +41,4 @@ block script
 	script(type='text/javascript').
 		map.addControl(new app.Lateral({titulo: 'Editar denuncia', denuncia : denuncia}));
 		map.addControl(new app.Draw());
+		var random = '#{random}';

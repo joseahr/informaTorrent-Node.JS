@@ -5,6 +5,8 @@ var container = document.getElementById('popup-visor');
 var content = document.getElementById('popup-visor-content');
 var closer = document.getElementById('popup-visor-closer');
 
+var seleccionada = '';
+
 /**
  * Add a click handler to hide the popup.
  * @return {boolean} Don't follow the href.
@@ -28,28 +30,29 @@ var overlay = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
 console.log(denuncias + ' denuncias' + typeof(denuncias) );
 denuncias.forEach(function(denuncia){
 	console.log('denuncia añadida bdd' + JSON.parse(denuncia.geometria).type);
-	var feature, type = JSON.parse(denuncia.geometria).type;
+	var feature, type = JSON.parse(denuncia.geometria).type, coordinates = JSON.parse(denuncia.geometria).coordinates;
 	
 	if(type == 'Point'){
     	feature = new ol.Feature({
-    		  geometry: new ol.geom.Point(JSON.parse(denuncia.geometria).coordinates),
+    		  geometry: new ol.geom.Point(coordinates),
     		  name: 'Denuncia - Punto'
     	});
     	
     }
     else if(type == 'LineString'){
     	feature = new ol.Feature({
-    		geometry: new ol.geom.LineString(JSON.parse(denuncia.geometria).coordinates),
+    		geometry: new ol.geom.LineString(coordinates),
     		name: 'Denuncia - Polígono'
     	});
     }
     else if(type == 'Polygon'){
     	feature = new ol.Feature({
-    		geometry: new ol.geom.Polygon(JSON.parse(denuncia.geometria).coordinates),
+    		geometry: new ol.geom.Polygon(coordinates),
     		name: 'Denuncia - Polígono'
     	});
     }
-	
+	denuncia.tipo = type;
+	denuncia.coordenadas = coordinates;
 	feature.attributes = {
 		denuncia: denuncia
 		
@@ -69,30 +72,19 @@ select.on('select', function(e){
 	if(! e.selected[0]) return;
 	e.target.getFeatures().forEach(function(f){
 		
-		var tags = f.attributes.denuncia.tags_ || [];
-		
-		var numImages = f.attributes.denuncia.imagenes ? f.attributes.denuncia.imagenes.length : 0;
-		
-		numComments = f.attributes.denuncia.comentarios ? f.attributes.denuncia.comentarios.length : 0;
-		
-		var stringTags = '';
-		
-		tags.forEach(function(tag){
-			stringTags += '#' + tag.tag + '  ';
-		});
-		
-		content.innerHTML = '<div class="row text-center" style="padding-bottom: 0px !important;background: rgba(0,0,0,0.2); padding: 5px;"><div class="col-lg-4 text-center"><img class="img img-thumbnail img-responsive img-circle" src="' + f.attributes.denuncia.usuario[0].profile.picture + '" style="height: 60px; width: 60px; float: left; margin: 0 auto;"></img></div>' + 
-							'<div class="col-lg-8 text-center" style="padding: 5px;"><p> denunciado por <span><a href="/app/usuarios/' + f.attributes.denuncia.usuario[0]._id + '">' + f.attributes.denuncia.usuario[0].profile.username + '</a></span></p></div>'+
-							'<div class="col-lg-12 btn-info text-center" style="padding: 5px;">' + f.attributes.denuncia.fecha + '</div>' +
-							'<div class="col-lg-12" style="clear: both; margin-top: 5px;"><i class="fa fa-tags"></i> ' + stringTags + '</div>' + 
-							'<div class="col-lg-12" style="clear: both;"><i class="fa fa-image"></i> ' + numImages + '  <i class="fa fa-comments"></i> ' + numComments + '  <i class="fa fa-eye"></i> ' + f.attributes.denuncia.veces_vista + '  <i class="fa fa-thumbs-o-up"></i> ' + f.attributes.denuncia.likes + '</div>' + 
-							'</div>' + 
-							'<h4>' + f.attributes.denuncia.titulo + '</h4>' +
-							'<div class="space" style="clear: both;"></div>' + 
-							'<div style="max-height: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; word-wrap: break-word; word-break: break-all;">' + f.attributes.denuncia.descripcion + '</div>' +
-							'<div class="space" style="clear: both;"></div>' + 
-							'<a style="margin-right: 15px; width: 100%;" class="btn btn-warning" href="/app/denuncia/' + f.attributes.denuncia.gid + '"> + Info</a>';
+		console.log('denuncia seleccionada : ' + f.attributes.denuncia.gid);
+
+		$(content).empty();
+		$(content).append($(getDenunciaRow(f.attributes.denuncia, true)));
+		$('.container-fluid').css('text-align', 'center');
+		$('.container-fluid').css('padding-top', '0px');
+		$('.container-fluid').css('margin', '0px');
 		overlay.setPosition(ol.extent.getCenter(f.getGeometry().getExtent()));
+
+		$('#imagenes_denuncia').click(function(e){
+			cambiar_imagen(f.attributes.denuncia, this);
+		});
+
 	});
 	$(container).removeClass('hidden');
 });
@@ -142,3 +134,23 @@ function flash(feature) {
 	vector.getSource().on('addfeature', function(e) {
 	  flash(e.feature);
 	});
+
+	function cambiar_imagen(denuncia, boton){
+		//console.log(denuncia);
+		//denuncia = JSON.parse(denuncia);
+		console.log(denuncia.imagenes);
+		var imagenes = denuncia.imagenes;
+		if(!imagenes) return;
+		var actual = $(boton).attr('src');
+
+		var index = -1;
+
+		imagenes.forEach(function(imagen, index_){
+			if(imagen.path == actual) index = index_;
+		});
+
+		if(index == -1) $(boton).attr('src', imagenes[0].path)
+		else if(index == imagenes.length - 1) $(boton).attr('src', getGeoserverMiniatura(denuncia, 1200));
+		else $(boton).attr('src', imagenes[index + 1].path);
+		console.log('index', index, 'length', imagenes.length);
+	}

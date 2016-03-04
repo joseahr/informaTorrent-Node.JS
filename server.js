@@ -3,33 +3,39 @@
  */
 
 // Set Up
-var http = require('http');
-var morgan = require('morgan');
-var express  = require('express');
-var app      = express();
-var port     = process.env.PORT || 3000;
-var passport = require('passport');
-var flash    = require('connect-flash');
+var http = require('http'); // Módulo http
+var morgan = require('morgan'); // Loggea cada petición en consola
+var express  = require('express'); // Framework Express
+var app      = express(); // Aplicación empaquetada en express
+var port     = process.env.PORT || 3000; // Puerto usado por nuestra aplicación
+var passport = require('passport'); // Passport - Sistema de Logins
+var flash    = require('connect-flash'); // Flash - Emitir mensajes al request
 
-var promiseLib = require('bluebird');
-var configDB = require('./config/database.js');
+
+var promiseLib = require('bluebird'); // Librería de Promises - Especificación ES6
+var configDB = require('./config/database.js'); // Datos de la BDD
+
+// Opciones de la bdd - Recibe la librería de Promises
 var pg_options = {
 	promiseLib : promiseLib
 };
 
-var pgp = require('pg-promise')(pg_options);
-var db = pgp(configDB.denuncias);
-var dbCarto = pgp(configDB.carto);
-var queries = require('./app/controllers/queries.js');
+var pgp = require('pg-promise')(pg_options); // Objeto pg-promise
 
+var db = pgp(configDB.denuncias); // Objeto bdd - denuncias
+var dbCarto = pgp(configDB.carto); // Objeto bbd - cartografía
+
+var queries = require('./app/controllers/queries.js'); // Consultas
+
+// Hace logs en la consola de la consultas, errores, conexiones...
 require('pg-monitor').attach(pg_options, ['query', 'error', 'connect', 'disconnect', 'task', 'transact']);
 
-var fs = require('fs');
-var path = require('path');
+var fs = require('fs'); // Módulo fs
+var path = require('path'); // Módulo path
 
-var cookieParser = require('cookie-parser');
-var session      = require('express-session');
-
+var cookieParser = require('cookie-parser'); // Módulo cookieParser - Se encarga de manejar las cookies
+var session      = require('express-session'); // Módulo de sesiones de express
+var bodyParser = require('body-parser'); // BodyParser - Se encarga de parsear el cuerpo de las peticiones
 
 
 //process.on('uncaughtException', function (err) {
@@ -39,114 +45,29 @@ var session      = require('express-session');
 //http.globalAgent.maxSockets = Infinity;
 
 // Express
-var bodyParser = require('body-parser');
 
 app.use(morgan('dev')); // Log cada request en la consola
-app.use(cookieParser()); // Leer Coockies
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(express.static(path.join(__dirname, 'public')));
-app.set('view engine', 'jade'); // Jade
-app.set('port', process.env.PORT || 3000);
+app.use(cookieParser()); // Usa el cookie parser de express
+app.use(bodyParser.json()); // Body JSON
+app.use(bodyParser.urlencoded({extended: true})); // Codifica la URL
+app.use(express.static(path.join(__dirname, 'public'))); // Servir archivos estáticos
+app.set('view engine', 'jade'); // Motor de renderizado de vista - Jade
+app.set('port', process.env.PORT || 3000); // Que use el puerto 3000
 
 //app.use(require('connect-multiparty')());
 
-
-
 // Necesarios para passport
-app.use(session({ secret: 'peroqueestasdisiendotu' })); // Almacenar sesiones 
-app.use(passport.initialize());
-app.use(passport.session()); // Sesiones Login Persistentes
+app.use(session({ secret: 'peroqueestasdisiendotu' })); // Almacenar sesiones express 
+app.use(passport.initialize()); // Usa passport
+app.use(passport.session()); // Sesiones Login Persistentes - Passport
 app.use(flash()); // Flashear mensaje almacenados en la sesión
 
 var os = require('os');
 console.log(os.networkInterfaces()['ens33'][0]['address']);
 
-var IP = os.networkInterfaces()['ens33'][0]['address'];
+var IP = os.networkInterfaces()['ens33'][0]['address']; // IP desde donde ejecuto la aplicación
 
 //var IP = 'http://localhost:3000/'
-
-// Ruta middleware
-
-function middle_datos (req, res, next){
-	
-	var id_usuario = req.user ? req.user._id : 'undefined';
-
-	var variables_locales = {
-		ip: IP,
-		message: {
-			error: req.flash('error'),
-			success: req.flash('success'),
-			info : req.flash('info'),
-		},
-		title: 'Informa Torrent',
-		subtitle: 'La app con la que podrás contribuir a la mejora de Torrent.',
-		user: req.user, 
-		id_usuario: id_usuario
-	};
-	
-	db.one(queries.obtener_datos_app) // consultamos los datos de la app
-		.then (function(datos_app){
-			
-			variables_locales.datos_app = datos_app; // obtenemos datos app
-			
-			if (! req.user) throw new Error('no estás loggeado'); // Si no hay usuario conectado --> Continuamos adelante
-											   // ya que no consultamos notificaciones ni acciones	
-			
-			return db.query(queries.obtener_notificaciones, req.user._id); // consultamos notificaciones
-			
-		})
-		.then(function(notificaciones){
-			// obtenemos notificaciones
-			
-			notificaciones.forEach(function(n){
-				if(n.denuncia_punto) n.denuncia = n.denuncia_punto[0];
-				else if(n.denuncia_linea) n.denuncia = n.denuncia_linea[0];
-				else if(n.denuncia_poligono) n.denuncia = n.denuncia_poligono[0];
-				else if(n.denuncia_poligono) n.denuncia = n.denuncia_poligono[0];
-				
-				if(n.denuncia){
-					n.denuncia.tipo = n.denuncia.geometria.type;
-					n.denuncia.coordenadas = n.denuncia.geometria.coordinates;
-					n.denuncia.geometria = undefined;
-				}
-				//console.log(n.denuncia, 'tipossss');
-			});
-			
-			variables_locales.mis_notificaciones = notificaciones; // ls pasamos al objeto res.locals
-			
-			return db.query(queries.obtener_acciones, req.user._id); // consultamos acciones
-			
-		})
-		.then (function(acciones){
-			// obtenemos acciones
-			acciones.forEach(function(n){
-				
-				if(n.denuncia_punto) n.denuncia = n.denuncia_punto[0];
-				else if(n.denuncia_linea) n.denuncia = n.denuncia_linea[0];
-				else if(n.denuncia_poligono) n.denuncia = n.denuncia_poligono[0];
-				
-				if(n.denuncia){
-					n.denuncia.tipo = n.denuncia.geometria.type;
-					n.denuncia.coordenadas = n.denuncia.geometria.coordinates;
-					n.denuncia.geometria = undefined;
-				}
-				//console.log(n.denuncia, 'tipossss');
-			});
-			
-			variables_locales.mis_acciones = acciones;
-			res.locals = variables_locales;
-			next(); // siguiente ruta o middleware
-		})
-		.catch(function (error) {
-			console.log('Error middleware ' + error); 
-			res.locals = variables_locales;
-			next(); // siguiente ruta o middleware
-		});
-	
-};
-
-
 
 var server = http.createServer(app);
 server.listen(port);
@@ -405,6 +326,10 @@ app.get('/app/visor', middle_datos, contPg.getVisorPage);
 //	res.redirect('/app');
 //});
 
+/**
+ * Función que se ejecutará en la mayoría de las peticiones para saber si 
+ * un cliente está conectado como usuarios
+**/
 function isLoggedIn(req, res, next) {
     if (req.isAuthenticated()){
     	if(req.user.local.valid)
@@ -420,4 +345,86 @@ function isLoggedIn(req, res, next) {
     	req.flash('error', 'Debes estar loggeado');
     	res.redirect('/app/login');
     }
-}
+};
+
+/**
+ * Función que se ejecutará en la mayoría de las peticiones para devolver al cliente
+ * datos de su cuenta como notificaciones y datos de la app como nº de denuncias...
+**/
+function middle_datos (req, res, next){
+	
+	var id_usuario = req.user ? req.user._id : 'undefined';
+
+	var variables_locales = {
+		ip: IP,
+		message: {
+			error: req.flash('error'),
+			success: req.flash('success'),
+			info : req.flash('info'),
+		},
+		title: 'Informa Torrent',
+		subtitle: 'La app con la que podrás contribuir a la mejora de Torrent.',
+		user: req.user, 
+		id_usuario: id_usuario
+	};
+	
+	db.one(queries.obtener_datos_app) // consultamos los datos de la app
+		.then (function(datos_app){
+			
+			variables_locales.datos_app = datos_app; // obtenemos datos app
+			
+			if (! req.user) throw new Error('no estás loggeado'); // Si no hay usuario conectado --> Continuamos adelante
+											   // ya que no consultamos notificaciones ni acciones	
+			
+			return db.query(queries.obtener_notificaciones, req.user._id); // consultamos notificaciones
+			
+		})
+		.then(function(notificaciones){
+			// obtenemos notificaciones
+			
+			notificaciones.forEach(function(n){
+				if(n.denuncia_punto) n.denuncia = n.denuncia_punto[0];
+				else if(n.denuncia_linea) n.denuncia = n.denuncia_linea[0];
+				else if(n.denuncia_poligono) n.denuncia = n.denuncia_poligono[0];
+				else if(n.denuncia_poligono) n.denuncia = n.denuncia_poligono[0];
+				
+				if(n.denuncia){
+					n.denuncia.tipo = n.denuncia.geometria.type;
+					n.denuncia.coordenadas = n.denuncia.geometria.coordinates;
+					n.denuncia.geometria = undefined;
+				}
+				//console.log(n.denuncia, 'tipossss');
+			});
+			
+			variables_locales.mis_notificaciones = notificaciones; // ls pasamos al objeto res.locals
+			
+			return db.query(queries.obtener_acciones, req.user._id); // consultamos acciones
+			
+		})
+		.then (function(acciones){
+			// obtenemos acciones
+			acciones.forEach(function(n){
+				
+				if(n.denuncia_punto) n.denuncia = n.denuncia_punto[0];
+				else if(n.denuncia_linea) n.denuncia = n.denuncia_linea[0];
+				else if(n.denuncia_poligono) n.denuncia = n.denuncia_poligono[0];
+				
+				if(n.denuncia){
+					n.denuncia.tipo = n.denuncia.geometria.type;
+					n.denuncia.coordenadas = n.denuncia.geometria.coordinates;
+					n.denuncia.geometria = undefined;
+				}
+				//console.log(n.denuncia, 'tipossss');
+			});
+			
+			variables_locales.mis_acciones = acciones;
+			res.locals = variables_locales;
+			next(); // siguiente ruta o middleware
+		})
+		.catch(function (error) {
+			console.log('Error middleware ' + error); 
+			res.locals = variables_locales;
+			next(); // siguiente ruta o middleware
+		});
+	
+};

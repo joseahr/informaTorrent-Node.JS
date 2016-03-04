@@ -165,10 +165,8 @@ num_denuncias_io.on('new_denuncia', function(data){
 	 var numhoy = parseInt($('#numdenunhoy').text());
 	 //alert(num + ' ' + numhoy);
 	 $('#numdenun').empty();
-	 $('#numdenun').append('<i class="fa fa-bullhorn" style="margin-right: 5px;"></i>');
-	 $('#numdenun').append(num + 1);
+	 $('#numdenun').append(' ' + (num + 1));
 	 
 	 $('#numdenunhoy').empty();
-	 $('#numdenunhoy').append('<i class="fa fa-bullhorn" style="margin-right: 5px;"></i>');
-	 $('#numdenunhoy').append(numhoy + 1);
+	 $('#numdenunhoy').append(' ' + (numhoy + 1));
 });

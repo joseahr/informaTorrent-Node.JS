@@ -61,8 +61,6 @@ block content
 							.input-group-addon
 								i.fa.fa-search.fa-fw
 							button.btn-default.form-control#buscar Buscar denuncias por...
-					
-		// Contenedor del contenido del perfil
 		.container
 			.row#denuncias
 block link
@@ -131,55 +129,12 @@ block script
 			$('#denuncias').empty();
 			var html_ = '';
 			data.query.forEach(function(denuncia){
-			
-				var tags = data.query.tags_ || [];
-
-				var imagenes = denuncia.imagenes ? denuncia.imagenes.length : 0;
-				var comentarios = denuncia.comentarios ? denuncia.comentarios.length : 0;
-				var veces_vista = denuncia.veces_vista;
-				var likes = denuncia.likes || 0;
-				
-				var imagen = imagenes.length > 0 ? denuncia.imagenes[0].path : 'http://telecapita.org/sites/all/themes/flat/images/thumbnail-default.jpg';
-				
-				var tags_str = '';
-				tags.forEach(function(tag){
-					tags_str += '#' + tag.tag + ' ';
-				});
-				
-				alert(denuncia.titulo);
-				html_ += '<hr style="margin: 35px 0px 0px 0px;"></hr>' + 
-				'<div style="background:rgba(255,255,255,0.3); padding-top:20px; padding-bottom:20px">' + 
-					'<div class="media" style="padding-left:20px; padding-right:20px">' +  
-						'<a class="pull-left">' +
-							'<img class="media-object img-thumbnail" src="' + imagen + '" style="width : 100px; height : 100px"></img>' +
-						'</a>' +
-						'<div class="media-body" style="width: 100%; display: inline;">' +
-							'<h4 style="float:left" class="media-heading">' + denuncia.titulo + '</h4>' +
-							'<p class="text-right">' + denuncia.fecha + '</p>' +		
-							'<p class="text-right">Por ' + denuncia.usuario[0].profile.username + '</p>' +		
-							'<p class="text-right"><a href="/app/denuncia/' + denuncia.gid + '" class="btn btn-danger">Ver denuncia <i class="fa fa-eye"></i></a></p>' +
-							'<div style="max-width:100%; word-break:break-all">' + 
-								'<i class="fa fa-eye"></i>' +
-								'<i>' + veces_vista + '</i>' +
-								'<i></i>' +
-								'<i class="fa fa-comments"></i>' +
-								'<i>' + comentarios + '</i>' +
-								'<i></i>' +
-								'<i class="fa fa-thumbs-o-up"></i>' +
-								'<i>' + likes + '</i>' +
-								'<i></i>' +
-								'<i class="fa fa-image"></i>' +
-								'<i>' + imagenes + '</i>' +
-								'<i></i>' +
-								'<i class="fa fa-tags"></i>' +
-								'<i>' + tags_str + '</i>' +
-							'</div>' +
-						'</div>' + 
-					'</div>' + 
-				'</div>' +
-				'<hr style="margin: 0px 0px 20px 0px;"></hr>';
-				console.log(html_);
-				
+				denuncia.tipo = JSON.parse(denuncia.geometria).type;
+				denuncia.coordenadas = JSON.parse(denuncia.geometria).coordinates;
+				//alert(denuncia.geometria + '' +  JSON.parse(denuncia.geometria).coordinates);
+				html_ += '<div style="padding:10 20 10 20px; text-align: center;" class="col-md-4">' + 
+							getDenunciaRow(denuncia, true) +
+						'</div>';	
 			});
 			
 			BootstrapDialog.alert({

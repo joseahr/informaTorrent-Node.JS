@@ -48,7 +48,8 @@ function getGeoserverMiniatura(denuncia, width){
 		
 	var dif = Math.abs(extension[2] - extension[0]) / Math.abs(extension[3] - extension[1]) ;
 	var height = Math.round(width / dif);
-	return "http://192.168.1.14:8080/geoserver/jahr/wms?service=WMS&version=1.1.0&request=GetMap" +
+	//alert(ip);
+	return "http://" + ip + ":8080/geoserver/jahr/wms?service=WMS&version=1.1.0&request=GetMap" +
 		"&layers=jahr:OI.OrthoimageCoverage,jahr:" + tabla + "&styles=&bbox=" + 
 		extension + "&width=" + width + "&height=" + height + 
 		"&srs=EPSG:4258&format=image/png&cql_filter=1=1;gid='" + denuncia.gid + "'";
@@ -190,7 +191,7 @@ function getDenunciaRow(denuncia, tabla){
 			'<div class="'+ clas +' container-fluid" style="margin: 10 5 5 5px; padding-top: 10px; overflow-x: hidden;">' + 
 				'<div class="col-lg-12 container imagen_con_menu">' + 
 					'<h2 style="background:rgba(255,255,255,0.4); margin: 0px; position: absolute; top: 20px; right: 0px; left:0px; z-index:1; font-size: 1.5em; color: #000; font-weight: bold;">' + denuncia.titulo + '</h2>' +
-					'<img class="img img-responsive" src="' +  getGeoserverMiniatura(denuncia, 1200) + '" style="border-top-right-radius: 10px;border-top-left-radius: 10px; float:left;height: 300px; object-fit: cover; margin-top: 20px; padding: 0px; width: 100%;"></img>' +
+					'<img id="imagenes_denuncia" class="img img-responsive" src="' +  getGeoserverMiniatura(denuncia, 1200) + '" style="border-top-right-radius: 10px;border-top-left-radius: 10px; float:left;height: 300px; object-fit: cover; margin-top: 20px; padding: 0px; width: 100%;"></img>' +
 					'<div class="menu_encima_de_imagen text-center">' + 
 						menu +
 					'</div>' +
