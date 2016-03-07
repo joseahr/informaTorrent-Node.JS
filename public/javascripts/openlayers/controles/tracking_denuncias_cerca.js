@@ -51,37 +51,49 @@ app.TrackingDenunciasCerca = function(opt_options) {
   });
 
   var coor_ant;
+  var distancia = 100;
+  var projection = map.getView().getProjection();
 
   geolocation.on('change:position', function() {
     var coordinates = geolocation.getPosition();
 
-    var distancia = 100;
-
     if(coor_ant){
       var line = new ol.geom.LineString([coordinates, coor_ant]);
 
-      distancia = Math.round(line.getLength() * 100) / 100;
+      var coordinates_ = line.getCoordinates();
+      distancia = 0;
+      for (var i = 0, ii = coordinates_.length - 1; i < ii; ++i) {
+        var c1 = ol.proj.transform(coordinates_[i], projection, 'EPSG:4326');
+        var c2 = ol.proj.transform(coordinates_[i + 1], projection, 'EPSG:4326');
+        distancia += new ol.Sphere(6378137).haversineDistance(c1, c2);
+      }
 
     }
-
     positionFeature.setGeometry(coordinates ? new ol.geom.Point(coordinates) : null);
+    console.log('distancia', distancia, 'actual', coordinates, 'anterior', coor_ant);
 
+    //alert(distancia);
     if(distancia > 20){
       console.log('distancia recorrida respecto a la ultima rev 20 metros');
-      coor_ant = positionFeature.getGeometry() ? positionFeature.getGeometry().getCoordinates() : null;
+      coor_ant = positionFeature.getGeometry().getCoordinates();
       // Enviamos a traves de socket io nuestra posición al servidor
-      alert(wktFormat.writeFeature(accuracyFeature.clone()));
+      //alert(wktFormat.writeFeature(accuracyFeature.clone()));
       num_denuncias_io.emit('tengo_denuncias_cerca_?', wktFormat.writeFeature(positionFeature.clone()));
     }
 
     num_denuncias_io.on('si_que_tengo_denuncias_cerca', function(data){
       /* Mostrar las denuncias */
-      console.log(data);
-      if(!data) return;
-      var message = '';
+      //console.log(data);
+      if(!data || data == '') return;
+      var message = '<div style="text-align: center">' + 
+                    '<p> Posición actual : ' + ol.coordinate.toStringHDMS(coordinates, 2) + '</p>';
       data.forEach(function(denuncia){
-        message += denuncia.gid + '<br>';
+        denuncia.tipo = JSON.parse(denuncia.geometria).type;
+        denuncia.coordenadas = JSON.parse(denuncia.geometria).coordinates;
+        //alert('denuncia ' + denuncia.tipo + ' ' + denuncia.coordenadas);
+        message += getDenunciaRow(denuncia, true);
       });
+      message += '</div>'
       dialog.setMessage(message);
       dialog.open();
     });
@@ -127,7 +139,7 @@ app.TrackingDenunciasCerca = function(opt_options) {
   function show (){ // Manejador del control
 	  // Cuando hacemos click sobre el control
       show_position = !show_position;
-      alert(show_position);
+      //alert(show_position);
       
       if(show_position){
         $(button).empty();

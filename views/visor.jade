@@ -10,6 +10,7 @@ block script
 		var wktFormat = new ol.format.WKT({dataProjection: 'EPSG:4258'});
 		
 		map.addControl(new app.QueryDenuncias());
+		map.addControl(new app.TrackingDenunciasCerca());
 		
 		num_denuncias_io.on('error_query', function(data){
 			BootstrapDialog.show({ 

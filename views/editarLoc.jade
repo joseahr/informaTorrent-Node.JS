@@ -14,5 +14,7 @@ block script
 				name: 'Ubicación Preferida'
 			});
 			
-			vectorSource.addFeature(feature);
+			map.getControls().forEach(function(c){
+				if (c instanceof app.Draw) c.getSource().addFeature(feature);
+			});
 		}

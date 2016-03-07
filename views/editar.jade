@@ -39,6 +39,6 @@ block script
 	// JS CONFIG SUBIR IMÁGENES
 	script(src="/javascripts/openlayers/oleditar.js")
 	script(type='text/javascript').
+		map.addControl(new app.Draw({denuncia : denuncia}));
 		map.addControl(new app.Lateral({titulo: 'Editar denuncia', denuncia : denuncia}));
-		map.addControl(new app.Draw());
 		var random = '#{random}';

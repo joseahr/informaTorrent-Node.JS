@@ -24,7 +24,7 @@ block script
 	script(src="/javascripts/openlayers/olnueva.js")
 	// JS CONFIG SUBIR IMÁGENES
 	script(type="text/javascript").
-		map.addControl(new app.Lateral({titulo: 'Añadir nueva denuncia'}));
 		map.addControl(new app.Draw());
+		map.addControl(new app.Lateral({titulo: 'Añadir nueva denuncia'}));
 		var random = '#{random}';
 		alert(random);

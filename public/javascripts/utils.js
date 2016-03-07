@@ -56,15 +56,17 @@ function getGeoserverMiniatura(denuncia, width){
 
 }							
 
+var mes_str = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+
 function getFechaFormatted(fecha){
 	var dia = fecha.getDate();
-	var mes = fecha.getMonth() + 1;
+	var mes = fecha.getMonth();
 	var año = fecha.getFullYear();
 	var hora = fecha.getHours();
 	var minutos = fecha.getMinutes();
 	var segundos = fecha.getSeconds();
 	if (dia < 10) dia = '0' + dia;
-	if(mes < 10) mes = '0' + mes;
+	mes = mes_str[mes];
 	if(hora < 10) hora = '0' + hora;
 	if(minutos < 10) minutos = '0' + minutos;
 	if(segundos<10) segundos = '0' + segundos;
@@ -114,7 +116,7 @@ function getInfoNotificacion(noti){
 	}
 	else if(noti.tipo == 'COMENTARIO_DENUNCIA'){
 		return '<p><a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
-				'comentó: <div style="word-break: break-all">"' + noti.datos.contenido.substring(0,20)  + '..."</div> en tu denuncia</p>' + 
+				'comentó: <div style="word-break: break-all">"' + decodeURIComponent(noti.datos.contenido).substring(0,20)  + '..."</div> en tu denuncia</p>' + 
 				'<div style="word-break: break-all">Denuncia : ' + noti.denuncia.titulo + '</div>';
 	}
 	else if(noti.tipo == 'LIKE_DENUNCIA'){
@@ -138,7 +140,7 @@ function getInfoAccion(noti){
 				'<div style="word-break: break-all">Denuncia : ' + noti.denuncia.titulo + '</div>';
 	}
 	else if(noti.tipo == 'COMENTARIO_DENUNCIA'){
-		return '<p>Comentaste: <i>"' + noti.datos.contenido.substring(0,20)  + '..."</i> en la denuncia de ' +
+		return '<p>Comentaste: <i>"' + decodeURIComponent(noti.datos.contenido).substring(0,20)  + '..."</i> en la denuncia de ' +
 			'<a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a></p>' + 
 			'<div style="word-break: break-all">Denuncia : ' + noti.denuncia.titulo + '</div>';
 	}
@@ -232,7 +234,7 @@ function getNotificacionRow(notificacion){
 			'<div class="thumbnail container-fluid noti" style="margin: 5px; padding: 10 0 5 0px; overflow-x: hidden; background-color:' + color + ';" id_noti="' + notificacion.id_noti + '" vista="' + notificacion.vista + '" onclick="noti(this)">' + 
 			'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getFechaFormatted(fecha) + ' <i class="fa fa-clock-o"></i> </p>' + 																
 			'<div class="media" style="margin : 0 20 0 20px;">' + 
-				'<a class="media-left" style="width:100px;">' + 
+				'<a class="media-left" style="width:100px; float:left;">' + 
 					'<img onclick="window.open(&#39;/app/usuarios/' + notificacion.id_usuario_from + '&#39;)" src="' + notificacion.profile_from.picture + '" style="width: 100px; height: 100px;" class=" media-object img-circle img-thumbnail">' +
 					'<img onclick="window.open(&#39;/app/denuncia/' + notificacion.denuncia.gid + '&#39;)" src="' + getGeoserverMiniatura(notificacion.denuncia, 100) + '" style="width: 100px; height: 100px;" class=" media-object img-thumbnail">' +
 				'</a>' + 

@@ -80,6 +80,7 @@ app.ComentariosDenuncia = function(opt_options, denuncia, user) {
 				xhr.open('POST','/app/denuncia/' + denuncia.gid + '/addComentario' , true);
 				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); // Especificamos cabecera
 				xhr.send(JSON.stringify({contenido: encodeURIComponent(contenido)})); // Enviamos petición
+				$(this).find('.input-group').parent().append('<div style="text-align: center"><i class="fa fa-spinner fa-spin fa-5x" style="color: #339BEB"></i><p>Enviando Comentario...</p></div>');
 				$(this).find('.input-group').hide();
 				xhr.onload = function(){
 					//var res = JSON.parse(xhr.responseText);

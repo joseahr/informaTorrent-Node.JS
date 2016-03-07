@@ -17,7 +17,7 @@ app.Lateral = function(opt_options) {
   var json = {};
 
   var denuncia_titulo = denuncia ? denuncia.titulo : '',
-  	  denuncia_contenido = denuncia ? denuncia.descripcion : '',
+  	  denuncia_contenido = denuncia ? decodeURIComponent(denuncia.descripcion) : '',
   	  post = denuncia ? '/app/denuncias/editar?id=' + denuncia.gid : '/app/denuncias/nueva/save';
 
   var button = document.createElement('button');
@@ -25,6 +25,7 @@ app.Lateral = function(opt_options) {
   
   var this_ = this;
 
+  var btn_msg = denuncia ? 'Guardar Cambios' : 'Enviar Denuncia';
   
   var message = '<form class="form-horizontal">' + 
   					'<div style="margin-top:5px" class="input-group"><span class="input-group-addon">Título</span>' + 
@@ -43,7 +44,7 @@ app.Lateral = function(opt_options) {
   					'<input id="tags" type="text" name="tags" placeholder="Introduce tags" class="col-lg-12"/>' + 
   					'<div style="margin-top:5px;margin-bottom:15px" class="col-lg-12 input-group space">' +
   						'<span class="input-group-addon"><i class="fa fa-send fa-fw"></i></span>' +
-    					'<input id="submitDenuncia" type="button" value="Denunciar" class="form-control btn-success"/>' +
+    					'<input id="submitDenuncia" type="button" value="' + btn_msg + '" class="form-control btn-success"/>' +
   					'</div>' +
 				'</form>';
   	var aux = true;
@@ -174,9 +175,14 @@ app.Lateral = function(opt_options) {
 				}
 
 			$('#submitDenuncia').click( function(event){
-						
-				toWKT(); //llamamos a la función para generar el WKT (openlayers.js)
-			
+				
+				map.getControls().forEach(function(control){
+					if(control instanceof app.Draw) {
+						json.wkt = control.toWKT();
+						console.log(json.wkt , control.toWKT());
+					}
+				});	
+
 				var titulo = $('#titulo').val(); // Obtenemos el titulo del array anterior
 
 				var contenido = (tinyMCE.activeEditor) ? encodeURIComponent(tinyMCE.activeEditor.getContent().replace(/'/g, " ")) : $('textarea').val();
@@ -184,7 +190,7 @@ app.Lateral = function(opt_options) {
 				json.titulo = titulo;
 				json.contenido = contenido;
 				json.tempDir = random;
-				json.wkt = wkt;
+				//json.wkt = wkt;
 
 				//alert(JSON.stringify(json));
 				//return;
@@ -211,7 +217,9 @@ app.Lateral = function(opt_options) {
 				xhr.send(JSON.stringify(json)); // Enviamos petición
 
 				var self = this;
-
+				var m = denuncia ? 'Guardando cambios' : 'Enviando Denuncia';
+				$(self).parent().parent().append('<div id="spinner" style="text-align: center"><i class="fa fa-spinner fa-spin fa-5x" style="color: #339BEB"></i>'
+					 + '<p>' + m + '...</p></div>');
 				$(self).parent().hide();
 				
 				// Recibimos respuesta del servidor
@@ -223,6 +231,7 @@ app.Lateral = function(opt_options) {
 					// Mostramos si ha habido error subiendo la denuncia
 					if(res.type == 'error'){
 						// Mostramos un Bootstrap Dialog
+						$(self).parent().parent().find('#spinner').remove();
 						$(self).parent().css('display', '');
 						BootstrapDialog.show({
 							type: BootstrapDialog.TYPE_DANGER,
@@ -240,12 +249,15 @@ app.Lateral = function(opt_options) {
 
 						BootstrapDialog.show({
 							type: BootstrapDialog.TYPE_SUCCESS,
-							title: 'Denuncia añadiendo denuncia',
+							title: 'Denuncia añadida correctamente',
 							message: res.msg,
 							closable: false,
-							buttons: [{
-							label: 'Cerrar',
-							action: function(dialog){dialog.close(); window.location.replace('/app/visor');}}]
+							onshown : function(dialog){
+								setTimeout(function(){
+									dialog.close();
+									window.location.replace('/app/denuncia/' + res.denuncia.gid);
+								}, 2000);
+							},
 							// Cuando se cierre redirigimos al usuario 
 						});
 					}
@@ -256,6 +268,7 @@ app.Lateral = function(opt_options) {
 
   		}
   	});
+
 
   function lateral_ (){
   	dialog.open();

@@ -97,6 +97,7 @@ app.CQL = function(opt_options) {
 				  if (capa == 'jahr:denuncias_lineas') denuncias_lineas.setSource(source);
 				  if (capa == 'jahr:denuncias_poligonos') denuncias_poligonos.setSource(source);
 				  
+				  
 			  });
 			  $('#reset').click(function(){
 				  var capa = $('.selectpicker').val();

@@ -78,7 +78,9 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 			var buffer_radio_ = data.buffer_radio || undefined;
 			filtro.usuario_nombre = data.username == '' ? undefined : data.username;
 			filtro.fecha_desde = data.fecha_desde == '' ? undefined : data.fecha_desde.split('/');
-			filtro.fecha_hasta = data.fecha_hasta == '' ? undefined : data.fecha_hasta.split('/');		
+			filtro.fecha_hasta = data.fecha_hasta == '' ? undefined : data.fecha_hasta.split('/');
+			filtro.bbox = (buffer_centro_ || buffer_radio_) ? undefined : 
+				(data.bbox ? data.bbox : undefined);
 			
 
 			console.log(buffer_centro_ + ' buffer centroooo ');
@@ -117,7 +119,7 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 			console.log(query);
 			db.query(query)
 				.then(function(denuncias){
-					console.log('denuncias api ' + denuncias);
+					console.log('denuncias api');
 					socket.emit('api', {query: denuncias});					
 				})
 				.catch(function(error){
@@ -284,6 +286,10 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 	    		filter.buffer_centro[0].replace(',', '.') + ' ' + 
 	    		filter.buffer_centro[1].replace(',', '.') + ")', 4258), 25830)) < " + 
 	    		filter.buffer_radio));
+	    }
+	    // BBOX
+	    if(filter.bbox){
+	    	cnd.push('the_geom && st_makeEnvelope(' + filter.bbox + ')');
 	    }
 	    // Nombre Usuario
 	    if(filter.usuario_nombre){

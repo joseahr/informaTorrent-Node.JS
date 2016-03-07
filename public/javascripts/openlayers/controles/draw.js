@@ -6,13 +6,70 @@ var app = window.app;
  */
 app.Draw = function(opt_options, aux) {
 
+  var options = opt_options || {};
+
+  var wktFormat = new ol.format.WKT(),
+	vectorSource = new ol.source.Vector(),
+	vectorLayer = new ol.layer.Vector({
+		source: vectorSource
+	});
+
+  map.addLayer(vectorLayer);
+
+  this.getSource = function(){
+  	return vectorSource;
+  };
+
+  this.toWKT = function(){
+  	var wkt;
+	vectorLayer.getSource().forEachFeature(function(feature){
+
+		wkt = wktFormat.writeFeature(feature.clone());
+		console.log('wkt: ' + wkt);
+		return;
+	});
+	return wkt;
+  };
+
+  var denuncia = options.denuncia;
+  if (denuncia){
+  	var type = denuncia.geometria.type, 
+	coordenadas = denuncia.geometria.coordinates;
+
+	var feature;
+
+	if(type == 'Point'){
+		feature = new ol.Feature({
+			  geometry: new ol.geom.Point(coordenadas),
+			  name: 'Denuncia - Punto'
+		});
+	}
+	else if(type == 'LineString'){
+		feature = new ol.Feature({
+			geometry: new ol.geom.LineString(coordenadas),
+			name: 'Denuncia - Polígono'
+		});
+	}
+	else if(type == 'Polygon'){
+		feature = new ol.Feature({
+			geometry: new ol.geom.Polygon(coordenadas),
+			name: 'Denuncia - Polígono'
+		});
+	}
+	console.log(feature, 'feature');
+	vectorSource.addFeature(feature);
+
+	var geom = feature.getGeometry().getExtent();
+	var size = map.getSize();
+
+	map.getView().fit(geom,size);
+  }
+
   var loc_anterior;
   vectorSource.once('addfeature', function(e){
   	loc_anterior = e.feature;
   	console.log('FEATURE ANTERIOR: ', e.feature);
   });
-	
-  var options = opt_options || {};
 
   var button = document.createElement('button');
   button.setAttribute('id', 'show_menu');

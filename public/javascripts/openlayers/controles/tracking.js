@@ -88,7 +88,7 @@ app.Tracking = function(opt_options) {
   function show (){ // Manejador del control
 	  // Cuando hacemos click sobre el control
       show_position = !show_position;
-      alert(show_position);
+      //alert(show_position);
       
       if(show_position){
         $(button).empty();

@@ -1,0 +1,16 @@
+{
+  "name": "ol3-geocoder",
+  "version": "1.5.1",
+  "description": "A geocoder extension for OpenLayers 3.",
+  "main": "ol3-geocoder.js",
+  "author": "Jonatas Walker",
+  "license": "MIT",
+  "devDependencies": {
+    "jshint": "latest",
+    "uglify-js": "latest",
+    "clean-css": "latest",
+    "postcss": "latest",
+    "nodemon": "latest",
+    "parallelshell": "latest"
+  }
+}

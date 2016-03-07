@@ -31,54 +31,72 @@ html
     // Bootstrap Select
     link(rel="stylesheet" href="/javascripts/plugins/bootstrap-select/dist/css/bootstrap-select.css")
     link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.1/css/bootstrap-datepicker.css")
-    
+    link(href="/javascripts/plugins/ol3-geocoder/build/ol3-geocoder.min.css" rel="stylesheet")
+    link(href="/javascripts/plugins/bootstrap-sidebar/dist/css/sidebar.css" rel="stylesheet")
     block link
+    style.
+      .menu-item {padding: 5 0 5 5px; margin: 5 0 5 0px; border-radius: 5px;}
+      .menu-item:hover { background: rgba(0,59,111,0.3) }
+      .menu-item > a:hover { text-decoration: none; color: #003b6f}
+      .menu-item > a {color: #000}
   body(style="margin-top: -10px;")
     - var nuevas = 0;
     if locals.user && mis_notificaciones
       each noti in mis_notificaciones
         if noti.vista == false
-          - nuevas ++;    
-    ul
-      li(style="position: absolute; top: 25px; left: 50px;z-index: 1;background: rgba(250,250,250,0.7); border-radius: 5px; padding: 5 30 5 5px;")
-        a(href='#' style="height: 100%; z-index: 1;" data-toggle="dropdown")
-          if(user)
-            img.img-responsive-img-thumbnail.img-circle.pull-left(src="#{locals.user.profile.picture}" style="height: 40px; width: 40px; margin: 0 5 0 0px;")
-            span(style="margin-left: -15px; margin-top: 25px;").badge.noti_up #{nuevas}
+          - nuevas ++;  
+    div.col-xs-7.col-sm-3.col-md-2.sidebar.sidebar-left.sidebar-animate(style="background: rgba(255,255,255, 1); top: 0px !important; box-shadow: 5px 0px 15px 1px rgba(50, 50, 50, 0.5);")
+      //content
+      .media(style="padding: 10 0 10 0px; border-bottom: 1px solid rgba(0,0,0,0.6)")
+        a.media-left
+          if user
+            img.img-responsive.img-circle.pull-left(src="#{locals.user.profile.picture}" style="height: 40px; width: 40px; margin: 0 5 0 0px;")
           else
-            img.img-responsive-img-thumbnail.img-circle.pull-left(src="http://appstudio.windows.com/Content/img/temp/icon-user.png" style="height: 40px; width: 40px; margin: 0 5 0 0px;")          
-          i.fa.fa-chevron-down(style="font-size: 2em; position: absolute; top: 10px; right: 5px;")
-        ul.dropdown-menu.dropdown(style="width: 100%; background: rgba(250,250,250,0.7);")
-          li
+            img.img-responsive.img-circle.pull-left(src="http://appstudio.windows.com/Content/img/temp/icon-user.png" style="height: 40px; width: 40px; margin: 0 5 0 0px;") 
+        div.media-body(style="display: table-cell; vertical-align: middle; height: 40px; color: #003b6f; font-weight: bold;")
+          if user
+            |  #{user.profile.username}
+          else
+            |  Usuario invitado
+      .col-xs-12(style="padding: 0px")
+          .menu-item.col-xs-12
             a(href="/app") 
-              i.fa.fa-home 
+              i.fa.fa-home
               |  Inicio
-          li
+          .menu-item.col-xs-12
             a(href="/app/visor") 
               i.fa.fa-globe
               |  Visor tiempo real
-          li
+          .menu-item.col-xs-12
             a(href="/app/denuncias?page=1") 
               i.fa.fa-list
               |  Denuncias
           if user
-            li
-              a(href="/app/perfil#notificaciones")
+            .menu-item.col-xs-12
+              a(href="#" id="notificaciones")
                 i.fa.fa-inbox
                 |  Notificaciones
                 span(style="margin-left: 5px;").badge.noti_up #{nuevas}
-            li.dropdown
+            .menu-item.col-xs-12
               a(href="/app/perfil") 
                 i.fa.fa-user
                 |  Mi perfil
-            li.dropdown
+            .menu-item.col-xs-12
               a(href="/app/denuncias/nueva") 
                 i.fa.fa-plus
                 |  Nueva denuncia
-            li
+            .menu-item.col-xs-12
               a(href="/app/logout") 
                 i.fa.fa-sign-out
                 |  Cerrar sesión
+    ul
+      li(style="position: absolute; top: 8.5em; left: 0.5em;z-index: 1; border-radius: 5px;")
+        a(class="navbar-toggle" data-toggle="sidebar" data-target=".sidebar" href="#" style="padding: 0px; margin: 0px;")
+          if(user)
+            img.img-responsive.img-circle.pull-left(src="#{locals.user.profile.picture}" style="height: 40px; width: 40px;")
+            span(style="margin-left: -15px; margin-top: 25px;").badge.noti_up #{nuevas}
+          else
+            img.img-responsive.img-circle.pull-left(src="http://appstudio.windows.com/Content/img/temp/icon-user.png" style="height: 40px; width: 40px; margin: 0 5 0 0px;")          
     // header-right end
     // header end
     // section start
@@ -136,7 +154,10 @@ html
   script(src="https://cdn.socket.io/socket.io-1.3.7.js")
   // Bootstrap Select JS
   script(src="/javascripts/plugins/bootstrap-select/js/bootstrap-select.js")
+  script(src="/javascripts/plugins/ol3-geocoder/build/ol3-geocoder.js")
+  script(src="/javascripts/plugins/bootstrap-sidebar/dist/js/sidebar.js")
   script.
+    'use strict';
     var ip = '#{ip}';
     var id_usuario = '#{id_usuario}';
   // FUNCIONALIDADES SOCKET.IO
@@ -159,10 +180,10 @@ html
       controls: ol.control.defaults({
         attribution: false // No atribución
       }).extend([mousePositionControl, // MousePosition
-        new ol.control.FullScreen(), // FullScreen
+        //new ol.control.FullScreen(), 
         new ol.control.LayerSwitcher({tipLabel: 'Leyenda'}), // LayerSwitcher
         new ol.control.ScaleLine(), // ScaleLine
-        new ol.control.ZoomSlider(), // ZoomSlider
+        //new ol.control.ZoomSlider(),
       ]),
       target: 'map',
       view: new ol.View({
@@ -180,7 +201,7 @@ html
     caminos.setVisible(false);
     viales.setVisible(false);
     nom_viales.setVisible(false);
-    
+  
     var groupCartoTorrentWMS = new ol.layer.Group({
       title: 'Cartografía de Torrent WMS',
       layers: [municipio, manzanas, viales, caminos, nom_viales, portales]
@@ -189,7 +210,28 @@ html
     map.addLayer(groupCapasBase); // Añadimos grupo de Capas 1
     //map.addLayer(groupCartoTorrentWMST); // Añadimos grupo de Capas 2
     map.addLayer(groupCartoTorrentWMS); // Añadimos grupo de Capas 2
-    
+    var geocoder = new Geocoder('nominatim', {
+      provider: 'osm',
+      //key: '__some_key__',
+      lang: 'es-ES', //en-US, fr-FR
+      placeholder: 'Buscar dirección ...',
+      limit: 5,
+      keepOpen: false
+    });
+
+    geocoder.on('addresschosen', function(e){
+      var coor = e.coordinate;
+      geocoder.getSource().forEachFeature(function(f){
+        //console.log(coor + ' ' + f.getGeometry().getCoordinates());
+        var coor_ = f.getGeometry().getCoordinates();
+        if( coor_[0] != coor && coor_[1] != coor[1]) {
+          console.log(coor + ' ' + f.getGeometry().getCoordinates());
+          geocoder.getSource().removeFeature(f);
+        }        
+      });
+    });
+
+    map.addControl(geocoder);
     // Añadimos Control OverviewMap
     map.addControl(new ol.control.OverviewMap({ 
       layers: [new ol.layer.Tile(ignBase.getProperties())],
@@ -214,8 +256,8 @@ html
   // Block Script
   block script
   script.
+    //window.screen.lockOrientation('landscape');
     map.addControl(new app.Tracking());
-    map.addControl(new app.TrackingDenunciasCerca());
     $(function(){
       $('.dropdown-toggle').dropdown();
       $('[data-toggle="left"]').popover({
@@ -231,5 +273,21 @@ html
     $('#map').click(function(e){
       //alert('hideee');
       $('[data-toggle="right"], [data-toggle="left"]').popover('hide');
+    });
+
+    $('#notificaciones').click(function(e){
+      var d = new BootstrapDialog({
+        title : 'Mis notificaciones'
+      });
+
+      var message = '';
+
+      JSON.parse('!{JSON.stringify(mis_notificaciones)}').forEach(function(noti){
+        message += getNotificacionRow(noti);
+      });
+
+      d.setMessage(message);
+      d.open();
+
     });
      
