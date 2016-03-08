@@ -1,3 +1,14 @@
+.modal.modal-fullscreen .modal-content {
+background: rgba(0, 0, 0, .5);
+}
+.modal.modal-fullscreen .modal-header {
+border: 0;
+color: #fff;
+}
+.modal.modal-fullscreen .modal-footer {
+border-color: rgba(0, 0, 0, .5);
+}
+
 .imagen_con_menu:hover > .menu_encima_de_imagen {
 	opacity: unset;
     -webkit-transition: all 0.4s ease;

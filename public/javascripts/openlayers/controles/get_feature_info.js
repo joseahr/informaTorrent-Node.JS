@@ -6,9 +6,47 @@ var app = window.app;
  */
 app.GetFeatureInfo = function(opt_options) {
 
-  var options = opt_options || {};
+  var options = opt_options || {},
+  info = false,
+  div,
+  this_ = this,
+  button = document.createElement('button'),
+  element = document.createElement('div'),
+  popup = new ol.Overlay({
+        element: document.getElementById('popup'),
+        autoPan: true,
+        autoPanAnimation: {
+          duration: 250
+        }
+  }),
+  helpTooltipElement, 
+  helpTooltip, 
+  helpMsg,
+  createHelpTooltip = function() {
+    if (helpTooltipElement) {
+      helpTooltipElement.parentNode.removeChild(helpTooltipElement);
+    }
+    helpTooltipElement = document.createElement('div');
+    helpTooltipElement.className = 'tooltip hidden';
+    helpTooltip = new ol.Overlay({
+      element: helpTooltipElement,
+      offset: [15, 0],
+      positioning: 'center-left'
+    });
+    map.addOverlay(helpTooltip);
+  },
+  pointerMoveHandler = function(evt) {
+    if (evt.dragging || !info) {
+      return;
+    }
+
+    helpMsg = '<i class="fa fa-info-circle"></i> Click para obtener información';
   
-  var info = false;
+    helpTooltipElement.innerHTML = helpMsg;
+    helpTooltip.setPosition(evt.coordinate);
+  
+    $(helpTooltipElement).removeClass('hidden');
+  };
   
   this.activar = function(bool){
 
@@ -28,49 +66,14 @@ app.GetFeatureInfo = function(opt_options) {
       $(helpTooltipElement).addClass('hidden');
       button.innerHTML = '<i class="fa fa-info-circle"></i>';
     }
-  }
-  
-  var popup = new ol.Overlay({
-        element: document.getElementById('popup'),
-        autoPan: true,
-        autoPanAnimation: {
-          duration: 250
-        }
-  });
-        
-  map.addOverlay(popup);
-  $('#popup').css('display', 'none');
-  
-  var helpTooltipElement, helpTooltip, helpMsg;
-
-  function createHelpTooltip() {
-      if (helpTooltipElement) {
-        helpTooltipElement.parentNode.removeChild(helpTooltipElement);
-      }
-      helpTooltipElement = document.createElement('div');
-      helpTooltipElement.className = 'tooltip hidden';
-      helpTooltip = new ol.Overlay({
-        element: helpTooltipElement,
-        offset: [15, 0],
-        positioning: 'center-left'
-      });
-      map.addOverlay(helpTooltip);
-  }
-
-  var pointerMoveHandler = function(evt) {
-  	  if (evt.dragging || !info) {
-  	    return;
-  	  }
-
-  	  helpMsg = '<i class="fa fa-info-circle"></i> Click para obtener información';
-  	
-  	  helpTooltipElement.innerHTML = helpMsg;
-  	  helpTooltip.setPosition(evt.coordinate);
-  	
-  	  $(helpTooltipElement).removeClass('hidden');
   };
   
-  var div;
+  /******************* INIT ****/  
+  map.addOverlay(popup);
+  $('#popup').css('display', 'none');
+
+
+  /******************* EVENTOS ****/
   map.on('singleclick', function(evt){ // Cuando clickemos en el mapa 
     div = $(document.createElement('div'));
     if (!info) return;
@@ -143,18 +146,15 @@ app.GetFeatureInfo = function(opt_options) {
 	    $(helpTooltipElement).addClass('hidden');
   }, false);
 
-  var button = document.createElement('button');
-  button.innerHTML = '<i class="fa fa-info-circle"></i>';
-
-  var this_ = this;
   
   function getFeatureInfo_ (){
     if(!info) this_.activar(true);
     else this_.activar(false);
   }
+
+  button.innerHTML = '<i class="fa fa-info-circle"></i>';
   button.addEventListener('click', getFeatureInfo_, false);
 
-  var element = document.createElement('div');
   element.setAttribute('data-toggle', 'left');
   element.setAttribute('title', 'GetFeatureInfo');
   element.setAttribute('data-content', 'Obtener información de las entidades en un punto');
@@ -167,4 +167,5 @@ app.GetFeatureInfo = function(opt_options) {
   });
 
 };
+
 ol.inherits(app.GetFeatureInfo, ol.control.Control);

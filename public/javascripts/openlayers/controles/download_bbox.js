@@ -6,58 +6,49 @@ var app = window.app;
  */
 app.BBOX = function(opt_options) {
 
-  var options = opt_options || {};
-
-  var button = document.createElement('button');
-  button.innerHTML = '<i class="fa fa-download"></i>';
-
-  $('#capas_mapa').selectpicker('hide');
-  
-  var this_ = this;
-  
-  var helpTooltipElement, helpMsg;
-
-  function createHelpTooltip() {
-      if (helpTooltipElement) {
-        helpTooltipElement.parentNode.removeChild(helpTooltipElement);
-      }
-      helpTooltipElement = document.createElement('div');
-      helpTooltipElement.className = 'tooltip hidden';
-      helpTooltip = new ol.Overlay({
-        element: helpTooltipElement,
-        offset: [15, 0],
-        positioning: 'center-left'
-      });
-      map.addOverlay(helpTooltip);
-  }
-  
-  var pointerMoveHandler = function(evt) {
-  	  if (!hasbbox) {
-  		  console.log('no bbox', hasbbox);
-  	    return;
-  	  }
+  var options = opt_options || {},
+  hasbbox = false,
+  button = document.createElement('button'),
+  element = document.createElement('div'),
+  this_ = this,
+  helpTooltipElement, 
+  helpMsg,
+  boundingBox = new ol.interaction.DragBox({
+    condition: ol.events.condition.always, // default
+    className: 'line-dragbox'
+  }),
+  createHelpTooltip =  function() {
+    if (helpTooltipElement) {
+      helpTooltipElement.parentNode.removeChild(helpTooltipElement);
+    }
+    helpTooltipElement = document.createElement('div');
+    helpTooltipElement.className = 'tooltip hidden';
+    helpTooltip = new ol.Overlay({
+      element: helpTooltipElement,
+      offset: [15, 0],
+      positioning: 'center-left'
+    });
+    map.addOverlay(helpTooltip);
+  },
+  pointerMoveHandler = function(evt) {
+  	if (!hasbbox) {
+  		console.log('no bbox', hasbbox);
+  	 return;
+  	}
   	  
-  	  $(helpTooltipElement).removeClass('hidden');
+  	$(helpTooltipElement).removeClass('hidden');
   	  
-  	  if(evt.dragging){
-  		  helpTooltipElement.innerHTML = 'Suelta para acabar el BBOX';
-  		  helpTooltip.setPosition(evt.coordinate);
-  		  return;
-  	  }
+  	if(evt.dragging){
+  		helpTooltipElement.innerHTML = 'Suelta para acabar el BBOX';
+  		helpTooltip.setPosition(evt.coordinate);
+  		return;
+  	}
   	  
-  	  /** @type {string} */
-  	  var helpMsg = 'Click para empezar a dibujar BBOX';
+  	var helpMsg = 'Click para empezar a dibujar BBOX';
   	
-  	  helpTooltipElement.innerHTML = helpMsg;
-  	  helpTooltip.setPosition(evt.coordinate);
-  	
-  	  
+  	helpTooltipElement.innerHTML = helpMsg;
+  	helpTooltip.setPosition(evt.coordinate);	  
   };
-  
-  map.on('pointermove', pointerMoveHandler);
-  createHelpTooltip();
-  
-  var hasbbox = false;
   
   this.activar = function(bool){
 	  console.log('BBOX', bool);
@@ -77,14 +68,13 @@ app.BBOX = function(opt_options) {
     }
     console.log('HASBBOX', hasbbox);
   };
-  
-  var boundingBox = new ol.interaction.DragBox({
-      condition: ol.events.condition.always, // default
-      className: 'line-dragbox'
-  });
+  /*****************   INIT         */
+  $('#capas_mapa').selectpicker('hide');
 
-  //map.addInteraction(boundingBox);
+  map.on('pointermove', pointerMoveHandler);
 
+  createHelpTooltip();
+  /*****************     Evento bbox - boxEnd      */
   boundingBox.on('boxend', function(e){
   	 $(helpTooltipElement).addClass('hidden');
   	console.log('boxend');
@@ -125,9 +115,9 @@ app.BBOX = function(opt_options) {
   	else this_.activar(false);
   }
 
+  button.innerHTML = '<i class="fa fa-download"></i>';
   button.addEventListener('click', bbox_, false);
 
-  var element = document.createElement('div');
   element.setAttribute('data-toggle', 'left');
   element.setAttribute('title', 'Selecciona BBOX');
   element.setAttribute('data-content', 'Selecciona un recátngulo para limitar los elementos a descargar');
@@ -140,4 +130,5 @@ app.BBOX = function(opt_options) {
   });
 
 };
+
 ol.inherits(app.BBOX, ol.control.Control);

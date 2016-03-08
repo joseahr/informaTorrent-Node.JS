@@ -6,31 +6,32 @@ var app = window.app;
  */
 app.Tracking = function(opt_options) {
 
-  var options = opt_options || {};
-  
-  var show_position = false; // Bool - Activar/Desactivar control
-  
-  var panTo = 0;
-  
-  var geolocation = new ol.Geolocation({
-	    projection: map.getView().getProjection()
-  }); // Objeto geolocalizador
-  
-  var accuracyFeature = new ol.Feature(); // Feature precisión
-  
-  geolocation.on('error', function(e){
-    BootstrapDialog.show({
-      title: 'Error tratando de geolocalizar tu dispositivo',
-      message: 'Revise y active las opciones de geolocalización de su dispositivo'
-    });
-  });
+  var options = opt_options || {},
+  show_position = false, // Bool - Activar/Desactivar control
+  panTo = 0,
+  this_ = this,
+  geolocation = new ol.Geolocation({
+	  projection: map.getView().getProjection()
+  }), // Objeto geolocalizador
+  positionFeature = new ol.Feature(), // Feature de posición
+  accuracyFeature = new ol.Feature(), // Feature precisión
+  featuresOverlay = new ol.layer.Vector({
+    map: map,
+    source: new ol.source.Vector({
+      features: [accuracyFeature, positionFeature]
+    })
+  }), // Overlay que contiene los dos features creados: posición + precisión
+  button = document.createElement('button'), // Botón del control
+  element = document.createElement('div');
 
-  geolocation.on('change:accuracyGeometry', function() {
-    accuracyFeature.setGeometry(geolocation.getAccuracyGeometry());
-  }); // Manejador - Se dispara cuando cambia la precisión
-  
-  var positionFeature = new ol.Feature(); // Feature de posición
-  
+  this.desactivar = function(){
+    $(button).empty();
+    $(button).append('<i class="fa fa-eye" >');
+    geolocation.setTracking(false);
+    featuresOverlay.setVisible(false);
+  };
+
+  // Estilamos el feature
   positionFeature.setStyle(new ol.style.Style({
     image: new ol.style.Circle({
       radius: 6,
@@ -42,7 +43,19 @@ app.Tracking = function(opt_options) {
         width: 2
       })
     })
-  }));      
+  }));
+
+  // Eventos Geolocation ******************************************************
+  geolocation.on('error', function(e){
+    BootstrapDialog.show({
+      title: 'Error tratando de geolocalizar tu dispositivo',
+      message: 'Revise y active las opciones de geolocalización de su dispositivo'
+    });
+  });
+
+  geolocation.on('change:accuracyGeometry', function() {
+    accuracyFeature.setGeometry(geolocation.getAccuracyGeometry());
+  }); // Manejador - Se dispara cuando cambia la precisión      
 	  
   geolocation.on('change:position', function() {
     var coordinates = geolocation.getPosition();
@@ -72,19 +85,7 @@ app.Tracking = function(opt_options) {
       
     }
   });
-  
-  var featuresOverlay = new ol.layer.Vector({
-    map: map,
-    source: new ol.source.Vector({
-      features: [accuracyFeature, positionFeature]
-    })
-  }); // Overlay que contiene los dos features creados: posición + precisión
-  
-  var button = document.createElement('button'); // Botón del control
-  button.innerHTML = '<i class="fa fa-eye"></i>';
 
-  var this_ = this;
-  
   function show (){ // Manejador del control
 	  // Cuando hacemos click sobre el control
       show_position = !show_position;
@@ -96,18 +97,18 @@ app.Tracking = function(opt_options) {
         panTo = 0;
         geolocation.setTracking(true);
         featuresOverlay.setVisible(true);
+        map.getControls().forEach(function(c){
+          if(c instanceof app.TrackingDenunciasCerca) c.desactivar();
+        });
       }
       else {
-        $(button).empty();
-        $(button).append('<i class="fa fa-eye" >');
-        geolocation.setTracking(false);
-        featuresOverlay.setVisible(false);
+        this_.desactivar();
       }
   }
 
+  button.innerHTML = '<i class="fa fa-eye"></i>';
   button.addEventListener('click', show, false);
 
-  var element = document.createElement('div');
   element.setAttribute('data-toggle', 'left');
   element.setAttribute('title', 'Geolocalización');
   element.setAttribute('data-content', 'Situarme mi posición en el mapa');

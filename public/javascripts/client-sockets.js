@@ -8,7 +8,6 @@ $('.noti').click(function(event){
 	var id_noti = $(this).attr('id_noti');
 	console.log('hkgkhgkhg click');
 	num_denuncias_io.emit('noti_vista', id_noti);
-	
 });
 
 num_denuncias_io.on('imagen cambiá', function(data){
@@ -70,17 +69,21 @@ num_denuncias_io.on('denuncia_no_likeada', function(data){
 	});
 });
 
-
 ///////
 num_denuncias_io.on('denuncia_likeada', function(data){
 	data.noti = data.noti[1];
 	data.noti.profile_from = data.from.profile;
 	data.noti.denuncia = data.denuncia;
+
 	console.log(JSON.stringify(data));
+
 	var nuevas = parseInt($('.noti_up:eq(1)').text()) + 1;
+
 	$('.noti_up').empty();
 	$('.noti_up').append(nuevas);
+
 	var not_tot = parseInt($('.noti_tot').text()) + 1;
+	
 	$('.noti_tot').empty();
 	$('.noti_tot').append(not_tot);
 	

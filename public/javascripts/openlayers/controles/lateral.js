@@ -6,52 +6,40 @@ var app = window.app;
  */
 app.Lateral = function(opt_options) {
 
-  var options = opt_options || {};
-
-  var TIPO_MENU = options.tipo; // Editar o Nueva
-
-  var titulo = options.titulo;
-
-  var denuncia = options.denuncia;
-
-  var json = {};
-
-  var denuncia_titulo = denuncia ? denuncia.titulo : '',
-  	  denuncia_contenido = denuncia ? decodeURIComponent(denuncia.descripcion) : '',
-  	  post = denuncia ? '/app/denuncias/editar?id=' + denuncia.gid : '/app/denuncias/nueva/save';
-
-  var button = document.createElement('button');
-  button.innerHTML = '<i class="fa fa-list-alt"></i>';
-  
-  var this_ = this;
-
-  var btn_msg = denuncia ? 'Guardar Cambios' : 'Enviar Denuncia';
-  
-  var message = '<form class="form-horizontal">' + 
-  					'<div style="margin-top:5px" class="input-group"><span class="input-group-addon">Título</span>' + 
-    					'<input id="titulo" type="text" name="titulo" placeholder="Añade un título" class="form-control btn-default" value="' + denuncia_titulo + '"/>' +
-  					'</div>' +
-  					'<div class="space"></div>' +
-  					'<h4>Añade una descripción</h4>' +
-  					'<textarea id="contenido" name="contenido" rows="3" style="height:300px" class="form-control">' + denuncia_contenido + '</textarea>' +
-  					'<div class="space"></div>' +
-  					'<h4>Imágenes</h4>' +
-  					'<div id="file-dropzone" style="background:#55ACEE;border:1px dashed">' +
-    					'<div style="color:#fff" class="dz-message text-center">Arrastra imágenes o haz click aquí.</div>' +
-  					'</div>' +
-  					'<div class="space"></div>' +
-  					'<h4>Tags</h4>' +
-  					'<input id="tags" type="text" name="tags" placeholder="Introduce tags" class="col-lg-12"/>' + 
-  					'<div style="margin-top:5px;margin-bottom:15px" class="col-lg-12 input-group space">' +
-  						'<span class="input-group-addon"><i class="fa fa-send fa-fw"></i></span>' +
-    					'<input id="submitDenuncia" type="button" value="' + btn_msg + '" class="form-control btn-success"/>' +
-  					'</div>' +
-				'</form>';
-  	var aux = true;
-
- 	var aux = 0;
-
-  	var dialog = new BootstrapDialog({
+  	var options = opt_options || {},
+  	TIPO_MENU = options.tipo, // Editar o Nueva
+  	titulo = options.titulo,
+  	denuncia = options.denuncia,
+  	json = {},
+  	denuncia_titulo = denuncia ? denuncia.titulo : '',
+  	denuncia_contenido = denuncia ? decodeURIComponent(denuncia.descripcion) : '',
+  	post = denuncia ? '/app/denuncias/editar?id=' + denuncia.gid : '/app/denuncias/nueva/save',
+  	button = document.createElement('button'),
+  	element = document.createElement('div'),
+  	this_ = this,
+  	btn_msg = denuncia ? 'Guardar Cambios' : 'Enviar Denuncia',
+  	message = '<form class="form-horizontal">' + 
+  		'<div style="margin-top:5px" class="input-group"><span class="input-group-addon">Título</span>' + 
+    		'<input id="titulo" type="text" name="titulo" placeholder="Añade un título" class="form-control btn-default" value="' + denuncia_titulo + '"/>' +
+  		'</div>' +
+  		'<div class="space"></div>' +
+		'<h4>Añade una descripción</h4>' +
+		'<textarea id="contenido" name="contenido" rows="3" style="height:300px" class="form-control">' + denuncia_contenido + '</textarea>' +
+		'<div class="space"></div>' +
+		'<h4>Imágenes</h4>' +
+		'<div id="file-dropzone" style="background:#55ACEE;border:1px dashed">' +
+			'<div style="color:#fff" class="dz-message text-center">Arrastra imágenes o haz click aquí.</div>' +
+		'</div>' +
+		'<div class="space"></div>' +
+		'<h4>Tags</h4>' +
+		'<input id="tags" type="text" name="tags" placeholder="Introduce tags" class="col-lg-12"/>' + 
+		'<div style="margin-top:5px;margin-bottom:15px" class="col-lg-12 input-group space">' +
+			'<span class="input-group-addon"><i class="fa fa-send fa-fw"></i></span>' +
+			'<input id="submitDenuncia" type="button" value="' + btn_msg + '" class="form-control btn-success"/>' +
+		'</div>' +
+	'</form>',
+	aux = 0,
+	dialog = new BootstrapDialog({
   		title : titulo,
   		message: $(message),
   		autodestroy : false,
@@ -120,39 +108,39 @@ app.Lateral = function(opt_options) {
 			    		if(denuncia){
 			    			if(file.path)
 					    	    $.ajax({
-					 	           url:'/app/deleteImagen?path=' + file.path,
-					 	           type:'GET', // Método GET
-					 	           data:{},
-					 	           success:function(res){
-					 	        	   // Aquí debería ir un mensaje :/
+					 	           	url:'/app/deleteImagen?path=' + file.path,
+					 	           	type:'GET', // Método GET
+					 	           	data:{},
+					 	           	success:function(res){
+					 	        	   	// Aquí debería ir un mensaje :/
 						    			dropzone.options.maxFiles = dropzone.options.maxFiles + 1;
 						    			console.log(dropzone.options.maxFiles);
-					 	           }
+					 	           	}
 					    	    });
 				    		else
 					    	    $.ajax({
-					 	           url:'/app/deleteFile/'+ random + '/' + file.name,
-					 	           type:'GET', // Método GET
-					 	           data:{},
-					 	           success:function(res){
-					 	        	   // Aquí debería ir un mensaje :/
-					 	           }
+					 	           	url:'/app/deleteFile/'+ random + '/' + file.name,
+					 	           	type:'GET', // Método GET
+					 	           	data:{},
+					 	           	success:function(res){
+					 	        		// Aquí debería ir un mensaje :/
+					 	           	}
 					    	    });
-			    		}
+			    		} // if denuncia
 			    		else
 				    	    $.ajax({
-				 	           url:'/app/deleteFile/'+ random + '/' + file.name,
-				 	           type:'GET', // Método GET
-				 	           data:{},
-				 	           success:function(res){
+				 	           	url:'/app/deleteFile/'+ random + '/' + file.name,
+				 	           	type:'GET', // Método GET
+				 	           	data:{},
+				 	           	success:function(res){
 				 	        	   
-				 	           }
+				 	           	}
 				    	    });
 
-			    	});
-
+			    	}); // removed file
 			    }
-			}); // CONFIG DROPZONE	
+			}); // CONFIG DROPZONE
+
   			$('#tags').tagsinput({
 				maxTags: 5,
 				maxChars: 8,
@@ -162,6 +150,7 @@ app.Lateral = function(opt_options) {
 					alert('Tag repetido');
 				}
 			});
+
   			if (denuncia)
 				try {
 					//alert(tags);
@@ -175,7 +164,6 @@ app.Lateral = function(opt_options) {
 				}
 
 			$('#submitDenuncia').click( function(event){
-				
 				map.getControls().forEach(function(control){
 					if(control instanceof app.Draw) {
 						json.wkt = control.toWKT();
@@ -183,23 +171,10 @@ app.Lateral = function(opt_options) {
 					}
 				});	
 
-				var titulo = $('#titulo').val(); // Obtenemos el titulo del array anterior
-
-				var contenido = (tinyMCE.activeEditor) ? encodeURIComponent(tinyMCE.activeEditor.getContent().replace(/'/g, " ")) : $('textarea').val();
-
-				json.titulo = titulo;
-				json.contenido = contenido;
+				json.titulo = $('#titulo').val(); // Obtenemos el titulo del array anterior
+				json.contenido = (tinyMCE.activeEditor) ? encodeURIComponent(tinyMCE.activeEditor.getContent().replace(/'/g, " ")) : $('textarea').val();
 				json.tempDir = random;
-				//json.wkt = wkt;
-
-				//alert(JSON.stringify(json));
-				//return;
-
-				// Añadimos los tags a la lista
-				var tags = $('#tags').tagsinput('items');
-
-				// Añadimos la lista al objeto
-				json.tags = tags;
+				json.tags = $('#tags').tagsinput('items');
 				
 				/*******/
 				
@@ -208,7 +183,6 @@ app.Lateral = function(opt_options) {
 				formData.append('uploadDenuncia', json);
 				
 				var xhr = new XMLHttpRequest(); // Petición XMLHttpRequest
-				
 				
 				xhr.open('POST', post , true); // Método POST
 				
@@ -219,7 +193,7 @@ app.Lateral = function(opt_options) {
 				var self = this;
 				var m = denuncia ? 'Guardando cambios' : 'Enviando Denuncia';
 				$(self).parent().parent().append('<div id="spinner" style="text-align: center"><i class="fa fa-spinner fa-spin fa-5x" style="color: #339BEB"></i>'
-					 + '<p>' + m + '...</p></div>');
+					+ '<p>' + m + '...</p></div>');
 				$(self).parent().hide();
 				
 				// Recibimos respuesta del servidor
@@ -238,15 +212,15 @@ app.Lateral = function(opt_options) {
 							title: 'Error añadiendo denuncia',
 							message: res.msg,
 							buttons: [{
-							label: 'Cerrar',
-							action: function(dialog){dialog.close()}}]
+								label: 'Cerrar',
+								action: function(dialog){dialog.close()}
+							}]
 						});
 					}
 					else
 					{
 						//console.log(res.denuncia);
 						// Ha habido éxito subiendo la denuncia
-
 						BootstrapDialog.show({
 							type: BootstrapDialog.TYPE_SUCCESS,
 							title: 'Denuncia añadida correctamente',
@@ -264,29 +238,27 @@ app.Lateral = function(opt_options) {
 				};
 				event.preventDefault();  // preventDefault
 			});	//Submit denuncia
-			
-
   		}
+  	}); // Dialog
+
+
+  	function lateral_ (){
+  		dialog.open();
+  	}
+
+  	button.innerHTML = '<i class="fa fa-list-alt"></i>';
+  	button.addEventListener('click', lateral_, false);
+
+  	element.setAttribute('data-toggle', 'left');
+  	element.setAttribute('title', 'Datos');
+  	element.setAttribute('data-content', 'Rellena o modifica los datos de la denuncia');
+  	element.className = 'lateral ol-unselectable ol-control';
+  	element.appendChild(button);
+
+  	ol.control.Control.call(this, {
+    	element: element,
+    	target: options.target
   	});
-
-
-  function lateral_ (){
-  	dialog.open();
-  }
-
-  button.addEventListener('click', lateral_, false);
-
-  var element = document.createElement('div');
-  element.setAttribute('data-toggle', 'left');
-  element.setAttribute('title', 'Datos');
-  element.setAttribute('data-content', 'Rellena o modifica los datos de la denuncia');
-  element.className = 'lateral ol-unselectable ol-control';
-  element.appendChild(button);
-
-  ol.control.Control.call(this, {
-    element: element,
-    target: options.target
-  });
-
 };
+
 ol.inherits(app.Lateral, ol.control.Control);

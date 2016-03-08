@@ -6,16 +6,16 @@ var app = window.app;
  */
 app.LikeDenuncia = function(opt_options) {
 
-  var options = opt_options || {};
-
-  var button = document.createElement('button');
-  button.innerHTML = '<i class="fa fa-thumbs-o-up"></i>';
-  
-  var aux = 0;
+  var options = opt_options || {},
+  button = document.createElement('button'),
+  element = document.createElement('div'),
+  this_ = this,
+  aux = 0;
   
   num_denuncias_io.emit('te_pregunto_que_si_me_gusta_esta_puta_mierda_de_denuncia?', {denuncia: denuncia, usuario_id: usuario_id});
 
-  num_denuncias_io.on('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?', function(data){
+  num_denuncias_io.on('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?', 
+  function(data){
 	  if (data.error == false){
 		  //alert(data.like + 'like')
 		  if(data.like)
@@ -32,15 +32,13 @@ app.LikeDenuncia = function(opt_options) {
 	  }
   });
   
-  var this_ = this;
-  
   function like_ (){
 	  num_denuncias_io.emit('le_he_dao_al_boton_de_me_gusta_haz_lo_que_tengas_que_hacer', {denuncia: denuncia, usuario_id: usuario_id});
   }
 
+  button.innerHTML = '<i class="fa fa-thumbs-o-up"></i>';
   button.addEventListener('click', like_, false);
 
-  var element = document.createElement('div');
   element.setAttribute('data-toggle', 'left');
   element.setAttribute('title', 'Like');
   element.setAttribute('data-content', 'Dale un like a la denuncia');
@@ -51,6 +49,6 @@ app.LikeDenuncia = function(opt_options) {
     element: element,
     target: options.target
   });
-
 };
+
 ol.inherits(app.LikeDenuncia, ol.control.Control);

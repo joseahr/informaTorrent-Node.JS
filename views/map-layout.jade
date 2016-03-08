@@ -33,6 +33,7 @@ html
     link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.1/css/bootstrap-datepicker.css")
     link(href="/javascripts/plugins/ol3-geocoder/build/ol3-geocoder.min.css" rel="stylesheet")
     link(href="/javascripts/plugins/bootstrap-sidebar/dist/css/sidebar.css" rel="stylesheet")
+    link(href="/javascripts/plugins/modal-carousel/dist/css/bootstrap-modal-carousel.min.css" rel="stylesheet")
     block link
     style.
       .menu-item {padding: 5 0 5 5px; margin: 5 0 5 0px; border-radius: 5px;}
@@ -119,9 +120,12 @@ html
   // Plugins Javascript situados al final de la página, así el contenido carga antes
   // JQuery y Bootstrap
   script.
+    var ip = '#{ip}';
     var usuario_id = '#{locals.user ? locals.user._id : undefined}';
-  script(src='http://code.jquery.com/jquery-1.11.1.min.js')
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js')
   script(src='//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js')
+  // Modal carousel
+  script(src='/javascripts/plugins/modal-carousel/dist/js/bootstrap-modal-carousel.min.js')
   // Modernizr
   script(type='text/javascript', src='/javascripts/plugins/modernizr.js')
   // Jquery appear
@@ -136,29 +140,28 @@ html
   script(type='text/javascript', src='/javascripts/plugins/bootstrap-dialog.js')
   // Highlight JS
   script(src='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/highlight.min.js')
-  // Abrir cerrar header efecto movil mapa
-  script(src='/javascripts/close_header_mobile_map.js')
   // Proj4.js
   script(src='https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.12/proj4.js')
   // OpenLayers.js
   script(src='/javascripts/plugins/ol3/ol.js')
   // LayerSwitcher JS
   script(src='/javascripts/plugins/ol3-layerswitcher/src/ol3-layerswitcher.js')
+  // Geocoder
+  script(src="/javascripts/plugins/ol3-geocoder/build/ol3-geocoder.js")
   // Estilos Features
   script(src='/javascripts/openlayers/style.js')
   // proyección
   script(src='/javascripts/openlayers/proj.js')
   // Capas
   script(src='/javascripts/openlayers/capas.js')
+  // Capas
+  script(src='/javascripts/openlayers/mapa.js')
   // SOCKET.IO
   script(src="https://cdn.socket.io/socket.io-1.3.7.js")
   // Bootstrap Select JS
   script(src="/javascripts/plugins/bootstrap-select/js/bootstrap-select.js")
-  script(src="/javascripts/plugins/ol3-geocoder/build/ol3-geocoder.js")
   script(src="/javascripts/plugins/bootstrap-sidebar/dist/js/sidebar.js")
   script.
-    'use strict';
-    var ip = '#{ip}';
     var id_usuario = '#{id_usuario}';
   // FUNCIONALIDADES SOCKET.IO
   script(src="/javascripts/client-sockets.js")
@@ -169,78 +172,6 @@ html
       console.log(fontSize);
       $(this).fitText(1.1, {maxFontSize: fontSize});
     });
-    
-    // MousePosition Control --> ol.control.MousePosition
-    var mousePositionControl = new ol.control.MousePosition({
-      coordinateFormat: ol.coordinate.toStringHDMS,
-    });
-    
-    // Mapa --> ol.Map
-    var map = new ol.Map({
-      controls: ol.control.defaults({
-        attribution: false // No atribución
-      }).extend([mousePositionControl, // MousePosition
-        //new ol.control.FullScreen(), 
-        new ol.control.LayerSwitcher({tipLabel: 'Leyenda'}), // LayerSwitcher
-        new ol.control.ScaleLine(), // ScaleLine
-        //new ol.control.ZoomSlider(),
-      ]),
-      target: 'map',
-      view: new ol.View({
-        projection: proj,
-        zoom: 3,
-        center: ol.proj.fromLonLat([-0.47343, 39.42811], 'EPSG:4258'),
-        minZoom: 0,
-        maxZoom: 10
-        // Importante poner nuestra proyección, aunque es un parámetro opcional HAY QUE PONERLO!
-      })
-    });
-    
-    ortoPNOA.setVisible(true);
-    manzanas.setVisible(false);
-    caminos.setVisible(false);
-    viales.setVisible(false);
-    nom_viales.setVisible(false);
-  
-    var groupCartoTorrentWMS = new ol.layer.Group({
-      title: 'Cartografía de Torrent WMS',
-      layers: [municipio, manzanas, viales, caminos, nom_viales, portales]
-    });
-    
-    map.addLayer(groupCapasBase); // Añadimos grupo de Capas 1
-    //map.addLayer(groupCartoTorrentWMST); // Añadimos grupo de Capas 2
-    map.addLayer(groupCartoTorrentWMS); // Añadimos grupo de Capas 2
-    var geocoder = new Geocoder('nominatim', {
-      provider: 'osm',
-      //key: '__some_key__',
-      lang: 'es-ES', //en-US, fr-FR
-      placeholder: 'Buscar dirección ...',
-      limit: 5,
-      keepOpen: false
-    });
-
-    geocoder.on('addresschosen', function(e){
-      var coor = e.coordinate;
-      geocoder.getSource().forEachFeature(function(f){
-        //console.log(coor + ' ' + f.getGeometry().getCoordinates());
-        var coor_ = f.getGeometry().getCoordinates();
-        if( coor_[0] != coor && coor_[1] != coor[1]) {
-          console.log(coor + ' ' + f.getGeometry().getCoordinates());
-          geocoder.getSource().removeFeature(f);
-        }        
-      });
-    });
-
-    map.addControl(geocoder);
-    // Añadimos Control OverviewMap
-    map.addControl(new ol.control.OverviewMap({ 
-      layers: [new ol.layer.Tile(ignBase.getProperties())],
-      view: new ol.View({ // Importante añadir la View con nuestra proyección
-        projection: proj
-      })
-    }));
-    
-    ignBase.setVisible(false);
 
   // Botones mapa 
   script(type='text/javascript', src='/javascripts/openlayers/controles/comentarios_denuncia.js')
@@ -290,4 +221,9 @@ html
       d.open();
 
     });
-     
+    $('#myModal').on('show.bs.modal', function(){
+      $('#myCarousel').css('display', '');
+    });
+    $('#myModal').on('hide.bs.modal', function(){
+      $('#myCarousel').css('display', 'none');
+    });

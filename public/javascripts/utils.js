@@ -261,18 +261,18 @@ function getAccionRow(notificacion){
 	console.log(noti.id_denuncia);
 
 	return '<div class="row">' + 
-			'<div class="thumbnail container-fluid" style="margin: 5px; padding: 10 0 5 0px; overflow-x: hidden; background-color:#fff;">' + 
-			'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getFechaFormatted(fecha) + ' <i class="fa fa-clock-o"></i> </p>' + 																
-			'<div class="media" style="margin : 0 20 0 20px;">' + 
-				'<a class="media-left" style="width:100px;">' + 
-					'<img onclick="window.open(&#39;/app/usuarios/' + notificacion.id_usuario_to + '&#39;)" src="' + notificacion.profile_to.picture + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-circle img-thumbnail">' +
-					'<img onclick="window.open(&#39;/app/denuncia/' + notificacion.denuncia.gid + '&#39;)" src="' + getGeoserverMiniatura(notificacion.denuncia, 100) + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-thumbnail">' +
-				'</a>' +  
-				'<div class="media-body" style="padding: 30 20 30 20px; text-align: left;word-wrap: break-word; break-word: keep-all;">' + getInfoAccion(notificacion) + '</div>'+ 								
-			'</div>' + 
-			'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getIconoNotificacion(notificacion) + '</p>' + 
+		'<div class="thumbnail container-fluid" style="margin: 5px; padding: 10 0 5 0px; overflow-x: hidden; background-color:#fff;">' + 
+		'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getFechaFormatted(fecha) + ' <i class="fa fa-clock-o"></i> </p>' + 																
+		'<div class="media" style="margin : 0 20 0 20px;">' + 
+			'<a class="media-left" style="width:100px;">' + 
+				'<img onclick="window.open(&#39;/app/usuarios/' + notificacion.id_usuario_to + '&#39;)" src="' + notificacion.profile_to.picture + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-circle img-thumbnail">' +
+				'<img onclick="window.open(&#39;/app/denuncia/' + notificacion.denuncia.gid + '&#39;)" src="' + getGeoserverMiniatura(notificacion.denuncia, 100) + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-thumbnail">' +
+			'</a>' +  
+			'<div class="media-body" style="padding: 30 20 30 20px; text-align: left;word-wrap: break-word; break-word: keep-all;">' + getInfoAccion(notificacion) + '</div>'+ 								
 		'</div>' + 
-		'</div>';
+		'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getIconoNotificacion(notificacion) + '</p>' + 
+		'</div>' + 
+	'</div>';
 }
 
 function fillAcciones(acciones){
@@ -283,3 +283,19 @@ function fillAcciones(acciones){
 	});
 	$('#acciones > .panel-body').append(html);
 };
+
+function getCarouselModalDenuncia (denuncia) {
+	var html = $('<div class="carousel-inner" style="height: 100%;"></div>');
+
+	html.append('<div class="item active">' +
+  		'<img src="' + getGeoserverMiniatura(denuncia, 1200) + '" style="padding: 20 0 20 0px;" alt="Detalle Denuncia"/>' +
+  	'</div>');
+	
+	if (denuncia.imagenes)
+		denuncia.imagenes.forEach(function(img){
+			html.append('<div class="item">' +
+  				'<img src="' + img.path + '" alt="' + img.path + '" style="padding: 20 0 20 0px;" />' +
+  			'</div>');
+		});
+	return html;
+}

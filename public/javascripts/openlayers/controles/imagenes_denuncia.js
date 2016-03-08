@@ -7,14 +7,11 @@ var app = window.app;
  */
 app.ImagenesDenuncia = function(opt_options, denuncia) {
 
-  var options = opt_options || {};
-
-  var button = document.createElement('button');
-  button.innerHTML = '<i class="fa fa-image"></i>';
-
-  var this_ = this;
-  
-  var message;
+  var options = opt_options || {},
+  button = document.createElement('button'),
+  element = document.createElement('div'),
+  this_ = this,
+  message;
 
   if(!denuncia.imagenes){
   	message = '<h4>Esta denuncia no contiene imágenes</h4>';
@@ -54,9 +51,9 @@ app.ImagenesDenuncia = function(opt_options, denuncia) {
 	  });
   }
 
+  button.innerHTML = '<i class="fa fa-image"></i>';
   button.addEventListener('click', imagenes_, false);
 
-  var element = document.createElement('div');
   element.setAttribute('data-toggle', 'left');
   element.setAttribute('title', 'Imágenes');
   element.setAttribute('data-content', 'Imágenes asociadas a la denuncia');
@@ -69,4 +66,5 @@ app.ImagenesDenuncia = function(opt_options, denuncia) {
   });
 
 };
+
 ol.inherits(app.ImagenesDenuncia, ol.control.Control);

@@ -6,33 +6,39 @@ var app = window.app;
  */
 app.TrackingDenunciasCerca = function(opt_options) {
 
-  var options = opt_options || {};
-  
-  var show_position = false; // Bool - Activar/Desactivar control
-  
-  var panTo = 0;
-
-  var wktFormat = new ol.format.WKT();
-  
-  var geolocation = new ol.Geolocation({
+  var options = opt_options || {},
+  show_position = false, // Bool - Activar/Desactivar control
+  this_ = this,
+  panTo = 0,
+  wktFormat = new ol.format.WKT(),
+  geolocation = new ol.Geolocation({
 	    projection: map.getView().getProjection()
-  }); // Objeto geolocalizador
-  
-  var accuracyFeature = new ol.Feature(); // Feature precisión
-  
-  geolocation.on('error', function(e){
-    BootstrapDialog.show({
-      title: 'Error tratando de geolocalizar tu dispositivo',
-      message: 'Revise y active las opciones de geolocalización de su dispositivo'
-    });
-  });
+  }), // Objeto geolocalizador
+  accuracyFeature = new ol.Feature(), // Feature precisión
+  positionFeature = new ol.Feature(), // Feature de posición
+  featuresOverlay = new ol.layer.Vector({
+    map: map,
+    source: new ol.source.Vector({
+      features: [accuracyFeature, positionFeature]
+    })
+  }), // Overlay que contiene los dos features creados: posición + precisión
+  dialog = new BootstrapDialog({
+    title : 'Denuncias cercanas a mi posición'
+  }),
+  coor_ant,
+  distancia = 100,
+  projection = map.getView().getProjection(),
+  button = document.createElement('button'), // Botón del control
+  element = document.createElement('div');
 
-  geolocation.on('change:accuracyGeometry', function() {
-    accuracyFeature.setGeometry(geolocation.getAccuracyGeometry());
-  }); // Manejador - Se dispara cuando cambia la precisión
-  
-  var positionFeature = new ol.Feature(); // Feature de posición
-  
+  this.desactivar = function(){
+    $(button).empty();
+    $(button).append('<i class="fa fa-globe" style="color: #fff"></i>');
+    geolocation.setTracking(false);
+    featuresOverlay.setVisible(false);
+  };
+
+  // Estilamos el feature
   positionFeature.setStyle(new ol.style.Style({
     image: new ol.style.Circle({
       radius: 6,
@@ -44,15 +50,19 @@ app.TrackingDenunciasCerca = function(opt_options) {
         width: 2
       })
     })
-  }));      
-	  
-  var dialog = new BootstrapDialog({
-    title : 'Denuncias cercanas a mi posición'
+  })); 
+
+  // Eventos Geolocation ******************************************************
+  geolocation.on('error', function(e){
+    BootstrapDialog.show({
+      title: 'Error tratando de geolocalizar tu dispositivo',
+      message: 'Revise y active las opciones de geolocalización de su dispositivo'
+    });
   });
 
-  var coor_ant;
-  var distancia = 100;
-  var projection = map.getView().getProjection();
+  geolocation.on('change:accuracyGeometry', function() {
+    accuracyFeature.setGeometry(geolocation.getAccuracyGeometry());
+  }); // Manejador - Se dispara cuando cambia la precisión
 
   geolocation.on('change:position', function() {
     var coordinates = geolocation.getPosition();
@@ -124,17 +134,9 @@ app.TrackingDenunciasCerca = function(opt_options) {
     }
   });
   
-  var featuresOverlay = new ol.layer.Vector({
-    map: map,
-    source: new ol.source.Vector({
-      features: [accuracyFeature, positionFeature]
-    })
-  }); // Overlay que contiene los dos features creados: posición + precisión
-  
-  var button = document.createElement('button'); // Botón del control
-  button.innerHTML = '<i class="fa fa-globe" style="color: #fff"></i>';
+  // Eventos Geolocation ******************************************************     
 
-  var this_ = this;
+  button.innerHTML = '<i class="fa fa-globe" style="color: #fff"></i>';
   
   function show (){ // Manejador del control
 	  // Cuando hacemos click sobre el control
@@ -147,18 +149,17 @@ app.TrackingDenunciasCerca = function(opt_options) {
         panTo = 0;
         geolocation.setTracking(true);
         featuresOverlay.setVisible(true);
+        map.getControls().forEach(function(c){
+          if(c instanceof app.Tracking) c.desactivar();
+        });
       }
       else {
-        $(button).empty();
-        $(button).append('<i class="fa fa-globe" style="color: #fff"></i>');
-        geolocation.setTracking(false);
-        featuresOverlay.setVisible(false);
+        this_.desactivar();
       }
   }
 
   button.addEventListener('click', show, false);
 
-  var element = document.createElement('div');
   element.setAttribute('data-toggle', 'left');
   element.setAttribute('title', 'Denuncias cercanas tiempo real');
   element.setAttribute('data-content', 'Denuncias cercanas a mi posición');
