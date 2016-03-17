@@ -22,8 +22,15 @@ app.TrackingDenunciasCerca = function(opt_options) {
       features: [accuracyFeature, positionFeature]
     })
   }), // Overlay que contiene los dos features creados: posición + precisión
-  dialog = new BootstrapDialog({
-    title : 'Denuncias cercanas a mi posición'
+  dialog_td = new BootstrapDialog({
+    title : 'Denuncias cercanas a mi posición',
+    autodestroy : false,
+    buttons : [{
+      label : 'Cerrar',
+      action : function(dialog){
+        dialog.close();
+      },
+    }]
   }),
   coor_ant,
   distancia = 100,
@@ -36,6 +43,7 @@ app.TrackingDenunciasCerca = function(opt_options) {
     $(button).append('<i class="fa fa-globe" style="color: #fff"></i>');
     geolocation.setTracking(false);
     featuresOverlay.setVisible(false);
+    coor_ant = false;
   };
 
   // Estilamos el feature
@@ -54,6 +62,7 @@ app.TrackingDenunciasCerca = function(opt_options) {
 
   // Eventos Geolocation ******************************************************
   geolocation.on('error', function(e){
+    this_.desactivar();
     BootstrapDialog.show({
       title: 'Error tratando de geolocalizar tu dispositivo',
       message: 'Revise y active las opciones de geolocalización de su dispositivo'
@@ -89,6 +98,7 @@ app.TrackingDenunciasCerca = function(opt_options) {
       // Enviamos a traves de socket io nuestra posición al servidor
       //alert(wktFormat.writeFeature(accuracyFeature.clone()));
       num_denuncias_io.emit('tengo_denuncias_cerca_?', wktFormat.writeFeature(positionFeature.clone()));
+      distancia = 0;
     }
 
     num_denuncias_io.on('si_que_tengo_denuncias_cerca', function(data){
@@ -104,12 +114,12 @@ app.TrackingDenunciasCerca = function(opt_options) {
         message += getDenunciaRow(denuncia, true);
       });
       message += '</div>'
-      dialog.setMessage(message);
-      dialog.open();
+      dialog_td.setMessage(message);
+      dialog_td.open();
     });
 
     // Solo haremos pan una vez por activación de control. Pa que el usuario no se raye.
-    // En cambio si que actualizamos la posición cuando tenga nuevas coords.
+    // En cambio sí que actualizamos la posición cuando tenga nuevas coords.
     if (panTo == 0){
       panTo ++;
       // Pan a mi localización

@@ -2,6 +2,8 @@
  * Variables de las capas de los visores
  */
 
+ var ip = ip || '192.168.1.14';
+
 var resolutions = new Array(22),
 matrixIds = new Array(22),
 resInicial = 0.703125,
@@ -14,6 +16,7 @@ Tile = function(opciones){
 		title: opciones.titulo,
 		visible: true,
 		source: new ol.source.TileWMS({
+			crossOrigin: 'anonymous', // So important maniguiiiiii
 			url: 'http://' + ip + ':8080/geoserver/jahr/wms',
 			params: {
 				'FORMAT': format, 
@@ -30,6 +33,7 @@ TileWMST = function(opciones){
 		title: opciones.titulo,
 		visible: false,
 		source: new ol.source.WMTS({
+			crossOrigin: 'anonymous',
 			url: 'http://' + ip + ':8080/geoserver/gwc/service/wmts',
 			layer:opciones.capa,
 			matrixSet: 'EPSG:4326',
@@ -114,7 +118,9 @@ var denuncias_poligonos = Tile({
 var denunciasHeatMap = new ol.layer.Heatmap({
   title: 'Zonas más conflictivas',
   source: new ol.source.Vector({
-    url: ip + '/geoserver/jahr/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=jahr:denuncias_centroides&outputFormat=application/json',
+  	crossOrigin: 'anonymous',
+    url: 'http://' + ip + ':8080/geoserver/jahr/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=jahr:denuncias_centroides' + 
+    	'&outputFormat=application/json',
     format: new ol.format.GeoJSON({
       extractStyles: false
     })
@@ -195,6 +201,7 @@ var ignBase = new ol.layer.Tile({
 	visible: true,
 	source: new ol.source.TileWMS({
 		url: 'http://www.ign.es/wms-inspire/ign-base',
+		crossOrigin: 'anonymous',
 		params: {'FORMAT': format, 
              	 'VERSION': '1.1.1',
              	 tiled: true,
@@ -210,6 +217,7 @@ var ortoPNOA = new ol.layer.Tile({
 	visible: false,
 	source: new ol.source.TileWMS({
 		url: 'http://www.ign.es/wms-inspire/pnoa-ma',
+		crossOrigin: 'anonymous',
 		params: {'FORMAT': format, 
              	 'VERSION': '1.1.1',
              	 tiled: true,

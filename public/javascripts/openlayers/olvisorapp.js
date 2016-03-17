@@ -47,12 +47,20 @@ flash = function(feature) {
 	}
 	listenerKey = map.on('postcompose', animate);
 },
-cambiar_imagen = function(denuncia, boton){
+cache = {},
+spinner,
+cambiar_imagen = function(denuncia, boton, d_body){
 	//console.log(denuncia);
 	//denuncia = JSON.parse(denuncia);
 	console.log(denuncia.imagenes);
 	var imagenes = denuncia.imagenes;
-	if(!imagenes) return;
+	if(!imagenes) {
+		BootstrapDialog.alert({
+			'title' : 'Imágenes', 
+			message : 'La denuncia no contiene imágenes'
+		});
+		return;
+	}
 	var actual = $(boton).attr('src');
 
 	var index = -1;
@@ -61,11 +69,28 @@ cambiar_imagen = function(denuncia, boton){
 		if(imagen.path == actual) index = index_;
 	});
 
-	if(index == -1) $(boton).attr('src', imagenes[0].path)
-	else if(index == imagenes.length - 1) $(boton).attr('src', getGeoserverMiniatura(denuncia, 1200));
-	else $(boton).attr('src', imagenes[index + 1].path);
+	if(spinner) spinner.remove();
+	spinner = $('<div id="spinner" style="text-align: center; position: absolute; z-index: 10; top: 100px;width: 100%;"><i class="fa fa-spinner fa-spin fa-5x" style="color: #339BEB"></i>'
+		+ '<p>Cargando imagen...</p></div>');
+	$(d_body).append(spinner);
+
+	boton.onload = function(){
+		spinner.remove();
+	};
+
+	if(index == -1) 
+		$(boton).attr('src', imagenes[0].path);
+	else if(index == imagenes.length - 1) 
+		$(boton).attr('src', getGeoserverMiniatura(denuncia, 400));
+	else 
+		$(boton).attr('src', imagenes[index + 1].path);
+
 	console.log('index', index, 'length', imagenes.length);
-};
+},
+sel_dialog = new BootstrapDialog({
+	autodestroy : true
+});
+
 
 /****************  INIT  ********/
 map.addInteraction(select); // Seleccionar feature
@@ -123,19 +148,74 @@ closer.onclick = function() {
 select.on('select', function(e){
 	if(! e.selected[0]) return;
 	e.target.getFeatures().forEach(function(f){
-		
-		console.log('denuncia seleccionada : ' + f.attributes.denuncia.gid);
+		var denuncia = f.attributes.denuncia,
+		num_likes = denuncia.likes ? denuncia.likes.length : 0,
+		imagenes = denuncia.imagenes ? denuncia.imagenes.length : 0,
+		comentarios = denuncia.comentarios ? denuncia.comentarios.length : 0,
+  		fecha = getFechaFormatted(new Date(denuncia.fecha)),
+  		tags = [];
+  		console.log(denuncia.tags_, denuncia)
+  		if (denuncia.tags_)
+	  		denuncia.tags_.forEach(function(tag){
+	  		tags.push('#' + tag.tag);
+	  	});
 
+		console.log('denuncia seleccionada : ' + f.attributes.denuncia.gid, tags);
+		sel_dialog = new BootstrapDialog({
+			buttons: [{
+				label: 'IR',
+				action : function(){ window.location.replace('/app/denuncia/' + denuncia.gid) }
+			}, {
+				label : 'Cerrar',
+				action : function(dialog){dialog.close()}
+			}]
+		});
+
+		sel_dialog.onShow(function(dialog){
+			$(dialog.getModalHeader()).replaceWith($('<div class="row" style="margin: 0px; padding-bottom: 15px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
+  				'<div class="col-xs-4" style="text-align: center;">' +
+  					'<img class="img img-thumbnail" src="' + denuncia.usuario[0].profile.picture + '" style="margin-top: 15px; width: 90px; height: 90px; object-fit: cover;" />' +
+  				'</div>' +
+  				'<div class="col-xs-8" style="text-align: center; color: #fff">' +
+  					'<div class="col-lg-12" style="margin-top: 15px;height: 30px;"><i class="fa fa-user"></i> ' + denuncia.usuario[0].profile.username + '</div>' +
+  					'<div class="col-lg-12" style="height: 30px;">' + 
+  						'<i class="fa fa-eye"></i> ' + denuncia.veces_vista + 
+  						' <i class="fa fa-thumbs-up"></i> ' + num_likes + 
+  						' <i class="fa fa-image"></i> ' + imagenes +
+  						' <i class="fa fa-comments"></i> ' + comentarios + 
+  						' <i class="fa fa-tags"></i> ' + tags.length +  
+  					' </div>' +
+  					'<div class="col-lg-12" style="height: 30px;"><i class="fa fa-calendar"></i> ' + fecha + '</div>' +
+  				'</div>' + 
+  			'</div>'));
+
+	  		dialog.getModalBody().parent().css('border-radius', '15px');
+	  		dialog.getModalBody().css('padding-top', '0px');
+		});
+
+		sel_dialog.onShown(function(dialog){
+			dialog.setMessage('<h4 style="width: 100%; color: #fff; background-color: rgba(0,0,0,0.4); margin-top: -10px;text-align:center; border-radius: 5px">' + denuncia.titulo + '</h4>' +
+			'<div class="row" style="margin-top: 15px; word-break: break-all; background-color: #fff">' + 
+				'<i class="fa fa-tags"> ' + tags + '</i>' +
+				'<div class="col-lg-12 text-center"><img class="img img-thumbnail" id="imagenes_denuncia" src="' + getGeoserverMiniatura(denuncia, 500) + '" style="width: 300px; height: 300px; object-fit: cover; margin: 10 0 10 0px;"></img></div>' +
+				'<h4>Descripción</h4>' + 
+				'<div id="desc" style="margin: 5px;"></div>' + 
+			'</div>');
+			$(dialog.getModalBody()).find('#desc').append(decodeURIComponent(denuncia.descripcion));
+
+			$(dialog.getModalBody()).find('#imagenes_denuncia').click(function(e){
+				cambiar_imagen(f.attributes.denuncia, this, dialog.getModalBody());
+			});
+
+		});
+
+		sel_dialog.open();
 		/*$(content).empty();
 		$(content).append($(getDenunciaRow(f.attributes.denuncia, true)));
 		$('.container-fluid').css('text-align', 'center');
 		$('.container-fluid').css('padding-top', '0px');
 		$('.container-fluid').css('margin', '0px');
-		overlay.setPosition(ol.extent.getCenter(f.getGeometry().getExtent()));
-
-		$('#imagenes_denuncia').click(function(e){
-			cambiar_imagen(f.attributes.denuncia, this);
-		});*/
+		overlay.setPosition(ol.extent.getCenter(f.getGeometry().getExtent()));*/
 
 	});
 	$(container).removeClass('hidden');

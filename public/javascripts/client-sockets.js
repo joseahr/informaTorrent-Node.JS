@@ -21,7 +21,8 @@ function noti($this){
 	var id_noti = $($this).attr('id_noti');
 	
 	num_denuncias_io.emit('noti_vista', id_noti);
-	var vista = $($this).attr('vista', 'true');
+	$($this).attr('vista', 'true');
+
 }
 
 num_denuncias_io.on('noti_vista_cb', function(data){
@@ -33,6 +34,12 @@ num_denuncias_io.on('noti_vista_cb', function(data){
 	var nuevas = parseInt($('.noti_up:eq(1)').text()) - 1;
 	$('.noti_up').empty();
 	$('.noti_up').append(nuevas);
+
+	if(notificaciones)
+		notificaciones.forEach(function(n){
+			if(n.id_noti == data)
+				n.vista = true;
+		});
 	
 });
 
@@ -58,15 +65,16 @@ num_denuncias_io.on('denuncia_no_likeada', function(data){
 	var html =  getNotificacionRow(data.noti);
 	$('#notificaciones > .panel-body').prepend($(html));
 	
+	if(notificaciones) notificaciones.unshift(data.noti);
 	
-	BootstrapDialog.show({
+	/*BootstrapDialog.show({
 		title: 'Nueva notificación - Denuncia Dislike',
 		message: $(html),
 		buttons: [{label: 'Cerrar', action: function(dialog){dialog.close()}}],
 		onshown: function(dialog){
 			setTimeout(function(){dialog.close()}, 1500);
 		}
-	});
+	});*/
 });
 
 ///////
@@ -90,15 +98,16 @@ num_denuncias_io.on('denuncia_likeada', function(data){
 	var html = getNotificacionRow(data.noti);
 	$('#notificaciones > .panel-body').prepend($(html));
 	
-	
-	BootstrapDialog.show({
+	if(notificaciones) notificaciones.unshift(data.noti);
+
+	/*BootstrapDialog.show({
 		title: 'Nueva notificación - Denuncia Like',
 		message: $(html),
 		buttons: [{label: 'Cerrar', action: function(dialog){dialog.close()}}],
 		onshown: function(dialog){
 			//setTimeout(function(){dialog.close()}, 1500);
 		}
-	});
+	});*/
 });
 
 ///////
@@ -118,15 +127,16 @@ num_denuncias_io.on('denuncia_cerca', function(data){
 	var html = getNotificacionRow(data.noti);
 	$('#notificaciones > .panel-body').prepend($(html));
 	
+	if(notificaciones) notificaciones.unshift(data.noti);
 	
-	BootstrapDialog.show({
+	/*BootstrapDialog.show({
 		title: 'Nueva notificación - Denuncia Cerca',
 		message: $(html),
 		buttons: [{label: 'Cerrar', action: function(dialog){dialog.close()}}],
 		onshown: function(dialog){
 			setTimeout(function(){dialog.close()}, 1500);
 		}
-	});
+	});*/
 });
 
 num_denuncias_io.on('denuncia_comentada', function(data){
@@ -145,15 +155,15 @@ num_denuncias_io.on('denuncia_comentada', function(data){
 	var html = getNotificacionRow(data.noti);
 	$('#notificaciones > .panel-body').prepend($(html));
 	
-	
-	BootstrapDialog.show({
+	if(notificaciones) notificaciones.unshift(data.noti);
+	/*BootstrapDialog.show({
 		title: 'Nueva notificación - Denuncia Comentada',
 		message: $(html),
 		buttons: [{label: 'Cerrar', action: function(dialog){dialog.close()}}],
 		onshown: function(dialog){
 			//setTimeout(function(){dialog.close()}, 1500);
 		}
-	});
+	});*/
 	
 });
 

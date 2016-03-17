@@ -1,13 +1,7 @@
-.modal.modal-fullscreen .modal-content {
-background: rgba(0, 0, 0, .5);
-}
-.modal.modal-fullscreen .modal-header {
-border: 0;
-color: #fff;
-}
-.modal.modal-fullscreen .modal-footer {
-border-color: rgba(0, 0, 0, .5);
-}
+.menu-item {padding: 5 0 5 5px; margin: 5 0 5 0px; border-radius: 5px;}
+.menu-item:hover { background: rgba(0,59,111,0.3) }
+.menu-item > a:hover { text-decoration: none; color: #003b6f}
+.menu-item > a {color: #000}
 
 .imagen_con_menu:hover > .menu_encima_de_imagen {
 	opacity: unset;

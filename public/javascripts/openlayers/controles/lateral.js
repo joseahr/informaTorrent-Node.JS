@@ -164,6 +164,15 @@ app.Lateral = function(opt_options) {
 				}
 
 			$('#submitDenuncia').click( function(event){
+
+				if(Dropzone.forElement("#file-dropzone").getUploadingFiles().length > 0){
+					BootstrapDialog.alert({
+						title: 'Error',
+						message : 'Está subiendo imágenes al servidor.\n Espere a que finalicen de subir los archivos o cancele las descargas.'
+					});
+					return false;
+				}
+
 				map.getControls().forEach(function(control){
 					if(control instanceof app.Draw) {
 						json.wkt = control.toWKT();

@@ -240,7 +240,7 @@ function getNotificacionRow(notificacion){
 				'</a>' + 
 				'<div class="media-body" style="padding: 30 20 30 20px; text-align: left; word-wrap: break-word; break-word: keep-all;">' + getInfoNotificacion(notificacion) + '</div>'+ 
 			'</div>' + 
-			'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getIconoNotificacion(notificacion) + '</p>' + 
+			'<p style="clear: both; text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getIconoNotificacion(notificacion) + '</p>' + 
 		'</div>' + 
 		'</div>';
 }
@@ -270,7 +270,7 @@ function getAccionRow(notificacion){
 			'</a>' +  
 			'<div class="media-body" style="padding: 30 20 30 20px; text-align: left;word-wrap: break-word; break-word: keep-all;">' + getInfoAccion(notificacion) + '</div>'+ 								
 		'</div>' + 
-		'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getIconoNotificacion(notificacion) + '</p>' + 
+		'<p style="clear: both; text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getIconoNotificacion(notificacion) + '</p>' + 
 		'</div>' + 
 	'</div>';
 }
@@ -283,19 +283,3 @@ function fillAcciones(acciones){
 	});
 	$('#acciones > .panel-body').append(html);
 };
-
-function getCarouselModalDenuncia (denuncia) {
-	var html = $('<div class="carousel-inner" style="height: 100%;"></div>');
-
-	html.append('<div class="item active">' +
-  		'<img src="' + getGeoserverMiniatura(denuncia, 1200) + '" style="padding: 20 0 20 0px;" alt="Detalle Denuncia"/>' +
-  	'</div>');
-	
-	if (denuncia.imagenes)
-		denuncia.imagenes.forEach(function(img){
-			html.append('<div class="item">' +
-  				'<img src="' + img.path + '" alt="' + img.path + '" style="padding: 20 0 20 0px;" />' +
-  			'</div>');
-		});
-	return html;
-}

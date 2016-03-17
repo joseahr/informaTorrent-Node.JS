@@ -22,6 +22,8 @@ html
     link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/styles/default.min.css')
     // LayerSwitcher CSS
     link(rel='stylesheet', href='/javascripts/plugins/ol3-layerswitcher/src/ol3-layerswitcher.css')
+    // Context-Menu CSS
+    link(rel='stylesheet', href='/javascripts/plugins/ol3-contextmenu/build/ol3-contextmenu.min.css')
     // OpenLayers CSS
     link(rel='stylesheet', href='/javascripts/plugins/ol3/ol.css', type='text/css')
     // CSS OpenLayers Popup
@@ -33,13 +35,16 @@ html
     link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.1/css/bootstrap-datepicker.css")
     link(href="/javascripts/plugins/ol3-geocoder/build/ol3-geocoder.min.css" rel="stylesheet")
     link(href="/javascripts/plugins/bootstrap-sidebar/dist/css/sidebar.css" rel="stylesheet")
-    link(href="/javascripts/plugins/modal-carousel/dist/css/bootstrap-modal-carousel.min.css" rel="stylesheet")
-    block link
+    link(href='/javascripts/plugins/range-slider/css/iThing-min.css' rel="stylesheet") 
+    // CSS RangeSalider Date
     style.
-      .menu-item {padding: 5 0 5 5px; margin: 5 0 5 0px; border-radius: 5px;}
-      .menu-item:hover { background: rgba(0,59,111,0.3) }
-      .menu-item > a:hover { text-decoration: none; color: #003b6f}
-      .menu-item > a {color: #000}
+      .ui-rangeSlider-label {
+        bottom: 0px;
+      }
+      #slider_date {
+        padding : 10 0 0 0px;
+      }
+    block link
   body(style="margin-top: -10px;")
     - var nuevas = 0;
     if locals.user && mis_notificaciones
@@ -84,7 +89,7 @@ html
                 |  Mi perfil
             .menu-item.col-xs-12
               a(href="/app/denuncias/nueva") 
-                i.fa.fa-plus
+                i.fa.fa-plus-circle
                 |  Nueva denuncia
             .menu-item.col-xs-12
               a(href="/app/logout") 
@@ -102,18 +107,22 @@ html
     // header end
     // section start
     // ================
-    
+    div#heatmap_anim(style="position: absolute; top: 0px; z-index : 2; left: 50px; right: 50px;")
+      .col-lg-10(id="slider_date" style="height: 20px;")
+      .col-lg-2(style="margin-top: 5px")
+        button#play.btn.btn-default.btn-sm(style="min-width: 0px")
+          i.fa.fa-play
+        select#anyos(style="max-height : 32px")
     #map.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
       // Popup info denuncias
       #popup-visor.ol-popup.hidden(style="z-index: 3;width: 350px;")
         a#popup-visor-closer.ol-popup-closer(href='#')
         #popup-visor-content(style="width: 100%; overflow-x: hidden; word-wrap: break-word;")
     // section end
-    div(style="position: fixed; bottom: 0px; left: 0; right: 0; height: 1.5em; background : rgba(0,0,0,0.5); color: #fff; padding: 0 30 0 30px")
+    div(style="position: fixed; bottom: 0px; left: 0; right: 0; height: 1.5em; background : rgba(0,0,0,0.4); color: #fff; padding: 0 30 0 30px")
       i.fa.fa-bullhorn
-      |  HOY
       span#numdenunhoy  !{locals.datos_app.num_denun_hoy}
-      |  | TOTAL
+      |  | 
       |  
       span#numdenun  !{locals.datos_app.num_denun_total} 
       span#numusu.pull-right    
@@ -124,12 +133,12 @@ html
     var usuario_id = '#{locals.user ? locals.user._id : undefined}';
   script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js')
   script(src='//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js')
-  // Modal carousel
-  script(src='/javascripts/plugins/modal-carousel/dist/js/bootstrap-modal-carousel.min.js')
   // Modernizr
   script(type='text/javascript', src='/javascripts/plugins/modernizr.js')
   // Jquery appear
   script(type='text/javascript', src='/javascripts/plugins/jquery.appear.js')
+  // Bootstrap Select JS
+  script(src="/javascripts/plugins/bootstrap-select/js/bootstrap-select.js")
   // JS Principal
   script(type='text/javascript', src='/javascripts/template.js')
   // Útiles para denuncias, notificaciones, acciones
@@ -146,8 +155,14 @@ html
   script(src='/javascripts/plugins/ol3/ol.js')
   // LayerSwitcher JS
   script(src='/javascripts/plugins/ol3-layerswitcher/src/ol3-layerswitcher.js')
+  // ContextMenu JS
+  script(src='/javascripts/plugins/ol3-contextmenu/build/ol3-contextmenu.js')
   // Geocoder
   script(src="/javascripts/plugins/ol3-geocoder/build/ol3-geocoder.js")
+  // Jquery UI
+  script(src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js")
+  // jquery RangeSlider
+  script(src="/javascripts/plugins/range-slider/jQDateRangeSlider-min.js")
   // Estilos Features
   script(src='/javascripts/openlayers/style.js')
   // proyección
@@ -158,20 +173,28 @@ html
   script(src='/javascripts/openlayers/mapa.js')
   // SOCKET.IO
   script(src="https://cdn.socket.io/socket.io-1.3.7.js")
-  // Bootstrap Select JS
-  script(src="/javascripts/plugins/bootstrap-select/js/bootstrap-select.js")
   script(src="/javascripts/plugins/bootstrap-sidebar/dist/js/sidebar.js")
   script.
     var id_usuario = '#{id_usuario}';
+    if(id_usuario != 'undefined')
+      var notificaciones = JSON.parse('!{JSON.stringify(mis_notificaciones)}');
+    $('#notificaciones').click(function(e){
+      var d = new BootstrapDialog({
+        title : 'Mis notificaciones'
+      });
+
+      var message = '';
+
+      notificaciones.forEach(function(noti){
+        message += getNotificacionRow(noti);
+      });
+
+      d.setMessage(message);
+      d.open();
+
+    });
   // FUNCIONALIDADES SOCKET.IO
   script(src="/javascripts/client-sockets.js")
-      
-  script(type='text/javascript').
-    $("h1, h2").each(function(){
-      var fontSize = $(this).css('font-size');
-      console.log(fontSize);
-      $(this).fitText(1.1, {maxFontSize: fontSize});
-    });
 
   // Botones mapa 
   script(type='text/javascript', src='/javascripts/openlayers/controles/comentarios_denuncia.js')
@@ -206,24 +229,4 @@ html
       $('[data-toggle="right"], [data-toggle="left"]').popover('hide');
     });
 
-    $('#notificaciones').click(function(e){
-      var d = new BootstrapDialog({
-        title : 'Mis notificaciones'
-      });
-
-      var message = '';
-
-      JSON.parse('!{JSON.stringify(mis_notificaciones)}').forEach(function(noti){
-        message += getNotificacionRow(noti);
-      });
-
-      d.setMessage(message);
-      d.open();
-
-    });
-    $('#myModal').on('show.bs.modal', function(){
-      $('#myCarousel').css('display', '');
-    });
-    $('#myModal').on('hide.bs.modal', function(){
-      $('#myCarousel').css('display', 'none');
-    });
+  

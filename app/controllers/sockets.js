@@ -149,11 +149,12 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 			if (!data) return;
 
 			var query = consultas.denuncias_sin_where.query + 
-				" st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(the_geom,25830)) < 20 " +
+				" st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(the_geom,25830)) < 100 " +
 				"order by fecha desc";
 			db.any(query, data)
 				.then(function(denuncias){
-					socket.emit('si_que_tengo_denuncias_cerca', denuncias);
+					if(denuncias)
+						socket.emit('si_que_tengo_denuncias_cerca', denuncias);
 				});
 
 		});

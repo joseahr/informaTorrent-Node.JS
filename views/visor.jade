@@ -12,15 +12,6 @@ block script
 		map.addControl(new app.QueryDenuncias());
 		map.addControl(new app.TrackingDenunciasCerca());
 		
-		num_denuncias_io.on('error_query', function(data){
-			BootstrapDialog.show({ 
-				title: 'Error consultando', 
-				message: data.msg, 
-				closable: true, 
-				onshown: function(dialog){setTimeout(function(){dialog.close()}, 2000);}
-			});
-		});
-		
 		num_denuncias_io.on('new_denuncia', function(data){
 			var denuncia = data.denuncia;
 			console.log('denuncia añadida socket.io');

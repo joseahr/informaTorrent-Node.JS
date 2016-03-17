@@ -15,6 +15,7 @@ block content
 				.col-lg-12(style="padding: 25px; margin: 10 0 10 0px; border-radius: 5px; background: rgba(0,50,187.0.1)")
 					p Si has llegado hasta aquí es por que no puedes acceder a tu cuenta de usuario con tu contraseña.
 					p Por favor rellene los campos para cambiar de contraseña y poder volver a usar su cuenta.
+					p email: #{usuario_cambiar.local.email}
 				.col-lg-12(style="margin: 0 auto")
 					form(action="/app/reset/#{token}" method="POST" style="background:rgba(0,50,187, 0.1) ; border-radius: 5px; padding: 50px;")
 						fieldset

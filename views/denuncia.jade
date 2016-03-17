@@ -109,31 +109,6 @@ block script
 		map.addControl(new app.ComentariosDenuncia({}, denuncia, user));
 		map.addControl(new app.LikeDenuncia());
 
-		num_denuncias_io.emit('alguien_vio_una_denuncia', {id_denuncia: '#{denuncia.gid}'});
-
-		var likes_html = '<div class="container" style="width: 100%"><div class="col-lg-12">';
-		
-		var usuarios_like = JSON.parse('!{JSON.stringify(denuncia.likes)}');
-		if (usuarios_like)
-			usuarios_like.forEach(function(usuario){
-				likes_html += '<a data-toggle="bottom" title="Usuario" data-content="' + usuario.profile.username + '" href="/app/usuarios/' + usuario._id + '" style="float:left; margin: 2px;"><img style="width: 80px; height: 80px;" src="' + usuario.profile.picture + '" class="img img-thumbnail"></img></a>';
-			});
-
-		likes_html += '</div></div>';
-		
-		function quienLike(){
-			console.log('a quien le gusta');
-			BootstrapDialog.show({
-				title: 'Esta denuncia le gusta a...',
-				message: likes_html,
-				buttons: [{label: 'Cerrar', action: function(d){d.close();}}],
-				onshown: function(){
-					$('[data-toggle="bottom"]').popover({
-						trigger: 'hover',
-						placement: 'bottom'
-					});
-				}
-			});
-		};
+		//num_denuncias_io.emit('alguien_vio_una_denuncia', {id_denuncia: '#{denuncia.gid}'});
 		
 	script(src="/javascripts/openlayers/olvisor.js")

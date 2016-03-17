@@ -39,99 +39,37 @@
 
 <!-- Prefix free -->
 <script src="https://raw.githubusercontent.com/LeaVerou/prefixfree/gh-pages/prefixfree.min.js"></script>
+<!-- SIDEBAR CSS -->
+<link href="/javascripts/plugins/bootstrap-sidebar/dist/css/sidebar.css" rel="stylesheet">
+<!--Context-Menu CSS-->
+<link rel='stylesheet', href='/javascripts/plugins/ol3-contextmenu/build/ol3-contextmenu.min.css'>
 
 </head>
 
-<body class="no-trans">
-	
-	<!-- header start -->
-	<!-- ================ --> 
-	<header class="header clearfix navbar navbar-fixed-top" style="margin-bottom: 0px !important;" data-animation-effect="fadeOutLeft">
-		<div class="container">
-			<div class="row">
-				<div class="col-md-4">
-	
-					<!-- header-left start -->
-					<!-- ================ -->
-					<div class="header-left clearfix">
-	
-						<!-- logo -->
-						<div class="logo smooth-scroll">
-							<a href="#banner">
-								<span class="fa-stack fa-lg">
-								  <i class="fa fa-circle fa-stack-2x"></i>
-								  <i class="fa fa-location-arrow fa-stack-1x fa-inverse"></i>
-								</span>
-							</a>
-						</div> 
-	
-						<!-- name-and-slogan -->
-						<div class="site-name-and-slogan smooth-scroll">
-							<div class="site-name"><a href="/">Geoportal de Torrent</a></div>
-							<div class="site-slogan">Tu portal de información Geográfica</div>
-						</div>
-	
-					</div>
-					<!-- header-left end -->
-	
-				</div>
-				<div class="col-md-8">
-	
-					<!-- header-right start -->
-					<!-- ================ -->
-					<div class="header-right clearfix">
-	
-						<!-- main-navigation start -->
-						<!-- ================ -->
-						<div class="main-navigation animated">
-	
-							<!-- navbar start -->
-							<!-- ================ -->
-							<nav class="navbar navbar-default" role="navigation">
-								<div class="container-fluid">
-	
-									<!-- Toggle get grouped for better mobile display -->
-									<div class="navbar-header">
-										<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
-											<span class="sr-only">Abrir Menú</span>
-											<span class="icon-bar"></span>
-											<span class="icon-bar"></span>
-											<span class="icon-bar"></span>
-										</button>
-									</div>
-	
-									<!-- Collect the nav links, forms, and other content for toggling -->
-									<div class="collapse navbar-collapse scrollspy smooth-scroll" id="navbar-collapse-1">
-										<ul class="nav navbar-nav navbar-right">
-											<li class="active"><a href="#banner">Inicio</a></li>
-											<li class=""><a href="#servicios">Servicios</a></li>
-											<li><a href="#descargas">Descargas</a></li>
-											<li><a href="/visor">Visor</a></li>
-											<li><a href="#buscador">Buscador</a></li>
-										</ul>
-									</div>
-	
-								</div>
-							</nav>
-							<!-- navbar end -->
-	
-						</div>
-						<!-- main-navigation end -->
-	
-					</header>
-					<!-- header-right end -->
-	
-				</div>
-			</div>
+<body class="no-trans" style="margin-top: -10px;">
+	<div style="background: rgba(255,255,255, 1); top: 0px !important; box-shadow: 5px 0px 15px 1px rgba(50, 50, 50, 0.5);" class="col-xs-7 col-sm-3 col-md-2 sidebar sidebar-left sidebar-animate">
+  		<!--content-->
+ 		<div style="padding: 10 0 10 0px; border-bottom: 1px solid rgba(0,0,0,0.6)" class="media">
+  			<a class="media-left"><img src="/files/images/logo-ayunt.png"/></a>
+  		</div>
+  		<div style="padding: 0px" class="col-xs-12">
+		    <div class="menu-item col-xs-12"><a target="_blank" href="/"> <i class="fa fa-home"></i> Inicio</a></div>
+		    <div class="menu-item col-xs-12"><a target="_blank" href="/#servicios"> <i class="fa fa-cogs"></i> Servicios OGC</a></div>
+		    <div class="menu-item col-xs-12"><a target="_blank" href="http://192.168.1.14:8080/geonetwork"> <i class="fa fa-search"></i> Buscador Metadatos</a></div>
+		    <div class="menu-item col-xs-12"><a target="_blank" href="/#descargas"> <i class="fa fa-download"></i> Descargas</a></div>
 		</div>
 	</div>
-	<!-- header end -->
-	
-	
 	<!-- section start -->
 	<!-- ================ -->
 	<div id="map" class="clearfix object-non-visible" data-animation-effect="fadeInRightBig">
-		
+		<!-- Boton abrir lateral -->
+		<ul>
+      	<li style="position: absolute; top: 8.5em; right: 0.5em;z-index: 1; border-radius: 5px;">
+        	<a class="navbar-toggle" data-toggle="sidebar" data-target=".sidebar" href="#" style="padding: 0px; margin: 0px;">
+            	<i class="fa fa-navicon" style="font-size: 2em;"></i>
+            </a>
+        </li>
+        </ul>
 		<!-- Selector Capas Descargar -->
 		<div style="position: absolute; top: 0.5em; left: 20%; right: 20%; z-index: 2" class="btn-map">
 			<select id="capas_mapa" class="selectpicker" data-style="btn-info" data-live-search="false" style="width: 100%">
@@ -174,9 +112,6 @@
 <!-- Highlight JS -->
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/highlight.min.js"></script>
 
-<!-- Abrir cerrar header efecto movil mapa-->
-<script src="/javascripts/close_header_mobile_map.js"></script>
-
 <!-- Proj4.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.12/proj4.js"></script>
 
@@ -200,6 +135,12 @@
 
 <!-- Mobile-Detect JS -->
 <script src="//cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.3.0/mobile-detect.min.js"></script>
+
+<!-- SIDEBAR JS -->
+<script src="/javascripts/plugins/bootstrap-sidebar/dist/js/sidebar.js"></script>
+
+<!--Context-Menu JS-->
+<script src='/javascripts/plugins/ol3-contextmenu/build/ol3-contextmenu.js'></script>
 
 <script type="text/javascript">
 
@@ -238,6 +179,34 @@ var map = new ol.Map({
 		// Importante poner nuestra proyección, aunque es un parámetro opcional HAY QUE PONERLO!
 	})
 });
+
+var imprimir_mapa = function(){
+  map.once('postcompose', function(event) {
+    var canvas = event.context.canvas;
+    var image = new Image();
+    image.crossOrigin = "anonymous";
+    image.src = canvas.toDataURL('image/png');
+    window.open(image.src);
+  });
+
+},
+contextmenu_items = [{
+    text: '<i class="fa fa-print"></i> Imprimir mapa',
+    callback: imprimir_mapa
+  },
+  '-' // Separador
+],
+contextmenu = new ContextMenu({
+  width: 190,
+  default_items: true,
+  items: contextmenu_items
+});
+map.addControl(contextmenu);
+
+denuncias_puntos.setVisible(false);
+denuncias_lineas.setVisible(false); 
+denuncias_poligonos.setVisible(false); 
+denunciasHeatMap.setVisible(false);
 
 map.addLayer(groupCapasBase); // Añadimos grupo de Capas 1
 map.addLayer(groupCartoTorrentWMST); // Añadimos grupo de Capas 2

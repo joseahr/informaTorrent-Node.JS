@@ -674,6 +674,7 @@ ContPg.prototype.updateProfile = function(req, res){
 	db.query(consultas.usuario_por_username, aux)
 		.then(function(usuario){
 			if(usuario[0]) throw new Error('El nombre de usuario ya existe');
+			user.profile.username = nombre_usuario || user.profile.username;
 			return db.none(consultas.actualizar_info_usuario, [user.password, JSON.stringify(user.profile), user._id]);
 		})
 		.then(function(){
@@ -816,4 +817,3 @@ ContPg.prototype.getVisorPage = function(req, res){
 
 
 module.exports = ContPg;
-

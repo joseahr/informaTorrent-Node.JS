@@ -62,6 +62,13 @@ app.use(passport.initialize()); // Usa passport
 app.use(passport.session()); // Sesiones Login Persistentes - Passport
 app.use(flash()); // Flashear mensaje almacenados en la sesión
 
+/***** CORS - Orígenes externos**/
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
 var os = require('os');
 console.log(os.networkInterfaces()['ens33'][0]['address']);
 

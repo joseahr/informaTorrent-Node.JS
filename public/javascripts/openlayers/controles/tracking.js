@@ -47,6 +47,7 @@ app.Tracking = function(opt_options) {
 
   // Eventos Geolocation ******************************************************
   geolocation.on('error', function(e){
+    this_.desactivar();
     BootstrapDialog.show({
       title: 'Error tratando de geolocalizar tu dispositivo',
       message: 'Revise y active las opciones de geolocalización de su dispositivo'

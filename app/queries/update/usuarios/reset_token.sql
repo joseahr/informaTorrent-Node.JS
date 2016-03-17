@@ -1,1 +1,1 @@
-UPDATE usuarios SET (password,resetPasswordToken,resetPasswordExpires) = ($1, '', '') WHERE _id = $2
+UPDATE usuarios SET (password,resetPasswordToken,resetPasswordExpires) = ($1, null, null) WHERE _id = $2

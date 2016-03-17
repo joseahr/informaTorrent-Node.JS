@@ -12,7 +12,31 @@ app.InfoDenuncia = function(opt_options, denuncia) {
   this_ = this;  
   num_likes = denuncia.likes ? denuncia.likes.length : 0,
   fecha = getFechaFormatted(new Date(denuncia.fecha)),
-  tags = [];
+  tags = [],
+  likes_html = '<div class="container" style="width: 100%"><div class="col-lg-12">',
+  usuarios_like = denuncia.likes,
+  quienLike = function() {
+    if (!usuarios_like) return;
+    console.log('a quien le gusta');
+    BootstrapDialog.show({
+      title: 'Esta denuncia le gusta a...',
+      message: likes_html,
+      buttons: [{label: 'Cerrar', action: function(d){d.close();}}],
+      onshown: function(){
+        $('[data-toggle="bottom"]').popover({
+          trigger: 'hover',
+          placement: 'bottom'
+        });
+      }
+    });
+  };
+  
+  if (usuarios_like)
+    usuarios_like.forEach(function(usuario){
+      likes_html += '<a data-toggle="bottom" title="Usuario" data-content="' + usuario.profile.username + '" href="/app/usuarios/' + usuario._id + '" style="float:left; margin: 2px;"><img style="width: 80px; height: 80px;" src="' + usuario.profile.picture + '" class="img img-thumbnail"></img></a>';
+    });
+
+  likes_html += '</div></div>';
 
   if (denuncia.tags)
 	  denuncia.tags.forEach(function(tag){
@@ -26,10 +50,14 @@ app.InfoDenuncia = function(opt_options, denuncia) {
 	  BootstrapDialog.show({
 	  	title: denuncia.titulo,
 	  	message: '<h4 style="width: 100%; color: #fff; background-color: rgba(0,0,0,0.4); margin-top: -10px;text-align:center; border-radius: 5px">' + denuncia.titulo + '</h4>' +
-		'<div id="desc" class="row" style="margin-top: 15px; word-break: break-all; background-color: #fff">' + 
-			'<i class="fa fa-tags"> ' + tags + '</i>' +
-			'<h4>Descripción</h4>' + 
-		'</div>',
+		  '<div id="desc" class="row" style="margin-top: 15px; word-break: break-all; background-color: #fff">' + 
+			 '<i class="fa fa-tags"> ' + tags + '</i>' +
+			 '<h4>Descripción</h4>' + 
+		  '</div>',
+      buttons : [{
+        label : 'Cerrar',
+        action : function(dialog){dialog.close()},
+      }], 
 	  	onshow : function(dialog){
 	  		dialog.getModalHeader().replaceWith($('<div class="row" style="margin: 0px; padding-bottom: 15px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
   				'<div class="col-xs-4" style="text-align: center;">' +
@@ -45,8 +73,9 @@ app.InfoDenuncia = function(opt_options, denuncia) {
 	  		dialog.getModalBody().parent().css('border-radius', '15px');
 	  		dialog.getModalBody().css('padding-top', '0px');
 	  	},
-	  	onshown : function(){
-	  		$('#desc').append($(decodeURIComponent(denuncia.descripcion)));
+	  	onshown : function(dialog){
+        //alert($(decodeURIComponent(denuncia.descripcion)));
+	  		$(dialog.getModalBody()).find('#desc').append(decodeURIComponent(denuncia.descripcion));
 	  	},
 	  });
   }

@@ -7,6 +7,7 @@ var app = window.app;
 app.CQL = function(opt_options) {
 
 	var options = opt_options || {},
+	ip = '192.168.1.14',
 	button = document.createElement('button'),
 	element = document.createElement('div'),
   	this_ = this,
@@ -73,7 +74,8 @@ app.CQL = function(opt_options) {
 				  	style = (capa == 'jahr:muni_torrent' || capa == 'jahr:manzanas' || capa == 'jahr:denuncias_poligonos') ? 
 				  		'poli_sel' : ((capa == 'jahr:portales' || capa == 'jahr:denuncias_puntos') ? 'punto_sel' : 'linea_sel'),
 				  	source = new ol.source.TileWMS({
-						url: ip + '/geoserver/jahr/wms',
+				  		crossOrigin : 'anonymous',
+						url: 'http://' + ip + ':8080/geoserver/jahr/wms',
 						params: {
 							'FORMAT': format, 
 			             	'VERSION': '1.1.0',
@@ -101,7 +103,8 @@ app.CQL = function(opt_options) {
 			  	$('#reset').click(function(){
 				  	var capa = $('.selectpicker').val(),
 				  	source = new ol.source.TileWMS({
-						url: ip + '/geoserver/jahr/wms',
+				  		crossOrigin : 'anonymous',
+						url: 'http://' + ip + ':8080/geoserver/jahr/wms',
 						params: {
 							'FORMAT': format, 
 				            'VERSION': '1.1.0',

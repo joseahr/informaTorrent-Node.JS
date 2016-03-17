@@ -85,16 +85,17 @@ Passport.prototype.postResetToken = function(req, res) {
 			user_ = user;
 			if(!user)
 				throw new Error('La URL solicitada no es válida o ha expirado.');
-			db.none(actualizar_password_reset_token, [User.generateHash(req.body.password), user._id]);
+			db.none(consultas.actualizar_password_reset_token, [User.generateHash(req.body.password), user._id]);
 		})
 		.then(function(){
 			req.flash('Contraseña actualizada correctamente.');
 			req.logIn(user_, function(err) {
+				if(err) throw err;
 				enviar_email(user_.local.email)
 		    });
 		})
 		.catch(function(error){
-			res.status(500).send(error);
+			res.status(500).send(error.toString());
 		});
 	
 		var enviar_email = function(email){
@@ -111,7 +112,7 @@ Passport.prototype.postResetToken = function(req, res) {
 				from: 'joherro123@gmail.com',
 				subject: 'informaTorrent! - Contraseña Actualizada',
 				text: 'Querido usuario,\n\n' +
-					'Este mensaje se ha generado automáticamente para avisarte de que la contraseña de la cuenta vinculada al e-mail ' + user.local.email + ' ha sido actualizada satisfactoriamente.\n Gracias por usar nuestra aplicación!'
+					'Este mensaje se ha generado automáticamente para avisarte de que la contraseña de la cuenta vinculada al e-mail ' + email + ' ha sido actualizada satisfactoriamente.\n Gracias por usar nuestra aplicación!'
 			};
 			smtpTransport.sendMail(mailOptions, function(err) {
 				return res.redirect('/app');
