@@ -169,7 +169,7 @@
 						<div class="row">
 							<div class="col-md-6">
 								<p>Desde el menú podrás acceder a los diferentes servicios web elaborados por el ayuntamiento de Torrent siguiendo los estándares aprobados por el <b>Open Geospatial Consortium (OGC)</b> para su uso en sistemas de información geográfica (SIG). Siguiendo estos estándares se intenta conseguir la integración y la interoperabilidad de grandes vólumenes de datos espacialmente referenciados (Información Geográfica).</p>
-								<p>Si lo deseas también puedes hacer uso de nuestro <span><a href="/visor">visor online</a></span> o buscar los recursos de su interés accediendo al <a href="/linkCtalogoAqui">catálogo de servicios</a></span>.</p>
+								<p>Si lo deseas también puedes hacer uso de nuestro <span><a href="/visor">visor online</a></span> o buscar los recursos de su interés accediendo al <a href="http://192.168.1.14:8080/geonetwork">catálogo de servicios</a></span>.</p>
 							</div>
 							<div class="col-md-6">
 								<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
@@ -210,8 +210,10 @@
 													<button id="capabilities" service_url="http://192.168.1.14:8080/geoserver/jahr/wms?service=WFS&request=GetCapabilities&version=1.3.0" service_name="Servicio WFS - GetCapabilities" type="button" class="btn btn-default">Get Capabilities</button>
 												</div>
 												<br>
-												<p>Los servicios web de mapas <b>WMS (Web Map Service)</b> producen mapas (imágenes digitales georeferenciadas) a partir de datos georeferenciados.</p>
-												<p>Contiene cartografía general de Torrent, ortofoto y cartografía temática de denuncias.</p>
+												<p><b>Web Feature Service</b> o WFS del Consorcio Open Geospatial Consortium o OGC es un servicio estándar, que ofrece una interfaz de comunicación que permite interactuar con los mapas servidos por el estándar WMS, como por ejemplo, editar la imagen que nos ofrece el servicio WMS o analizar la imagen siguiendo criterios geográficos.
+												Para realizar estas operaciones se utiliza el lenguaje GML que deriva del XML, que es el estándar a través del que se transmiten las órdenes WFS.
+
+												WFS no transaccional permite hacer consultas y recuperación de elementos geográficos. Por el contrario WFS-T (Web Feature Service Transactional) permite además la creación, eliminación y actualización de estos elementos geográficos del mapa.</p>
 											</div>
 										</div>
 									</div>
@@ -231,8 +233,7 @@
 													<button id="capabilities" service_url="http://192.168.1.14:8080/geoserver/jahr/wms?service=WCS&request=GetCapabilities&version=1.3.0" service_name="Servicio WCS - GetCapabilities" type="button" class="btn btn-default">Get Capabilities</button>
 												</div>
 												<p></p>
-												<p>Los servicios web de mapas <b>WMS (Web Map Service)</b> producen mapas (imágenes digitales georeferenciadas) a partir de datos georeferenciados.</p>
-												<p>Contiene cartografía general de Torrent, ortofoto y cartografía temática de denuncias.</p>
+												<p>La interfaz estándar <b>Web Coverage Service</b> (WCS) o Servicio de Cobertura Web de Open Geospatial Consortium proporciona una interfaz que permite realizar peticiones de cobertura geográfica a través de la web utilizando llamadas independientes de la plataforma. Las coberturas son objetos (o imágenes) en un área geográfica mientras que la interfaz WMS o portales de mapas online como Google Maps devuelven sólo una imagen, que los usuarios no pueden editar o analizar espacialmente.</p>
 											</div>
 										</div>
 									</div>
@@ -253,8 +254,7 @@
 													<button id="capabilities" service_url="http://192.168.1.14:8080/geoserver/gwc/service/wmts?request=GetCapabilities&service=WMTS&version=1.3.0" service_name="Servicio WMTS - GetCapabilities" type="button" class="btn btn-default">Get Capabilities</button>
 												</div>
 												<p></p>
-												<p>Los servicios web de mapas <b>WMS (Web Map Service)</b> producen mapas (imágenes digitales georeferenciadas) a partir de datos georeferenciados.</p>
-												<p>Contiene cartografía general de Torrent, ortofoto y cartografía temática de denuncias.</p>
+												<p>Los Servicios Web de Mapas Teselados <b>WMTS (Web Map Tile Service)</b> es un protoc olo estándar del OGC para servir teselas de mapa pregeneradas en el servidor.</p>
 											</div>
 										</div>
 									</div>
@@ -372,7 +372,7 @@
 
 	$('.selectpicker').selectpicker({
 		width: '100%'
-	});
+	}).selectpicker('mobile');
 	
 	$('#format').selectpicker('hide');
 	

@@ -74,8 +74,8 @@ block script
 		var denuncias = !{denuncias};
 		var tipo, coords, extension;
 		denuncias.forEach(function(d){
-			d.tipo = JSON.parse(d.geometria).type;
-			d.coordenadas = JSON.parse(d.geometria).coordinates;
+			d.tipo = d.geometria.type;
+			d.coordenadas = d.geometria.coordinates;
 			var imagenes = d.imagenes ? d.imagenes[0].path : '';
 			var html = '<div style="padding:10 20 10 20px; text-align: center;" class="col-md-4">' + 
 				getDenunciaRow(d, true) +

@@ -44,6 +44,10 @@ html
       #slider_date {
         padding : 10 0 0 0px;
       }
+      .bootstrap-select {
+        padding-right : 0px;
+        float: right;
+      }
     block link
   body(style="margin-top: -10px;")
     - var nuevas = 0;
@@ -107,19 +111,20 @@ html
     // header end
     // section start
     // ================
-    div#heatmap_anim(style="position: absolute; top: 0px; z-index : 2; left: 50px; right: 50px;")
-      .col-lg-10(id="slider_date" style="height: 20px;")
-      .col-lg-2(style="margin-top: 5px")
-        button#play.btn.btn-default.btn-sm(style="min-width: 0px")
-          i.fa.fa-play
-        select#anyos(style="max-height : 32px")
+    div#heatmap_anim(style="position: absolute; top: 0px; z-index : 1; left: 50px; right: 50px;")
+      .col-lg-12
+        div(id="slider_date" style="height: 20px;")
+      .col-lg-12(style="margin-top: 10px;")
+          button#play.btn.btn-default.btn-sm(style="min-width: 0px; margin-top: 5px; float: left;")
+            i.fa.fa-play
+          select#anyos
     #map.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
       // Popup info denuncias
       #popup-visor.ol-popup.hidden(style="z-index: 3;width: 350px;")
         a#popup-visor-closer.ol-popup-closer(href='#')
         #popup-visor-content(style="width: 100%; overflow-x: hidden; word-wrap: break-word;")
     // section end
-    div(style="position: fixed; bottom: 0px; left: 0; right: 0; height: 1.5em; background : rgba(0,0,0,0.4); color: #fff; padding: 0 30 0 30px")
+    div(style="position: fixed; bottom: 0px; left: 0; right: 0; height: 1.5em; background : rgba(0,0,0,0.4); color: #fff; padding: 0 15 0 15px")
       i.fa.fa-bullhorn
       span#numdenunhoy  !{locals.datos_app.num_denun_hoy}
       |  | 

@@ -1,3 +1,10 @@
+.denuncias_cerca_track_abrir {
+  position: absolute;
+  z-index : 1;
+  bottom: 6.875em;
+  right: 3.375em;
+}
+
 .denuncias_cerca_track {
   bottom: 6.875em;
   right: 0.5em;

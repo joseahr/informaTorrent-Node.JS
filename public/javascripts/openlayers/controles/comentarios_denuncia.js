@@ -9,12 +9,13 @@ app.ComentariosDenuncia = function(opt_options, denuncia, user) {
   	var options = opt_options || {},
   	button = document.createElement('button'),
   	this_ = this,
+  	num_coments = denuncia.comentarios ? (denuncia.comentarios.length > 10 ? '10+' : denuncia.comentarios.length) : '0',
   	form = user ? '<h4>Añade un comentario</h4><form id="form_add_comentario" action="/app/denuncia/' + denuncia.gid + '/addComentario" method="post">' + 
 		'<textarea id="comentar" name="contenido" rows="3" style="height:200px" class="form-control"></textarea>' + 
 	  	'<div style="margin-top:5px;margin-bottom:15px" class="col-lg-12 input-group space"><span class="input-group-addon"><i class="fa fa-comment fa-fw"></i></span>' +
 	    	'<input type="submit" value="Comentar" class="form-control btn-success"/>' +
 	  	'</div>' +
-	'</form>' : '¡Debes estar loggeado para comentar!',
+	'</form>' : '<p>¡Debes estar loggeado para comentar!</p>',
 	comentarios_html = '',
 	element = document.createElement('div'),
 	aux = true,
@@ -84,6 +85,7 @@ app.ComentariosDenuncia = function(opt_options, denuncia, user) {
 	  	});
 
 	form += comentarios_html;
+	dialog.setMessage(form);
 
   	function comentarios_ (){	
 	  	dialog.open();
@@ -91,6 +93,7 @@ app.ComentariosDenuncia = function(opt_options, denuncia, user) {
 
   	button.innerHTML = '<i class="fa fa-comments"></i>';
   	button.addEventListener('click', comentarios_, false);
+  	$(button).append('<span class="badge" style="background-color: #cc0000; font-size: 0.6em">' + num_coments + '</span>');
 
   	element.setAttribute('data-toggle', 'left');
   	element.setAttribute('title', 'Comentarios');

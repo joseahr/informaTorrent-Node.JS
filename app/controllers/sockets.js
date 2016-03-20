@@ -144,7 +144,7 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 		});
 		
 		socket.on('tengo_denuncias_cerca_?', function(data){
-			console.log(data);
+			console.log('tengo denuncuas cerca?', data);
 
 			if (!data) return;
 
@@ -270,14 +270,15 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 	    
 	    // Nombre like
 	    if (filter.titulo){
-	    	cnd.push(pgp.as.format("titulo like '%$1^%'", filter.titulo.replace(' ', '_')));
+	    	cnd.push(pgp.as.format("titulo ilike '%$1^%'", filter.titulo.replace(' ', '_').toLowerCase()));
 	    }
 	    // Tags like
 	    if(filter.tags){
 	    	var q = '';
 	    	filter.tags.forEach(function(tag, index){
-	    		if(index == 0) q += "tag like '%" + tag + "%' ";
-	    		else q += "or tag like '%" + tag + "%' "
+	    		tag = tag.toLowerCase();
+	    		if(index == 0) q += "tag ilike '%" + tag + "%' ";
+	    		else q += "or tag ilike '%" + tag + "%' "
 	    	});
 	    	cnd.push(pgp.as.format("gid in (select id_denuncia from tags where " + q + ")"));
 	    }
@@ -294,7 +295,7 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 	    }
 	    // Nombre Usuario
 	    if(filter.usuario_nombre){
-	    	cnd.push("id_usuario = (select _id from usuarios where profile ->> 'username' like '%" + filter.usuario_nombre + "%')");
+	    	cnd.push("id_usuario = (select _id from usuarios where profile ->> 'username' ilike '%" + filter.usuario_nombre.toLowerCase() + "%')");
 	    }
 	    // Fecha desde
 	    if(filter.fecha_desde){

@@ -2,9 +2,11 @@
  * Estilos para el GeoJSON
  */
 var image = new ol.style.Circle({
-	radius: 5,
-	fill: null,
-	stroke: new ol.style.Stroke({color: 'red', width: 1})
+	radius: 3,
+	fill: new ol.style.Fill({
+    color: '#a10000'
+  }),
+	stroke: new ol.style.Stroke({color: '#fff', width: 1})
 }),
 styles = {
   'Point': [new ol.style.Style({
@@ -12,8 +14,8 @@ styles = {
   })],
   'LineString': [new ol.style.Style({
     stroke: new ol.style.Stroke({
-      color: 'green',
-      width: 1
+      color: '#e38d80',
+      width: 2
     })
   })],
   'MultiLineString': [new ol.style.Style({
@@ -36,12 +38,13 @@ styles = {
   })],
   'Polygon': [new ol.style.Style({
     stroke: new ol.style.Stroke({
-      color: 'blue',
+      color: '#fff',
       lineDash: [4],
-      width: 3
+      width: 1
     }),
     fill: new ol.style.Fill({
-      color: 'rgba(0, 0, 255, 0.1)'
+      color: [255, 187, 0, 0.5],
+      opacity : 0.5,
     })
   })],
   'GeometryCollection': [new ol.style.Style({

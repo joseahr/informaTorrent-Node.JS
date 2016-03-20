@@ -2,15 +2,14 @@ extends map-layout
 
 // block script
 block script
-	script(src="/javascripts/openlayers/ol_loc_pref.js")
 	script.
-		//alert(!{loc_pref}.coordinates);
+		//alert(typeof(JSON.parse('!{JSON.stringify(loc_pref)}').coordinates));
 		
 		map.addControl(new app.Draw(false, true));
 		
 		if('!{loc_pref}' != ''){
 			feature = new ol.Feature({
-				geometry: new ol.geom.Point(!{loc_pref}.coordinates),
+				geometry: new ol.geom.Point(JSON.parse('!{JSON.stringify(loc_pref)}').coordinates),
 				name: 'Ubicación Preferida'
 			});
 			

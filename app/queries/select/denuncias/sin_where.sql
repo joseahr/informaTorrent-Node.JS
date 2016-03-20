@@ -5,7 +5,7 @@ SELECT * FROM (SELECT *,
 	(SELECT json_agg(com) AS comentarios FROM (SELECT c.*, u.* FROM comentarios c, usuarios u 
 		WHERE c.id_usuario = u._id and c.id_denuncia = denuncias_puntos.gid ORDER BY fecha DESC) com),
 	(SELECT json_agg(img) AS imagenes FROM  (SELECT * FROM imagenes WHERE id_denuncia = denuncias_puntos.gid) img),
-	ST_AsGeoJSON(the_geom) AS geometria
+	ST_AsGeoJSON(the_geom)::json AS geometria
 FROM denuncias_puntos
 UNION ALL
 SELECT *, 
@@ -15,7 +15,7 @@ SELECT *,
 	(SELECT json_agg(com) AS comentarios FROM (SELECT c.*, u.* FROM comentarios c, usuarios u 
 		WHERE c.id_usuario = u._id and c.id_denuncia = denuncias_lineas.gid ORDER BY fecha DESC) com),
 	(SELECT json_agg(img) AS imagenes FROM  (SELECT * FROM imagenes WHERE id_denuncia = denuncias_lineas.gid) img),
-	ST_AsGeoJSON(the_geom) as geometria
+	ST_AsGeoJSON(the_geom)::json as geometria
 FROM denuncias_lineas
 UNION ALL
 SELECT *, 
@@ -25,5 +25,5 @@ SELECT *,
 	(SELECT json_agg(com) AS comentarios FROM (SELECT c.*, u.* FROM comentarios c, usuarios u 
 		WHERE c.id_usuario = u._id and c.id_denuncia = denuncias_poligonos.gid ORDER BY fecha DESC) com),
 	(SELECT json_agg(img) AS imagenes FROM  (SELECT * FROM imagenes WHERE id_denuncia = denuncias_poligonos.gid) img),
-	ST_AsGeoJSON(the_geom) as geometria
+	ST_AsGeoJSON(the_geom)::json as geometria
 FROM denuncias_poligonos)x WHERE

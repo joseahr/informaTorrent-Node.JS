@@ -321,7 +321,7 @@ app.Draw = function(opt_options, aux) {
 				onshown: function(dialog){
 					$('#distancia').selectpicker({
 					  	width: '100%'
-				  	});
+				  	}).selectpicker('mobile');
 					$('#distancia').change(function(event){
 						val = $('#distancia').val();
 						//alert(val);
@@ -381,7 +381,7 @@ app.Draw = function(opt_options, aux) {
 			  	onshown: function(dialog){
 				  	$('#dibujar').selectpicker({
 					  	width: '100%'
-				  	});
+				  	}).selectpicker('mobile');
 				  
 				  	$('#dibujar').change(function(){
 					  	var opcion = $(this).val();

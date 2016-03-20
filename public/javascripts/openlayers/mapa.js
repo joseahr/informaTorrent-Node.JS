@@ -121,7 +121,39 @@ formatDate = function(date) {
   return [year, month, day].join('-');
 },
 months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+playing = false,
+año_min = 2016,
+año_max = new Date().getFullYear(),
+interval = function(){
 
+  console.log(playing);
+
+  var values = $("#slider_date").dateRangeSlider("values"),
+  bounds = $("#slider_date").dateRangeSlider("bounds"),
+  mes = (values.max.getDay() == 31) ? values.max.getMonth() + 1: values.max.getMonth(),
+  dia = (values.max.getDay() == 31) ? 1 : values.max.getDate() + 1;
+  max = new Date(values.min.getFullYear(), mes, dia),
+  min = values.min;
+
+  //console.log(values.max.toString(), bounds.max.toString());
+  if(!(values.max.getFullYear() == bounds.max.getFullYear() &&
+    values.max.getMonth() == bounds.max.getMonth() &&
+    values.max.getDate() == bounds.max.getDate()) && playing)
+  {
+    $("#slider_date").dateRangeSlider("values", min, max);
+    animacionDenuncia({fecha_min: formatDate(min), fecha_max: formatDate(max)});
+    setTimeout(interval, 500);
+  }
+  else{
+    playing = false;
+    $('#play').find('i').attr('class', 'fa fa-play');
+    $("#slider_date").dateRangeSlider("enable");
+    $('#anyos').selectpicker('show');
+    //clearInterval(interval);
+  }
+};
+
+/********* INICIAMOS EL RANGE SLIDER *****/
 $('#slider_date').dateRangeSlider({
   valueLabels:"change",
   durationIn: 1000,
@@ -143,48 +175,20 @@ $('#slider_date').dateRangeSlider({
   }]
 });
 
+/************ Cambio los valores RangeSlider manualmente, llammamos a la animacion ********/
 $('#slider_date').bind('valuesChanging', function(e, data){
   //console.log(data.values.min.toString(), data.values.max.toString())
   animacionDenuncia({fecha_min: formatDate(data.values.min), fecha_max: formatDate(data.values.max)});
 });
 
-var playing = false;
-
-var año_min = 2016,
-año_max = new Date().getFullYear();
-
-var interval = function(){
-
-   console.log(playing);
-
-  var values = $("#slider_date").dateRangeSlider("values"),
-  bounds = $("#slider_date").dateRangeSlider("bounds"),
-  mes = (values.min.getDay() == 31) ? values.min.getMonth() + 1: values.min.getMonth(),
-  dia = (values.min.getDay() == 31) ? 1 : values.min.getDate() + 1;
-  max = new Date(2016, mes, dia + 1),
-  min = new Date(2016, mes, dia);
-
-  //console.log(values.max.toString(), bounds.max.toString());
-  if(!(values.max.getFullYear() == bounds.max.getFullYear() &&
-    values.max.getMonth() == bounds.max.getMonth() &&
-    values.max.getDate() == bounds.max.getDate()) && playing)
-  {
-    setTimeout(interval, 500);
-  }
-  else
-    playing = false;
-    //clearInterval(interval);
-
-  $("#slider_date").dateRangeSlider("values", min, max);
-  animacionDenuncia({fecha_min: formatDate(min), fecha_max: formatDate(max)});
-
-};
-
+/*************** Si activamos la capa HeatMap abrimos el menú animación ***************/
 denunciasHeatMap.on('change:visible', function(e){
 
   var visible = e.target.getVisible();
+
   if (visible){
     $('#heatmap_anim').show();
+    $('#anyos').empty();
     for(var i = año_min; i<= año_max; i++){
       console.log(i);
       $('<option value="' + i + '">' + i + '</option>').appendTo('#anyos');
@@ -192,21 +196,37 @@ denunciasHeatMap.on('change:visible', function(e){
     $('.ui-rangeSlider-container').css('width', '100%');
     $('#anyos').css('min-width', '0px').attr('class', 'btn-sm').selectpicker({
       width : '100px',
-    })
+    }).selectpicker('mobile');
+    $('.bootstrap-select').css('float', 'right');
+
+    $('#anyos').change(function(){
+      var $anyos = $(this);
+      console.log($anyos.val());
+      $("#slider_date").dateRangeSlider("bounds", new Date($anyos.val(), 0, 1), new Date($anyos.val(), 11, 31, 23, 59, 59));
+      $("#slider_date").dateRangeSlider("values", new Date($anyos.val(), 0, 1), new Date($anyos.val(), 11, 31, 23, 59, 59));
+    });
+
   }
   else
     $('#heatmap_anim').hide();
 });
 
+/********************   Hacemos click en play animación  *************/
 $('#play').click(function(e){
 
   if(playing){
     playing = false;
     $(this).find('i').attr('class', 'fa fa-play');
+    $("#slider_date").dateRangeSlider("enable");
+    $('#anyos').selectpicker('show');
   }
   else{
     playing = true;
+    var b = $("#slider_date").dateRangeSlider("bounds");
+    //$("#slider_date").dateRangeSlider("values", b.min);
     interval();
+    $("#slider_date").dateRangeSlider("disable");
+    $('#anyos').selectpicker('hide');
     $(this).find('i').attr('class', 'fa fa-pause');
   }
 

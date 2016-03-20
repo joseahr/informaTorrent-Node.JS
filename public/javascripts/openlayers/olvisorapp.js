@@ -98,8 +98,8 @@ map.addInteraction(select); // Seleccionar feature
 denuncias.forEach(function(denuncia){
 	//console.log('denuncia añadida bdd' + JSON.parse(denuncia.geometria).type);
 	var feature, 
-	type = JSON.parse(denuncia.geometria).type, 
-	coordinates = JSON.parse(denuncia.geometria).coordinates;
+	type = denuncia.geometria.type, 
+	coordinates = denuncia.geometria.coordinates;
 	
 	if(type == 'Point'){
     	feature = new ol.Feature({

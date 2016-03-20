@@ -8,6 +8,7 @@ var app = window.app;
 app.ImagenesDenuncia = function(opt_options, denuncia) {
 
   var options = opt_options || {},
+  num_imgs = denuncia.imagenes ? denuncia.imagenes.length : '0',
   button = document.createElement('button'),
   element = document.createElement('div'),
   this_ = this,
@@ -42,6 +43,8 @@ app.ImagenesDenuncia = function(opt_options, denuncia) {
   }
 
   function imagenes_ (){
+    if(!denuncia.imagenes)
+      message = '<p> Esta denuncia no contiene imágenes </p>';
 	  BootstrapDialog.show({
 	  	title: 'Imágenes',
 	  	message: message,
@@ -53,6 +56,7 @@ app.ImagenesDenuncia = function(opt_options, denuncia) {
 
   button.innerHTML = '<i class="fa fa-image"></i>';
   button.addEventListener('click', imagenes_, false);
+  $(button).append('<span class="badge" style="background-color: #cc0000; font-size: 0.6em">' + num_imgs + '</span>');
 
   element.setAttribute('data-toggle', 'left');
   element.setAttribute('title', 'Imágenes');

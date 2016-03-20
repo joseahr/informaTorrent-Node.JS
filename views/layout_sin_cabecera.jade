@@ -94,10 +94,10 @@ html
                                 span.caret
                             ul.dropdown-menu(style="width: 100%; background: #E7E7E7")
                               li.dropdown
-                                a(href="/app/profile#headingOne") Notificaciones
+                                a(href="/app/perfil#headingOne") Notificaciones
                                   span(style="float: right; margin-top: -20px;").badge.noti_up #{nuevas}
                               li.dropdown
-                                a(href="/app/profile") Mi perfil
+                                a(href="/app/perfil") Mi perfil
                               li.dropdown
                                 a(href="/app/denuncias/nueva") Nueva denuncia
                               li.dropdown
@@ -110,14 +110,14 @@ html
     // Contenido
     // ================
     block content
-    #numdenun(style="position: fixed; bottom: 0.5em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;")
-      i.fa.fa-bullhorn(style="margin-right: 5px;")
-      | #{locals.datos_app.num_denun_total}
-    #numdenunhoy(style="position: fixed; bottom: 2.875em; right: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;")
-      i.fa.fa-bullhorn(style="margin-right: 5px;")
-      | #{locals.datos_app.num_denun_hoy}
-    #numusu(style="position: fixed; bottom: 0.5em; left: 0.5em;border-radius: 4px; background: #00bbff; color: #fff;padding: 5px;")
-      i.fa.fa-user(style="margin-right: 5px;")
+    div(style="position: fixed; z-index: 5; bottom: 0px; left: 0; right: 0; background : rgba(0,0,0,0.5); color: #fff; padding:2 20 2 20px")
+      i.fa.fa-bullhorn
+      |  HOY
+      span#numdenunhoy  !{locals.datos_app.num_denun_hoy}
+      |  | TOTAL
+      |  
+      span#numdenun  !{locals.datos_app.num_denun_total} 
+      span#numusu.pull-right
     script.
       var ip = '#{locals.ip}';
       var id_usuario = '#{locals.id_usuario}';

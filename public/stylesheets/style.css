@@ -2,7 +2,9 @@
 .menu-item:hover { background: rgba(0,59,111,0.3) }
 .menu-item > a:hover { text-decoration: none; color: #003b6f}
 .menu-item > a {color: #000}
-
+.open {
+	background: none;
+}
 .imagen_con_menu:hover > .menu_encima_de_imagen {
 	opacity: unset;
     -webkit-transition: all 0.4s ease;
@@ -463,9 +465,9 @@ textarea {
 /* Modals
 ---------------------------------- */
 .modal-content {
-	-webkit-border-radius: 0px;
-	-moz-border-radius: 0px;
-	border-radius: 0px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
 }
 .modal-header {
 	background-color: #55acee;

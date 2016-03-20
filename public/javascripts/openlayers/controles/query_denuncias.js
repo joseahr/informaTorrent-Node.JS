@@ -182,7 +182,7 @@ app.QueryDenuncias = function(opt_options) {
 		vector.getSource().clear();
 
 		data.query.forEach(function(denuncia){		
-			var feature, type = JSON.parse(denuncia.geometria).type, coordinates = JSON.parse(denuncia.geometria).coordinates;
+			var feature, type = denuncia.geometria.type, coordinates = denuncia.geometria.coordinates;
 			
 			if(type == 'Point'){
 		    	feature = new ol.Feature({

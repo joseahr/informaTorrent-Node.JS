@@ -175,6 +175,7 @@ ContPg.prototype.saveDenuncia = function(req, res){
 	var denuncia_io = req.body;
 	denuncia_io.id_usuario = user_id;
 	// comprobando datos de la denuncia
+	if(tags_.length < 2) errormsg += '· La denuncia debe contener al menos dos tags. \n';
 	if(!validator.isLength(titulo, 5, 50)) errormsg += '· El título debe tener entre 5 y 50 caracteres.\n';
 	if(!validator.isLength(contenido, 50, 10000)) errormsg += '· El contenido debe tener entre 50 y 10000 caracteres.\n';
 	if(wkt == undefined) errormsg += '· Debe agregar un punto, línea o polígono\n';	
@@ -322,10 +323,10 @@ ContPg.prototype.getProfile = function(req, res) {
 			denuncias.forEach(function(denuncia){
 				denuncia.descripcion = denuncia.descripcion.replace(/\n/g, "<br />");
 				//denuncia.geometria = JSON.stringify(denuncia.geometria);
-				denuncia.tipo = JSON.parse(denuncia.geometria).type;
-				denuncia.coordenadas = JSON.parse(denuncia.geometria).coordinates;
+				denuncia.tipo = denuncia.geometria.type;
+				denuncia.coordenadas = denuncia.geometria.coordinates;
 				console.log(denuncia.tipo, 'tipo', denuncia.coordenadas, 'coordenadas', denuncia.geometria.type, 'geometria');
-				denuncia.geometria = undefined;
+				//denuncia.geometria = undefined;
 			});
 			res.render('profile', { misDenuncias: denuncias });
 		})
@@ -533,6 +534,7 @@ ContPg.prototype.updateDenuncia = function(req, res){
 	var denuncia_io = req.body;
 	denuncia_io.id_usuario = user_id;
 	// comprobando datos de la denuncia
+	if(tags_.length < 2) errormsg += '· La denuncia debe contener al menos dos tags. \n';
 	if(!validator.isLength(titulo, 5, 50)) errormsg += '· El título debe tener entre 5 y 50 caracteres.\n';
 	if(!validator.isLength(contenido, 50, 10000)) errormsg += '· El contenido debe tener entre 50 y 10000 caracteres.\n';
 	if(wkt == undefined) errormsg += '· Debe agregar un punto, línea o polígono\n';	

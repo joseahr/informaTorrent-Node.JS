@@ -37,7 +37,7 @@ app.CQL = function(opt_options) {
 		  	buttons: [{label: 'Cerrar', action: function(d){d.close();}}],
 		  	draggable: true,
 		  	onshown: function(){ 
-			  	$('.selectpicker').selectpicker();
+			  	$('.selectpicker').selectpicker('mobile');
 			  
 			  	$('.selectpicker').change(function(e){
 				  	var capa_aux = '';
