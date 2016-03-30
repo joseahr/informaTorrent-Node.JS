@@ -46,7 +46,7 @@ app.ComentariosDenuncia = function(opt_options, denuncia, user) {
 				//alert(contenido);
 				var xhr = new XMLHttpRequest();
 
-				xhr.open('POST','/app/denuncia/' + denuncia.gid + '/addComentario' , true);
+				xhr.open('POST','/app/denuncia?id=' + denuncia.gid + '&action=add_coment' , true);
 				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); // Especificamos cabecera
 				xhr.send(JSON.stringify({contenido: encodeURIComponent(contenido)})); // Enviamos petición
 				

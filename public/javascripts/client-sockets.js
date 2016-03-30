@@ -1,4 +1,4 @@
-var num_denuncias_io = io.connect("http://79.108.230.85:8000/app/visor");
+var num_denuncias_io = io.connect("http://192.168.1.14:3000/app/visor");
 
 num_denuncias_io.emit('get_num_usuarios');
 

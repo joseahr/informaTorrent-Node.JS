@@ -1,1 +1,0 @@
-update denuncias_puntos set veces_vista = veces_vista + 1 where gid = $1

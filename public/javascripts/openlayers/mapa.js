@@ -1,12 +1,4 @@
-var capas_disponibles = {
-  municipio : municipio,
-  manzanas : manzanas,
-  viales : viales,
-  caminos : caminos,
-  nom_viales : nom_viales,
-  portales : portales,
-},
-mousePositionControl = new ol.control.MousePosition({
+var mousePositionControl = new ol.control.MousePosition({
   coordinateFormat: ol.coordinate.toStringHDMS,
 }),
 map = new ol.Map({
@@ -151,7 +143,18 @@ interval = function(){
     $('#anyos').selectpicker('show');
     //clearInterval(interval);
   }
-};
+}; 
+/*var ol3d = new olcs.OLCesium({
+  map : map
+}),
+scene = ol3d.getCesiumScene(),
+terrainProvider = new Cesium.CesiumTerrainProvider({
+  url : '//assets.agi.com/stk-terrain/world'
+});*/
+
+//ol3d.setEnabled(true);
+
+//scene.terrainProvider = terrainProvider;
 
 /********* INICIAMOS EL RANGE SLIDER *****/
 $('#slider_date').dateRangeSlider({

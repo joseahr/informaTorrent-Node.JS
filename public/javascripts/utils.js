@@ -7,7 +7,7 @@ function eliminar(id){
 		type: BootstrapDialog.TYPE_INFO,
 		buttons: [
 			{label: 'Aceptar', action: function(dialog){
-				$.get('/app/eliminar?id=' + id,
+				$.post('/app/denuncia?id=' + id + '&action=delete',
 				function(res){
 					dialog.close();
 					$('#' + id).remove();
@@ -23,8 +23,8 @@ function eliminar(id){
 // Obtener Imagen miniatura de geoserver
 function getGeoserverMiniatura(denuncia, width){
 	
-	tipo = denuncia.tipo;
-	coords = denuncia.coordenadas;
+	tipo = denuncia.geometria.type;
+	coords = denuncia.geometria.coordinates;
 	//alert(coords + ' ' + tipo);
 	var extension = [];
 	var tabla = '';
@@ -176,12 +176,12 @@ function getDenunciaRow(denuncia, tabla){
 
 	if (!tabla) {
 		clas = 'thumbnail';
-		menu = '<a target="_blank" href="/app/denuncia/' + id + '" style="margin: 0px auto;">' + icono('fa-eye', '#55acee') + '</a>' +
-				'<a target="_blank" href="/app/editar?id=' + id + '" style="margin: 0px auto;">' + icono('fa-edit', '#ec971f') + '</a>' +
+		menu = '<a target="_blank" href="/app/denuncia?id=' + id + '" style="margin: 0px auto;">' + icono('fa-eye', '#55acee') + '</a>' +
+				'<a target="_blank" href="/app/denuncia?id=' + id + '&action=get_edit_page" style="margin: 0px auto;">' + icono('fa-edit', '#ec971f') + '</a>' +
 				'<a id="' + id + '" onclick="eliminar(this.id)" href="#" style="margin: 0px auto;">' + icono('fa-trash', '#d9534f') + '</a>';
 	}
 	else {
-		menu = '<a target="_blank" href="/app/denuncia/' + id + '" style="margin: 0px auto;">' + icono('fa-eye', '#55acee') + '</a>' +
+		menu = '<a target="_blank" href="/app/denuncia?id=' + id + '" style="margin: 0px auto;">' + icono('fa-eye', '#55acee') + '</a>' +
 				'<a target="_blank" href="/app/usuarios/' + denuncia.usuario[0]._id + '" style="margin: 0px auto;">' + 
 					'<span class="fa-stack fa-lg" style="color: #ec971f">' +
   						'<img src="' + denuncia.usuario[0].profile.picture + '" style="padding: 2px; object-fit: cover; width: 40px; height: 40px;" class="fa fa-circle fa-stack-2x img-circle"></img>' +

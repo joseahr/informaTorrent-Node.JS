@@ -128,7 +128,7 @@ var limpiador_directorio = tarea.scheduleJob(regla, function(){
 				});
 				
 			} else {
-				console.log('archivo/directorio aun joven para eliminar ' + file + ' XD' + ' ctime ' + estadisticas.ctime);
+				console.log('archivo/directorio aun joven para eliminar ' + file + ' XD ctime ' + estadisticas.ctime);
 			}
 			
 		});
@@ -145,8 +145,10 @@ var filename_perfil_img = function(req, file, cb){
 };
 
 var filename_temp_img = function(req, file, cb){
+	console.log(req.query.tempdir);
+	if(!req.query.tempdir) req.query.tempdir = '';
 	console.log('fileeeee' + JSON.stringify(file));
-	cb(null, path.join(req.params.tempDirID, file.originalname));
+	cb(null, path.join(req.query.tempdir, file.originalname));
 }
 
 function crearMulter(dest, filename){
@@ -178,6 +180,21 @@ var contPg = new contPg_(fs, path, dir, exec, User, validator,
  * Geoportal, lo servimos como archivos estáticos
  */
 // Index
+var request = require('request');
+app.get('/xhr', function(req, res){
+	var url = req.query.url;
+	console.log(url);
+	if(!url)
+		return res.status(500).send('Debe introducir el parámetro url y method');
+
+	request(url, function (error, response, body) {
+	  if (!error && response.statusCode == 200) {
+	    res.status(200).send(body);
+	  }
+	  else return res.status(500).send(error);
+	});
+});
+
 app.get('/', function(req, res){
     res.writeHead(200, {
         "Content-Type": "text/html"
@@ -286,23 +303,22 @@ app.get('/app/forgot', middle_datos, contPass.getForgot); // Formulario para rec
 app.get('/app/changePass', middle_datos, isLoggedIn, contPass.getChangePass);
 app.post('/app/changePass', isLoggedIn, contPass.postChangePass); // Cambiar contraseña
 
-app.post('/app/fileUpload/:tempDirID', isLoggedIn, contPg.uploadTempImage); // Subir imagen de una denuncia a una carpeta temporal Random
-app.get('/app/deleteFile/:tempDirID/:fileName', isLoggedIn, contPg.deleteTempImage); // Elimina una imagen de la carpeta temporal
+app.post('/app/fileUpload', isLoggedIn, contPg.uploadTempImage); // Subir imagen de una denuncia a una carpeta temporal Random
+app.get('/app/deleteFile', isLoggedIn, contPg.deleteTempImage); // Elimina una imagen de la carpeta temporal
 app.get('/app/denuncias/nueva', middle_datos, isLoggedIn, contPg.renderNueva);
 
-app.post('/app/denuncia/:id_denuncia/addComentario', isLoggedIn, contPg.addComentario);
-app.post('/app/denuncias/nueva/save', isLoggedIn, contPg.saveDenuncia);
+app.all('/app/denuncia', middle_datos, isLoggedIn, contPg.denunciaCont);
 
-app.post('/app/denuncias/editar', isLoggedIn, contPg.updateDenuncia);
+app.post('/app/denuncias/nueva/save', isLoggedIn, contPg.saveDenuncia);
 
 app.get('/app/denuncias', middle_datos, isLoggedIn, contPg.getDenunciasPage);//Ruta que nos mostrará las denuncias ordenadas por fecha
 
-app.get('/app/denuncia/:id_denuncia', middle_datos, contPg.getDenunciaPage);// Ruta que nos muestra la informacion de una denuncia
+//app.get('/app/denuncia', middle_datos, contPg.getDenunciaPage);// Ruta que nos muestra la informacion de una denuncia
 
 app.get('/app/confirmar/:idUsuario', middle_datos, contPass.confirmUser);
 
-app.get('/app/eliminar', isLoggedIn, contPg.deleteDenuncia);
-app.get('/app/editar', middle_datos, isLoggedIn, contPg.getEdit);
+//app.get('/app/eliminar', isLoggedIn, contPg.deleteDenuncia);
+//app.get('/app/editar', middle_datos, isLoggedIn, contPg.getEdit);
 
 //app.get('/app/getImagenesDenuncia', contPg.getImagenesDenuncia);
 
@@ -338,6 +354,18 @@ app.get('/app/visor', middle_datos, contPg.getVisorPage);
  * un cliente está conectado como usuarios
 **/
 function isLoggedIn(req, res, next) {
+
+	console.log(req.url.split('?')[0]);
+	var action = req.query.action;
+	if(req.url.split('?')[0] == '/app/denuncia' && 
+		(action == 'get_denuncia_page' || !action || 
+			!(action == 'edit' || action == 'delete' || action == 'get_edit_page' || action == 'add_coment')
+		)
+	){
+		console.log(req.url + ' isloggedIn --> vas a la pagina de una denuncia no hace falta estar conectao');
+		return next();
+	}
+
     if (req.isAuthenticated()){
     	if(req.user.local.valid)
     		next();
@@ -359,6 +387,11 @@ function isLoggedIn(req, res, next) {
  * datos de su cuenta como notificaciones y datos de la app como nº de denuncias...
 **/
 function middle_datos (req, res, next){
+
+	if(req.method.toLowerCase() == 'post'){
+		console.log('middle datos method post continue');
+		return next();
+	}
 	
 	var id_usuario = req.user ? req.user._id : 'undefined';
 
@@ -390,16 +423,8 @@ function middle_datos (req, res, next){
 			// obtenemos notificaciones
 			
 			notificaciones.forEach(function(n){
-				if(n.denuncia_punto) n.denuncia = n.denuncia_punto[0];
-				else if(n.denuncia_linea) n.denuncia = n.denuncia_linea[0];
-				else if(n.denuncia_poligono) n.denuncia = n.denuncia_poligono[0];
-				else if(n.denuncia_poligono) n.denuncia = n.denuncia_poligono[0];
-				
-				if(n.denuncia){
-					n.denuncia.tipo = n.denuncia.geometria.type;
-					n.denuncia.coordenadas = n.denuncia.geometria.coordinates;
-					n.denuncia.geometria = undefined;
-				}
+				n.denuncia = n.denuncia[0];
+				n.denuncia.geometria = n.denuncia.geometria_pu || n.denuncia.geometria_li || n.denuncia.geometria_po;
 				//console.log(n.denuncia, 'tipossss');
 			});
 			
@@ -411,21 +436,14 @@ function middle_datos (req, res, next){
 		.then (function(acciones){
 			// obtenemos acciones
 			acciones.forEach(function(n){
-				
-				if(n.denuncia_punto) n.denuncia = n.denuncia_punto[0];
-				else if(n.denuncia_linea) n.denuncia = n.denuncia_linea[0];
-				else if(n.denuncia_poligono) n.denuncia = n.denuncia_poligono[0];
-				
-				if(n.denuncia){
-					n.denuncia.tipo = n.denuncia.geometria.type;
-					n.denuncia.coordenadas = n.denuncia.geometria.coordinates;
-					n.denuncia.geometria = undefined;
-				}
+				n.denuncia = n.denuncia[0];
+				n.denuncia.geometria = n.denuncia.geometria_pu || n.denuncia.geometria_li || n.denuncia.geometria_po;				
 				//console.log(n.denuncia, 'tipossss');
 			});
 			
 			variables_locales.mis_acciones = acciones;
 			res.locals = variables_locales;
+			console.log(variables_locales);
 			next(); // siguiente ruta o middleware
 		})
 		.catch(function (error) {

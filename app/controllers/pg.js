@@ -31,8 +31,31 @@ function ContPg(fs_, path_, dir_, exec_, User_, validator_,
 	consultas = consultas_;
 	multer_imagen_perfil = multer_imagen_perfil_.single('file');
 	multer_temp_denuncia = multer_temp_denuncia_.single('file');
-	
 }
+
+/* Denuncia Controller */
+ContPg.prototype.denunciaCont = function(req, res){
+	var action = req.query.action || 'get_denuncia_page';
+
+	console.log('denuncia action ' + action);
+
+	if(!req.query.id)
+		return res.status(500).send('Ruta no encontrada. Debe introducir al menos la id de la denuncia');
+
+	switch (action){
+		case 'get_denuncia_page' : getDenunciaPage(req, res);
+			break;
+		case 'get_edit_page' : getEdit(req, res);
+			break;
+		case 'edit' : updateDenuncia(req, res);
+			break;
+		case 'delete' : deleteDenuncia(req, res);
+			break;
+		case 'add_coment' : addComentario(req, res);
+			break;
+		default : getDenunciaPage(req, res);
+	}
+};
 
 /*
  * Renderizamos la página para añadir una denuncia
@@ -52,7 +75,13 @@ ContPg.prototype.renderNueva = function(req, res){
  * Eliminar imagen de la carpeta temporal
  */
 ContPg.prototype.deleteTempImage = function(req, res){
-	var path_image = path.join(path.join(config.TEMPDIR, req.params.tempDirID), req.params.fileName);
+	var tempdir = req.query.tempdir;
+	var filename = req.query.filename;
+
+	if(!(tempdir && filename))
+		return res.status(500).send('Error borrando la imagen:\n Debe introducir los parámetros tempdir y filename en el QueryString');
+
+	var path_image = path.join(path.join(config.TEMPDIR, tempdir), filename);
 	
 	fs.unlink(path_image, function(error){
 		if(error) return res.status(500).send('Error borrando la imagen:\n' + error);
@@ -99,12 +128,15 @@ ContPg.prototype.uploadTempImage = function(req, res){
 /*
  * Añadimos un comentario en una denuncia.
  */
-ContPg.prototype.addComentario = function(req, res){
+var addComentario = function(req, res){
 	
+	if(req.method.toLowerCase() != 'post')
+		return res.status(500).send('La acción requiere ser enviada a través de POST');
+
 	var denuncia, notificacion;
 	var contenido = req.body.contenido;
 	var user_id = req.user._id;
-	var id_denuncia = req.params.id_denuncia;
+	var id_denuncia = req.query.id;
 	
 	
 	if (!contenido || !user_id || !id_denuncia) return res.status(500).send('Fallo insertando comentario');
@@ -117,9 +149,10 @@ ContPg.prototype.addComentario = function(req, res){
 		})
 		.then(function(denuncia_){
 			denuncia = denuncia_;
-			denuncia.tipo = denuncia.geometria.type;
-			denuncia.coordenadas = denuncia.geometria.coordinates;
-			denuncia.geometria = undefined;
+			denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+			//denuncia.tipo = denuncia.geometria.type;
+			//denuncia.coordenadas = denuncia.geometria.coordinates;
+			//denuncia.geometria = undefined;
 			var datos = JSON.stringify({contenido : contenido});
 			if(denuncia.id_usuario == user_id){
 				var err = new Error();
@@ -195,31 +228,29 @@ ContPg.prototype.saveDenuncia = function(req, res){
 			else if(wkt.match(/POLYGON/g) && geom_check.st_area > 10000)
 				throw new Error('La geometría poligonal no debe superar un area mayor de 10.000 metros cuadrados.');
 			
-			
-			var files = fs.readdirSync(config.TEMPDIR + "/" + tempDirID);
-			if (files)
-				files.forEach(function(ruta, index, that) {
-				    console.log('img: ' + path.basename(ruta));
-				    
-					var from = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
-					var to = path.join(config.UPLOADDIR, tempDirID +"-" + path.basename(ruta));
-					imagenes.push("/files/denuncias/" + path.basename(to)); 
-					// Movemos la imagen desde la carpeta temporal hasta la carpeta final
-					fs.renameSync(from, to);
-				});
-			
-			
 			return db.task(function * (t){
 				// t = this = contexto bdd
 				var q = []; // consultas a ejecutar --> añadir imagenes y tags
 				
-				let denuncia = yield this.one(consultas.añadir_denuncia(wkt), [titulo, contenido, wkt, user_id]);
+				let denuncia = yield this.one(consultas.insert_denuncia, [titulo, contenido, user_id]);
+
+				var files = fs.readdirSync(config.TEMPDIR + "/" + tempDirID);
+				if (files){
+					fs.mkdirSync(path.join(config.UPLOADDIR, denuncia.gid));
+					files.forEach(function(ruta, index, that) {
+					    console.log('img: ' + path.basename(ruta));
+					    
+						var from = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
+						var to = path.join(config.UPLOADDIR, denuncia.gid + "/" + tempDirID + "-" + path.basename(ruta));
+						var path_ = "/files/denuncias/" + denuncia.gid + "/" + path.basename(to); 
+						// Movemos la imagen desde la carpeta temporal hasta la carpeta final
+						q.push(t.none(consultas.añadir_imagen_denuncia, [path_, denuncia.gid]));
+						fs.renameSync(from, to);
+					});
+				}
+				q.push(t.none(consultas.añadir_geometria(wkt), [denuncia.gid, wkt]));
 				
 				denuncia_io = denuncia;
-				
-				imagenes.forEach(function(path){
-					q.push(t.none(consultas.añadir_imagen_denuncia, [path, denuncia.gid, user_id]));
-				});
 				
 				tags_.forEach(function(tag){
 					q.push(t.none(consultas.añadir_tag_denuncia, [denuncia.gid, tag]));
@@ -271,9 +302,10 @@ ContPg.prototype.saveDenuncia = function(req, res){
 			return db.one(consultas.denuncia_por_id, denuncia_io.gid);
 		})
 		.then(function(denuncia_){
-			denuncia_.tipo = denuncia_.geometria.type;
-			denuncia_.coordenadas = denuncia_.geometria.coordinates;
-			denuncia_.geometria = undefined;
+			//denuncia_.tipo = denuncia_.geometria.type;
+			//denuncia_.coordenadas = denuncia_.geometria.coordinates;
+			//denuncia_.geometria = undefined;
+			denuncia_.geometria = denuncia_.geometria_pt || denuncia_.geometria_li || denuncia_.geometria_po;
 			denuncia_io = denuncia_;
 			return db.tx(function (t){
 				var q = [];
@@ -323,9 +355,11 @@ ContPg.prototype.getProfile = function(req, res) {
 			denuncias.forEach(function(denuncia){
 				denuncia.descripcion = denuncia.descripcion.replace(/\n/g, "<br />");
 				//denuncia.geometria = JSON.stringify(denuncia.geometria);
-				denuncia.tipo = denuncia.geometria.type;
-				denuncia.coordenadas = denuncia.geometria.coordinates;
-				console.log(denuncia.tipo, 'tipo', denuncia.coordenadas, 'coordenadas', denuncia.geometria.type, 'geometria');
+				console.log(denuncia);
+				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+				//denuncia.tipo = denuncia.geometria.type;
+				//denuncia.coordenadas = denuncia.geometria.coordinates;
+				//console.log(denuncia.gid, denuncia.tipo, 'tipo', denuncia.coordenadas, 'coordenadas', denuncia.geometria.type, 'geometria');
 				//denuncia.geometria = undefined;
 			});
 			res.render('profile', { misDenuncias: denuncias });
@@ -364,6 +398,10 @@ ContPg.prototype.getDenunciasPage = function(req, res){
 			
 		})
 		.then (function(denuncias){
+			denuncias.forEach(function(d){
+				d.geometria = d.geometria_pt || d.geomtria_li || d.geometria_po;
+			});
+			console.log(denuncias);
 			res.render('denuncias',{denuncias : JSON.stringify(denuncias), 
 				   user : req.user,
 				   page: page,
@@ -380,13 +418,15 @@ ContPg.prototype.getDenunciasPage = function(req, res){
 /*
  * Ruta /app/denuncia/:id_denuncia
  */
-ContPg.prototype.getDenunciaPage = function(req,res){
+var getDenunciaPage = function(req,res){
 
-	var id_denuncia = req.params.id_denuncia;
+	var id_denuncia = req.query.id;
 
 	db.one(consultas.denuncia_por_id, id_denuncia)
 		.then(function(denuncia){
 			if (!denuncia) throw new Error('Denuncia no encontrada');
+
+			denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
 			//console.log(denuncia);
 			//denuncia.geometria = JSON.stringify(denuncia.geometria);
 			//denuncia.descripcion = denuncia.descripcion.replace(/\n?\r\n/g, '<br />' );
@@ -423,7 +463,7 @@ ContPg.prototype.deleteImagenDenuncia = function(req, res){
 }
 
 
-ContPg.prototype.getEdit = function(req, res){
+var getEdit = function(req, res){
 	var id = req.query.id;
 	if(!id){
 		//Mostar error
@@ -439,6 +479,8 @@ ContPg.prototype.getEdit = function(req, res){
 				//console.log(denuncia[0]);
 				denuncia.tags_ = JSON.stringify(denuncia.tags_);
 				console.log(denuncia);
+
+				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
 
 				crypto.randomBytes(25, function(ex, buf) {
   					var token = buf.toString('hex');
@@ -458,8 +500,11 @@ ContPg.prototype.getEdit = function(req, res){
 /*
  *  Ruta /app/delete/
  */
-ContPg.prototype.deleteDenuncia = function(req, res){
+var deleteDenuncia = function(req, res){
 	
+	if(req.method.toLowerCase() != 'post')
+		return res.status(500).send('La acción requiere ser enviada a través de POST');
+
 	if(!req.query.id){
 		//Mostar error
 		res.status(500).send('No se ha especificado el id de la denuncia');
@@ -475,30 +520,19 @@ ContPg.prototype.deleteDenuncia = function(req, res){
 			if(id_user != denuncia.id_usuario) 
 				throw new Error('Usted no tiene permisos para eliminar esta denuncia');
 			
-			if (denuncia.imagenes){
-				denuncia.imagenes.forEach(function(img){
-					exec('rm -r ' + config.UPLOADDIR + "/" + path.basename(img.path), function ( errD, stdout, stderr ){
-						// Eliminamos las imágenes de la carpeta FINAL
-						if (errD) {
-						console.log('error_mensaje --> ' + errD);
-						}
-						else console.log('imagen eliminada: ' + path.basename(img.path));
-						
-					}); 
-				});
-			} // hay imágenes, las eliminamos
-			var tipo = denuncia.geometria.type;
+			exec('rm -r ' + config.UPLOADDIR + "/" + denuncia.gid, function ( errD, stdout, stderr ){
+				// Eliminamos las imágenes de la carpeta FINAL
+				if (errD) {
+				console.log('error_mensaje --> ' + errD);
+				}
+				else console.log('imagenes eliminadas ');
+				
+			}); 
+
+			//denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+			//var tipo = denuncia.geometria.type;
 			
-			return db.tx(function (t){
-				var q = [];
-				q.push(db.none(consultas.eliminar_denuncia_por_id(tipo), id));
-				q.push(db.none(consultas.delete_all_likes, id));
-				q.push(db.none(consultas.delete_all_tags, id));
-				q.push(db.none(consultas.delete_all_comentarios, id));
-				q.push(db.none(consultas.delete_all_imagenes, id));
-				q.push(db.none(consultas.delete_all_notificaciones, id));
-				return t.batch(q); // Devuelve una lista de promesas que ddeben evaluarse
-			});
+			return db.none(consultas.eliminar_denuncia, [denuncia.gid]);
 			
 		})
 		.then(function(){
@@ -513,7 +547,10 @@ ContPg.prototype.deleteDenuncia = function(req, res){
 /*
  * Update Denuncia
  */
-ContPg.prototype.updateDenuncia = function(req, res){
+var updateDenuncia = function(req, res){
+
+	if(req.method.toLowerCase() != 'post')
+		return res.status(500).send('La acción requiere ser enviada a través de POST');
 	
 	var id = req.query.id;
 	
@@ -533,6 +570,8 @@ ContPg.prototype.updateDenuncia = function(req, res){
 	
 	var denuncia_io = req.body;
 	denuncia_io.id_usuario = user_id;
+	denuncia_io.gid = id;
+
 	// comprobando datos de la denuncia
 	if(tags_.length < 2) errormsg += '· La denuncia debe contener al menos dos tags. \n';
 	if(!validator.isLength(titulo, 5, 50)) errormsg += '· El título debe tener entre 5 y 50 caracteres.\n';
@@ -549,6 +588,7 @@ ContPg.prototype.updateDenuncia = function(req, res){
 	db.one(consultas.denuncia_por_id, id)
 		.then(function(d){
 			denuncia = d;
+			denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
 			return dbCarto.one(consultas.comprobar_geometria(wkt), wkt);
 		})
 		.then(function(geom_check){
@@ -558,43 +598,58 @@ ContPg.prototype.updateDenuncia = function(req, res){
 				throw new Error('La geometría lineal no debe superar los 500 metros de longitud.');
 			else if(wkt.match(/POLYGON/g) && geom_check.st_area > 10000)
 				throw new Error('La geometría poligonal no debe superar un area mayor de 10.000 metros cuadrados.');
-			
-			var files = fs.readdirSync(config.TEMPDIR + "/" + tempDirID);
-			if (files)
-				files.forEach(function(ruta, index, that) {
-				    console.log('img: ' + path.basename(ruta));
-				    
-					var from = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
-					var to = path.join(config.UPLOADDIR, tempDirID +"-" + path.basename(ruta));
-					imagenes.push("/files/denuncias/" + path.basename(to)); 
-					// Movemos la imagen desde la carpeta temporal hasta la carpeta final
-					fs.renameSync(from, to);
-				});
+
 			console.log(wkt, 'wktttt');	
 			return db.task(function * (t){
 				// t = this = contexto bdd
 				var q = [];
+
+				var files = fs.readdirSync(config.TEMPDIR + "/" + tempDirID);
+				if (files){
+					try {
+						fs.mkdirSync(path.join(config.UPLOADDIR, denuncia.gid));
+					}
+					catch(e){
+
+					}
+					
+					files.forEach(function(ruta, index, that) {
+					    console.log('img: ' + path.basename(ruta));
+					    
+						var from = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
+						var to = path.join(config.UPLOADDIR, denuncia.gid + "/" + tempDirID + "-" + path.basename(ruta));
+						var path_ = "/files/denuncias/" + denuncia.gid + "/" + path.basename(to); 
+						// Movemos la imagen desde la carpeta temporal hasta la carpeta final
+						q.push(t.none(consultas.añadir_imagen_denuncia, [path_, denuncia.gid]));
+						fs.renameSync(from, to);
+					});
+				}
+
 				let borrar = yield t.none(consultas.delete_all_tags, id);
-				console.log('borrar ', borrar);
+				//console.log('borrar ', borrar);
 				var tipo_ant = denuncia.geometria.type;
-				var fecha = denuncia.fecha;
+				//var fecha = denuncia.fecha;
 				console.log(tipo);
 				// Ha cambiado la geometría de la denuncia ¿?
 				if (tipo != tipo_ant){
-					// Eliminamos la denuncia de la tabla en la que esté
-					q.push(t.none(consultas.eliminar_denuncia_por_id(tipo_ant), id));
-					// Insertamos la denuncia en la tabla que le corresponda a la nueva geometria
-					q.push(t.none(consultas.actualizar_denuncia_otra_tabla(tipo), 
-							[titulo, contenido, wkt, user_id, id, fecha]));
+					// Eliminamos la geometría de la tabla en la que esté
+					q.push(t.none(consultas.eliminar_geometria_por_id(tipo_ant), id));
+					// Insertamos la geometría en la tabla que corresponda
+					q.push(t.none(consultas.añadir_geometria(wkt), [id, wkt]));
+					// Actualizamos el contenido de la denuncia
+					q.push(t.none(consultas.actualizar_denuncia, [titulo, contenido, id]));
 				}
 				else {
-					// Si no ha cambiado actualizamos el registro simplemente
-					q.push(t.none(consultas.actualizar_denuncia(tipo), [titulo, contenido, wkt, id]));
+					// Si no ha cambiado actualizamos la geometria dentro de la misma tabla por si a caso
+					// aun siendo el mismo tipo de geometría, ha cambiado las coordenadas
+					q.push(t.none(consultas.actualizar_geometria(tipo), [wkt, id]));
+					// Actualizamos info denuncia
+					q.push(t.none(consultas.actualizar_denuncia, [titulo, contenido, id]));
 				}
 				console.log('imagenes' + imagenes);
 				imagenes.forEach(function(path){
 					console.log('imagenes--' + path);
-					q.push(t.none(consultas.añadir_imagen_denuncia, [path, id, user_id]));
+					q.push(t.none(consultas.añadir_imagen_denuncia, [path, id]));
 				});
 				
 				tags_.forEach(function(tag){
@@ -614,7 +669,7 @@ ContPg.prototype.updateDenuncia = function(req, res){
 		})
 		.catch(function(error){
 			console.log('Error insertando nueva denuncia ' + JSON.stringify(error));
-			res.send({type: 'error', msg: error.toString()})
+			res.status(500).send({type: 'error', msg: error.toString()})
 		});
 }; // Fin saveDenuncia
 
@@ -809,7 +864,12 @@ ContPg.prototype.getVisorPage = function(req, res){
 	
 	db.query(consultas.denuncias_visor)
 		.then(function(denuncias){
-			res.render('visor.jade', {denuncias: JSON.stringify(denuncias)});
+
+			denuncias.forEach(function(denuncia){
+				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+			});
+
+			res.render('visor.jade', {denuncias: denuncias});
 		})
 		.catch(function(error){
 			res.status(500).send(error);

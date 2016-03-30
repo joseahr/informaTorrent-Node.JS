@@ -119,6 +119,9 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 			console.log(query);
 			db.query(query)
 				.then(function(denuncias){
+					denuncias.forEach(function(denuncia){
+						denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+					});
 					console.log('denuncias api');
 					socket.emit('api', {query: denuncias});					
 				})
@@ -132,6 +135,7 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 		socket.on('alguien_vio_una_denuncia', function(data){
 			db.one(consultas.denuncia_por_id, data.id_denuncia)
 				.then(function(denuncia){
+					denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
 					var tipo = denuncia.geometria.type;
 					return db.none(consultas.denuncia_vista(tipo), data.id_denuncia)
 				})
@@ -149,12 +153,18 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 			if (!data) return;
 
 			var query = consultas.denuncias_sin_where.query + 
-				" st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(the_geom,25830)) < 100 " +
+				" (st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(x.geom_pt,25830)) < 100 or " +
+				"st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(x.geom_li,25830)) < 100 or " +
+				"st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(x.geom_po,25830)) < 100)" +
 				"order by fecha desc";
 			db.any(query, data)
 				.then(function(denuncias){
-					if(denuncias)
+					if(denuncias){
+						denuncias.forEach(function(denuncia){
+							denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+						});
 						socket.emit('si_que_tengo_denuncias_cerca', denuncias);
+					}
 				});
 
 		});
@@ -190,9 +200,10 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 			db.one(consultas.denuncia_por_id, data.denuncia.gid)
 				.then(function(denuncia_){
 					denuncia = denuncia_;
-					denuncia.tipo = denuncia.geometria.type;
-					denuncia.coordenadas = denuncia.geometria.coordinates;
-					denuncia.geometria = undefined;
+					denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+					//denuncia.tipo = denuncia.geometria.type;
+					//denuncia.coordenadas = denuncia.geometria.coordinates;
+					//denuncia.geometria = undefined;
 					return db.oneOrNone(consultas.check_like_denuncia, [id_usuario, data.denuncia.gid]);
 				})
 				.then(function(like){
@@ -284,14 +295,25 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 	    }
 	    // Buffer
 	    if(filter.buffer_centro && filter.buffer_radio){
-	    	cnd.push(pgp.as.format("st_distance(st_transform(the_geom, 25830), st_transform(st_geomfromtext('POINT(" + 
+	    	cnd.push(pgp.as.format("(st_distance(st_transform(x.geom_pt, 25830), st_transform(st_geomfromtext('POINT(" + 
 	    		filter.buffer_centro[0].replace(',', '.') + ' ' + 
 	    		filter.buffer_centro[1].replace(',', '.') + ")', 4258), 25830)) < " + 
-	    		filter.buffer_radio));
+	    		filter.buffer_radio + " or " + 
+	    		"st_distance(st_transform(x.geom_li, 25830), st_transform(st_geomfromtext('POINT(" + 
+	    		filter.buffer_centro[0].replace(',', '.') + ' ' + 
+	    		filter.buffer_centro[1].replace(',', '.') + ")', 4258), 25830)) < " + 
+	    		filter.buffer_radio + " or " +
+	    		"st_distance(st_transform(x.geom_po, 25830), st_transform(st_geomfromtext('POINT(" + 
+	    		filter.buffer_centro[0].replace(',', '.') + ' ' + 
+	    		filter.buffer_centro[1].replace(',', '.') + ")', 4258), 25830)) < " + 
+	    		filter.buffer_radio + ")")
+	    	);
 	    }
 	    // BBOX
 	    if(filter.bbox){
-	    	cnd.push('the_geom && st_makeEnvelope(' + filter.bbox + ')');
+	    	cnd.push('(x.geom_pt && st_makeEnvelope(' + filter.bbox + ') or ' + 
+	    		'x.geom_li && st_makeEnvelope(' + filter.bbox + ') or ' + 
+	    		'x.geom_po && st_makeEnvelope(' + filter.bbox + '))');
 	    }
 	    // Nombre Usuario
 	    if(filter.usuario_nombre){

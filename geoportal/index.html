@@ -161,6 +161,7 @@
 									<li><i class="fa fa-caret-right pr-10 text-colored"></i>¿Qué es un servicio <a target="_blank" href="http://www.opengeospatial.org/standards/wfs"><span>WFS</span></a>?</li>
 									<li><i class="fa fa-caret-right pr-10 text-colored"></i>¿Qué es un servicio <a target="_blank" href="http://www.opengeospatial.org/standards/wcs"><span>WCS</span></a>?</li>
 									<li><i class="fa fa-caret-right pr-10 text-colored"></i>¿Qué es un servicio <a target="_blank" href="http://www.opengeospatial.org/standards/wmts"><span>WMS Teselado</span></a>?</li>
+									<li><i class="fa fa-caret-right pr-10 text-colored"></i>¿Qué es un servicio <a target="_blank" href="http://www.opengeospatial.org/standards/cat"><span>CSW</span></a>?</li>
 								</ul>
 							</div>
 						</div>
@@ -255,6 +256,27 @@
 												</div>
 												<p></p>
 												<p>Los Servicios Web de Mapas Teselados <b>WMTS (Web Map Tile Service)</b> es un protoc olo estándar del OGC para servir teselas de mapa pregeneradas en el servidor.</p>
+											</div>
+										</div>
+									</div>
+
+									<div class="panel panel-default">
+										<div class="panel-heading" role="tab" id="headingFive">
+											<h4 class="panel-title">
+												<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+													Servicio CSW
+												</a>
+											</h4>
+										</div>
+										<div id="collapseFive" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
+											<div class="panel-body" style="text-align: center;">
+												<div class="btn-group-vertical col-lg-12">
+													<button id="ir" type="button" class="btn btn-default col-lg-12" service_url="http://192.168.1.14:8080/geonetwork/srv/spa/csw?request=GetCapabilities&version=2.0.2&service=CSW">Servicio</button>
+													<button id="copy" service_url="http://192.168.1.14:8080/geonetwork/srv/spa/csw?request=GetCapabilities&version=2.0.2&service=CSW" type="button" class="btn btn-default">Copiar url</button>
+													<button id="capabilities" service_url="http://192.168.1.14:8080/geonetwork/srv/spa/csw?request=GetCapabilities&version=2.0.2&service=CSW" service_name="Servicio CSW - GetCapabilities" type="button" class="btn btn-default">Get Capabilities</button>
+												</div>
+												<p></p>
+												<p>Los servicios CSW o <b>Servicios de Catálogo</b> satisfacen un estándar diseñado por el Open Geospatial Consortium, el cual define una interfaz común para el descubrimiento, búsqueda y consulta de metadatos relacionados a datos, servicios y recursos de tipo geográfico.</p>
 											</div>
 										</div>
 									</div>

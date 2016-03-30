@@ -48,9 +48,7 @@ var mis_consultas = {
 			punto : sql('insert', 'denuncias/punto.sql'),
 			linea : sql('insert', 'denuncias/linea.sql'),
 			poligono : sql('insert', 'denuncias/poligono.sql'),
-			punto_con_id : sql('insert', 'denuncias/punto_con_id.sql'),
-			linea_con_id : sql('insert', 'denuncias/linea_con_id.sql'),
-			poligono_con_id : sql('insert', 'denuncias/poligono_con_id.sql'),
+			denuncia : sql('insert', 'denuncias/denuncia.sql'),
 		},
 		usuarios : {
 			crear : sql('insert', 'usuarios/crear.sql'),
@@ -66,9 +64,8 @@ var mis_consultas = {
 			punto :sql('update', 'denuncias/punto.sql'),
 			linea :sql('update', 'denuncias/linea.sql'),
 			poligono :sql('update', 'denuncias/poligono.sql'),
-			vista_punto : sql('update', 'denuncias/vista_punto.sql'),
-			vista_linea : sql('update', 'denuncias/vista_linea.sql'),
-			vista_poligono : sql('update', 'denuncias/vista_poligono.sql'),
+			denuncia : sql('update', 'denuncias/denuncia.sql'),
+			vista : sql('update', 'denuncias/vista.sql'),
 		},
 		usuarios : {
 			contraseña_perfil : sql('update', 'usuarios/contraseña_perfil.sql'),
@@ -91,6 +88,7 @@ var mis_consultas = {
 			punto : sql('delete', 'denuncias/punto.sql'),
 			linea : sql('delete', 'denuncias/linea.sql'),
 			poligono : sql('delete', 'denuncias/poligono.sql'),
+			denuncia : sql('delete', 'denuncias/denuncia.sql'),
 			all : {
 				tags : sql('delete', 'denuncias/all/tags.sql'),
 				likes : sql('delete', 'denuncias/all/likes.sql'),

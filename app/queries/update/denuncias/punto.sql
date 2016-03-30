@@ -1,1 +1,1 @@
-UPDATE denuncias_puntos SET (titulo, descripcion, the_geom) = ($1, $2, st_geomfromtext($3,4258)) WHERE gid=$4
+UPDATE denuncias_puntos SET the_geom = st_geomfromtext($1,4258) WHERE gid=$2

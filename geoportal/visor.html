@@ -42,7 +42,9 @@
 <!-- SIDEBAR CSS -->
 <link href="/javascripts/plugins/bootstrap-sidebar/dist/css/sidebar.css" rel="stylesheet">
 <!--Context-Menu CSS-->
-<link rel='stylesheet', href='/javascripts/plugins/ol3-contextmenu/build/ol3-contextmenu.min.css'>
+<link rel='stylesheet' href='/javascripts/plugins/ol3-contextmenu/build/ol3-contextmenu.min.css'>
+
+<link rel="stylesheet" href="/javascripts/plugins/multiselect/css/style.css">
 
 </head>
 
@@ -219,14 +221,17 @@ $('[data-toggle="tab"]').popover({
     trigger: 'hover',
     'placement': 'top'
 });
+
 </script>
 
 <script src="/javascripts/openlayers/controles/cql.js"></script>
 <script src="/javascripts/openlayers/controles/get_feature_info.js"></script>
 <script src="/javascripts/openlayers/controles/draw.js"></script>
+<script src="/javascripts/openlayers/controles/external_wms.js"></script>
 <script type="text/javascript">
 	map.addControl(new app.GetFeatureInfo());
+	map.addControl(new app.ExternalWMS());
 </script>
-
+<script src="/javascripts/plugins/multiselect/js/multiselect.min.js"></script>
 </body>
 </html>

@@ -46,6 +46,26 @@ app.GetFeatureInfo = function(opt_options) {
     helpTooltip.setPosition(evt.coordinate);
   
     $(helpTooltipElement).removeClass('hidden');
+  },
+  addURL = function(coordinate, layer){
+    if(layer.getSource() instanceof ol.source.TileWMS && layer.getVisible() == true){
+      console.log('eeeeee');
+      var url = layer.getSource().getGetFeatureInfoUrl(
+        coordinate,
+        map.getView().getResolution(),
+        proj, 
+        {'INFO_FORMAT': 'text/html'}
+      );
+      $.get(url, function(data){
+        if(data.length > 0) {
+          div.append($(data));
+        }
+        console.log(div + 'diiiiiiiiiiiiv');
+        //alert(JSON.stringify(div));
+        $('table.featureInfo').addClass('table table-responsive auto');
+        $('table.featureInfo tbody tr th').addClass('info auto');
+      });
+    } 
   };
   
   this.activar = function(bool){
@@ -84,51 +104,50 @@ app.GetFeatureInfo = function(opt_options) {
     var coordinate = evt.coordinate;
     div.append('<p>' + ol.coordinate.toStringHDMS(coordinate) + '</p>');
     
-    groupCartoTorrentWMS.getLayers().forEach(function(layer, index, that){
-      console.log(layer);
-      var url;
+    map.getLayers().forEach(function(layer, index, that){
+      //console.log(layer);
       var append = '';
-      
-      if(layer.getSource() instanceof ol.source.TileWMS && layer.getVisible() == true){
-        url = layer.getSource().getGetFeatureInfoUrl(
-        	coordinate,
-        	map.getView().getResolution(),
-        	proj, 
-        	{'INFO_FORMAT': 'text/html'}
-        );
-        $.get(url, function(data){
-          if(data.length > 0) {
-        	  div.append($(data));
-          }
-          //alert(JSON.stringify(div));
-          $('table.featureInfo').addClass('table table-responsive auto');
-          $('table.featureInfo tbody tr th').addClass('info auto');
-        });
+
+      try {
+        console.log('layer');
+        if (layer instanceof ol.layer.Group && layer.getVisible() == true ) {
+          layer.getLayers().getArray().forEach(function(sublayer, j, layers) {
+            if(sublayer.getVisible())
+              addURL(coordinate, sublayer);
+          })
+        } else if ( !(layer instanceof ol.layer.Group) && layer.getVisible() == true ) {
+          if(layer.getVisible())
+            addURL(coordinate, layer);
+        }
       }
-      
+      catch(e){
+        console.log('no source' + e);
+      }
+
       if(index == that.length -1) {
         $('#popup').parent().css('display', '');
-   		  var button_mas_info = document.createElement('button');
-	      	button_mas_info.className = 'btn btn-default';
-	      	button_mas_info.innerHTML = 'VER INFORMACIÓN'
-	      	button_mas_info.addEventListener('click', function(event){
-		      BootstrapDialog.show({
-		    	  title: 'Operación GetFeatureInfo',
-		    	  message: div,
-		    	  buttons: [{
-		    		  label: 'Cerrar',
-		    		  action: function(dialog){dialog.close();}
-		    	  }]
-		      });
-	      	});
-	      	console.log(coordinate);
-	      	$('.ol-popup').parent().css('display', '');
-	      	$('.ol-popup').css('display', '');
-	      	$('#popup').removeClass('hidden');
-	      	$('#popup > #popup-content').empty();
-	      	$('.ol-popup > #popup-content').append(button_mas_info);
-	      	popup.setPosition(coordinate);
-        } 
+        var button_mas_info = document.createElement('button');
+          button_mas_info.className = 'btn btn-default';
+          button_mas_info.innerHTML = 'VER INFORMACIÓN'
+          button_mas_info.addEventListener('click', function(event){
+          BootstrapDialog.show({
+            title: 'Operación GetFeatureInfo',
+            message: div,
+            buttons: [{
+              label: 'Cerrar',
+              action: function(dialog){dialog.close();}
+            }]
+          });
+          });
+          console.log(coordinate);
+          $('.ol-popup').parent().css('display', '');
+          $('.ol-popup').css('display', '');
+          $('#popup').removeClass('hidden');
+          $('#popup > #popup-content').empty();
+          $('.ol-popup > #popup-content').append(button_mas_info);
+          popup.setPosition(coordinate);
+      }
+
     });
   
   });

@@ -13,7 +13,7 @@ app.Lateral = function(opt_options) {
   	json = {},
   	denuncia_titulo = denuncia ? denuncia.titulo : '',
   	denuncia_contenido = denuncia ? decodeURIComponent(denuncia.descripcion) : '',
-  	post = denuncia ? '/app/denuncias/editar?id=' + denuncia.gid : '/app/denuncias/nueva/save',
+  	post = denuncia ? '/app/denuncia?id=' + denuncia.gid + '&action=edit' : '/app/denuncias/nueva/save',
   	button = document.createElement('button'),
   	element = document.createElement('div'),
   	this_ = this,
@@ -73,7 +73,7 @@ app.Lateral = function(opt_options) {
 	
 			// Configuración del dropzone
 			$("#file-dropzone").dropzone({ 
-			    url: "/app/fileUpload/" + random,
+			    url: "/app/fileUpload?tempdir=" + random,
 			    maxFilesize: 4,
 			    maxFiles: 10,
 			    paramName: "file",
@@ -119,7 +119,7 @@ app.Lateral = function(opt_options) {
 					    	    });
 				    		else
 					    	    $.ajax({
-					 	           	url:'/app/deleteFile/'+ random + '/' + file.name,
+					 	           	url:'/app/deleteFile?tempdir='+ random + '&filename=' + file.name,
 					 	           	type:'GET', // Método GET
 					 	           	data:{},
 					 	           	success:function(res){
@@ -129,7 +129,7 @@ app.Lateral = function(opt_options) {
 			    		} // if denuncia
 			    		else
 				    	    $.ajax({
-				 	           	url:'/app/deleteFile/'+ random + '/' + file.name,
+				 	           	url:'/app/deleteFile?tempdir='+ random + '&filename=' + file.name,
 				 	           	type:'GET', // Método GET
 				 	           	data:{},
 				 	           	success:function(res){
@@ -238,7 +238,7 @@ app.Lateral = function(opt_options) {
 							onshown : function(dialog){
 								setTimeout(function(){
 									dialog.close();
-									window.location.replace('/app/denuncia/' + res.denuncia.gid);
+									window.location.replace('/app/denuncia?id=' + res.denuncia.gid);
 								}, 2000);
 							},
 							// Cuando se cierre redirigimos al usuario 
