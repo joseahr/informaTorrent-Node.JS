@@ -152,6 +152,7 @@ app.QueryDenuncias = function(opt_options) {
 			title: 'Error consultando', 
 			message: data.msg, 
 			closable: true, 
+			onshow : function(dialog){$(dialog.getModalHeader()).css('background', 'rgb(200,50,50)')},
 			onshown: function(dialog){setTimeout(function(){dialog.close()}, 2000);}
 		});
 	});

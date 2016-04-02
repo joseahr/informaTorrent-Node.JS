@@ -59,7 +59,7 @@ app.Lateral = function(opt_options) {
 				'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking',
 				'save table contextmenu directionality emoticons template paste textcolor'],
 				theme: 'modern',
-				remove_redundant_brs : true,
+				/*remove_redundant_brs : true,*/
 				autodestroy : false,
 				language_url: '/langs/es.js',
 				min_width: 300,

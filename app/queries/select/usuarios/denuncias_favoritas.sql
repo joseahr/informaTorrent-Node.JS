@@ -34,4 +34,7 @@ FROM denuncias d
 LEFT JOIN LATERAL (SELECT the_geom FROM denuncias_puntos where gid = d.gid) dpu ON true
 LEFT JOIN LATERAL (SELECT the_geom FROM denuncias_lineas where gid = d.gid) dli ON true
 LEFT JOIN LATERAL (SELECT the_geom FROM denuncias_poligonos where gid = d.gid) dpo ON true
-)x WHERE gid=$1
+)x WHERE id_usuario = $1 AND gid IN (
+	SELECT id_denuncia FROM likes where id_usuario = $1
+)
+ORDER BY fecha DESC

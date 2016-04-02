@@ -101,9 +101,23 @@
 										<ul class="nav navbar-nav navbar-right">
 											<li class="active"><a href="#banner">Inicio</a></li>
 											<li class=""><a href="#servicios">Servicios</a></li>
-											<li><a href="#descargas">Descargas</a></li>
+											<li class="dropdown">
+												<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Descargas <span class="caret"></span></a>
+												<ul class="dropdown-menu" style="width : 100%">
+													<li><a href="#descargas">Descargas</a></li>
+													<li><a href="/descargas">Visor de Descargas</a></li>
+												</ul>
+											</li>
 											<li><a href="/visor">Visor</a></li>
-											<li><a href="http://192.168.1.14:8080/geonetwork">Buscador</a></li>
+											<li><a href=":8080/geonetwork">Buscador</a></li>
+											<li class="dropdown">
+												<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Más <span class="caret"></span></a>
+												<ul class="dropdown-menu" style="width : 100%">
+													<li>
+														<a href="#app">Informa Torrent</a>
+													</li>										
+												</ul>
+											</li>
 										</ul>
 									</div>
 	
@@ -170,7 +184,7 @@
 						<div class="row">
 							<div class="col-md-6">
 								<p>Desde el menú podrás acceder a los diferentes servicios web elaborados por el ayuntamiento de Torrent siguiendo los estándares aprobados por el <b>Open Geospatial Consortium (OGC)</b> para su uso en sistemas de información geográfica (SIG). Siguiendo estos estándares se intenta conseguir la integración y la interoperabilidad de grandes vólumenes de datos espacialmente referenciados (Información Geográfica).</p>
-								<p>Si lo deseas también puedes hacer uso de nuestro <span><a href="/visor">visor online</a></span> o buscar los recursos de su interés accediendo al <a href="http://192.168.1.14:8080/geonetwork">catálogo de servicios</a></span>.</p>
+								<p>Si lo deseas también puedes hacer uso de nuestro <span><a href="/visor">visor online</a></span> o buscar los recursos de su interés accediendo al <a href=":8080/geonetwork">catálogo de servicios</a></span>.</p>
 							</div>
 							<div class="col-md-6">
 								<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
@@ -185,13 +199,12 @@
 										<div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
 											<div class="panel-body" style="text-align: center;">
 												<div class="btn-group-vertical col-lg-12">
-													<button id="ir" type="button" class="btn btn-default col-lg-12" service_url="http://192.168.1.14:8080/geoserver/jahr/wms?service=WMS&request=GetCapabilities&version=1.3.0">Servicio</button>
-													<button id="copy" service_url="http://192.168.1.14:8080/geoserver/jahr/wms?service=WMS&request=GetCapabilities&version=1.3.0" type="button" class="btn btn-default">Copiar url</button>
-													<button id="capabilities" service_url="http://192.168.1.14:8080/geoserver/jahr/wms?service=WMS&request=GetCapabilities&version=1.3.0" service_name="Servicio WMS - GetCapabilities" type="button" class="btn btn-default">Get Capabilities</button>
+													<button id="ir" type="button" class="btn btn-default col-lg-12" service_url="/geoserver/jahr/wms?service=WMS&request=GetCapabilities&version=1.3.0">Servicio</button>
+													<button id="copy" service_url="/geoserver/jahr/wms?service=WMS&request=GetCapabilities&version=1.3.0" type="button" class="btn btn-default">Copiar url</button>
+													<button id="capabilities" service_url="/geoserver/jahr/wms?service=WMS&request=GetCapabilities&version=1.3.0" service_name="Servicio WMS - GetCapabilities" type="button" class="btn btn-default">Get Capabilities</button>
 												</div>
 												<br>
 												<p>Los servicios web de mapas <b>WMS (Web Map Service)</b> producen mapas (imágenes digitales georeferenciadas) a partir de datos georeferenciados.</p>
-												<p>Contiene cartografía general de Torrent, ortofoto y cartografía temática de denuncias.</p>
 											</div>
 										</div>
 									</div>
@@ -206,9 +219,9 @@
 										<div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
 											<div class="panel-body" style="text-align: center;">
 												<div class="btn-group-vertical col-lg-12">
-													<button id="ir" type="button" class="btn btn-default col-lg-12" service_url="http://192.168.1.14:8080/geoserver/jahr/wms?service=WFS&request=GetCapabilities&version=1.3.0">Servicio</button>
-													<button id="copy" service_url="http://192.168.1.14:8080/geoserver/jahr/wms?service=WFS&request=GetCapabilities&version=1.3.0" type="button" class="btn btn-default">Copiar url</button>
-													<button id="capabilities" service_url="http://192.168.1.14:8080/geoserver/jahr/wms?service=WFS&request=GetCapabilities&version=1.3.0" service_name="Servicio WFS - GetCapabilities" type="button" class="btn btn-default">Get Capabilities</button>
+													<button id="ir" type="button" class="btn btn-default col-lg-12" service_url="/geoserver/jahr/wms?service=WFS&request=GetCapabilities&version=1.3.0">Servicio</button>
+													<button id="copy" service_url="/geoserver/jahr/wms?service=WFS&request=GetCapabilities&version=1.3.0" type="button" class="btn btn-default">Copiar url</button>
+													<button id="capabilities" service_url="/geoserver/jahr/wms?service=WFS&request=GetCapabilities&version=1.3.0" service_name="Servicio WFS - GetCapabilities" type="button" class="btn btn-default">Get Capabilities</button>
 												</div>
 												<br>
 												<p><b>Web Feature Service</b> o WFS del Consorcio Open Geospatial Consortium o OGC es un servicio estándar, que ofrece una interfaz de comunicación que permite interactuar con los mapas servidos por el estándar WMS, como por ejemplo, editar la imagen que nos ofrece el servicio WMS o analizar la imagen siguiendo criterios geográficos.
@@ -229,9 +242,9 @@
 										<div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
 											<div class="panel-body" style="text-align: center;">
 												<div class="btn-group-vertical col-lg-12">
-													<button id="ir" type="button" class="btn btn-default col-lg-12" service_url="http://192.168.1.14:8080/geoserver/jahr/wms?service=WCS&request=GetCapabilities&version=1.3.0">Servicio</button>
-													<button id="copy" service_url="http://192.168.1.14:8080/geoserver/jahr/wms?service=WCS&request=GetCapabilities&version=1.3.0" type="button" class="btn btn-default">Copiar url</button>
-													<button id="capabilities" service_url="http://192.168.1.14:8080/geoserver/jahr/wms?service=WCS&request=GetCapabilities&version=1.3.0" service_name="Servicio WCS - GetCapabilities" type="button" class="btn btn-default">Get Capabilities</button>
+													<button id="ir" type="button" class="btn btn-default col-lg-12" service_url="/geoserver/jahr/wms?service=WCS&request=GetCapabilities&version=1.3.0">Servicio</button>
+													<button id="copy" service_url="/geoserver/jahr/wms?service=WCS&request=GetCapabilities&version=1.3.0" type="button" class="btn btn-default">Copiar url</button>
+													<button id="capabilities" service_url="/geoserver/jahr/wms?service=WCS&request=GetCapabilities&version=1.3.0" service_name="Servicio WCS - GetCapabilities" type="button" class="btn btn-default">Get Capabilities</button>
 												</div>
 												<p></p>
 												<p>La interfaz estándar <b>Web Coverage Service</b> (WCS) o Servicio de Cobertura Web de Open Geospatial Consortium proporciona una interfaz que permite realizar peticiones de cobertura geográfica a través de la web utilizando llamadas independientes de la plataforma. Las coberturas son objetos (o imágenes) en un área geográfica mientras que la interfaz WMS o portales de mapas online como Google Maps devuelven sólo una imagen, que los usuarios no pueden editar o analizar espacialmente.</p>
@@ -250,9 +263,9 @@
 										<div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
 											<div class="panel-body" style="text-align: center;">
 												<div class="btn-group-vertical col-lg-12">
-													<button id="ir" type="button" class="btn btn-default col-lg-12" service_url="http://192.168.1.14:8080/geoserver/gwc/service/wmts?request=GetCapabilities&service=WMTS&version=1.3.0">Servicio</button>
-													<button id="copy" service_url="http://192.168.1.14:8080/geoserver/gwc/service/wmts?request=GetCapabilities&service=WMTS&version=1.3.0" type="button" class="btn btn-default">Copiar url</button>
-													<button id="capabilities" service_url="http://192.168.1.14:8080/geoserver/gwc/service/wmts?request=GetCapabilities&service=WMTS&version=1.3.0" service_name="Servicio WMTS - GetCapabilities" type="button" class="btn btn-default">Get Capabilities</button>
+													<button id="ir" type="button" class="btn btn-default col-lg-12" service_url="/geoserver/gwc/service/wmts?request=GetCapabilities&service=WMTS&version=1.3.0">Servicio</button>
+													<button id="copy" service_url="/geoserver/gwc/service/wmts?request=GetCapabilities&service=WMTS&version=1.3.0" type="button" class="btn btn-default">Copiar url</button>
+													<button id="capabilities" service_url="/geoserver/gwc/service/wmts?request=GetCapabilities&service=WMTS&version=1.3.0" service_name="Servicio WMTS - GetCapabilities" type="button" class="btn btn-default">Get Capabilities</button>
 												</div>
 												<p></p>
 												<p>Los Servicios Web de Mapas Teselados <b>WMTS (Web Map Tile Service)</b> es un protoc olo estándar del OGC para servir teselas de mapa pregeneradas en el servidor.</p>
@@ -271,9 +284,9 @@
 										<div id="collapseFive" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
 											<div class="panel-body" style="text-align: center;">
 												<div class="btn-group-vertical col-lg-12">
-													<button id="ir" type="button" class="btn btn-default col-lg-12" service_url="http://192.168.1.14:8080/geonetwork/srv/spa/csw?request=GetCapabilities&version=2.0.2&service=CSW">Servicio</button>
-													<button id="copy" service_url="http://192.168.1.14:8080/geonetwork/srv/spa/csw?request=GetCapabilities&version=2.0.2&service=CSW" type="button" class="btn btn-default">Copiar url</button>
-													<button id="capabilities" service_url="http://192.168.1.14:8080/geonetwork/srv/spa/csw?request=GetCapabilities&version=2.0.2&service=CSW" service_name="Servicio CSW - GetCapabilities" type="button" class="btn btn-default">Get Capabilities</button>
+													<button id="ir" type="button" class="btn btn-default col-lg-12" service_url="/geonetwork/srv/spa/csw?request=GetCapabilities&version=2.0.2&service=CSW">Servicio</button>
+													<button id="copy" service_url="/geonetwork/srv/spa/csw?request=GetCapabilities&version=2.0.2&service=CSW" type="button" class="btn btn-default">Copiar url</button>
+													<button id="capabilities" service_url="/geonetwork/srv/spa/csw?request=GetCapabilities&version=2.0.2&service=CSW" service_name="Servicio CSW - GetCapabilities" type="button" class="btn btn-default">Get Capabilities</button>
 												</div>
 												<p></p>
 												<p>Los servicios CSW o <b>Servicios de Catálogo</b> satisfacen un estándar diseñado por el Open Geospatial Consortium, el cual define una interfaz común para el descubrimiento, búsqueda y consulta de metadatos relacionados a datos, servicios y recursos de tipo geográfico.</p>
@@ -363,6 +376,33 @@
 		</div>
 		<!-- section end -->
 
+		<!-- section start -->
+		<!-- ================ -->
+		<div class="section clearfix object-non-visible" data-animation-effect="fadeInRightBig">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<h1 id="app" class="title text-center">Informa <span>Torrent</span></h1>
+						<p class="lead text-center">La app con la que contribuirás a la mejora de Torrent.</p>
+						<div class="space"></div>
+						<div class="row">
+							<div class="col-md-6 text-center object-non-visible" data-animation-effect="tada">
+								<i class="fa fa-bullhorn" style="font-size: 300px; color: #339BEB;"></i>
+								<div class="space"></div>
+							</div>
+							<div class="col-md-6 object-non-visible text-center" data-animation-effect="bounce">
+								<p>Una aplicación de geolocalización con la que podrás informar de denuncias, quejas y mejoras para Torrent.</p>
+								<p>Accede a la aplicación pulsando <a href="/app">aquí</a></p>
+						    	
+							</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- section end -->
+
 <!-- Plugins Javascript situados al final de la página, así el contenido carga antes -->
 
 <!-- JQuery y Bootstrap -->
@@ -391,7 +431,7 @@
 <script src="/javascripts/plugins/bootstrap-select/js/bootstrap-select.js"></script>
 
 <script type="text/javascript">
-
+console.log(window.location.href.toString().split(window.location.port)[0]);
 	$('.selectpicker').selectpicker({
 		width: '100%'
 	}).selectpicker('mobile');
@@ -405,15 +445,15 @@
 		console.log(capa + features);
 		
 		if (capa == 'jahr:ortofoto') {
-			window.open('http://192.168.1.14:8080/geoserver/jahr/wms?service=WMS&version=1.1.0&request=GetMap&layers=jahr:ortofoto&styles=&bbox=703922.4219253492,4361457.771400001,721973.2836746508,4370702.237000001&width=768' +
+			window.open(window.location.href.toString().split(window.location.port)[0] + '8001/geoserver/jahr/wms?service=WMS&version=1.1.0&request=GetMap&layers=jahr:ortofoto&styles=&bbox=703922.4219253492,4361457.771400001,721973.2836746508,4370702.237000001&width=768' +
 					'&height=393&srs=EPSG:25830&format=' + $('#format').val());
 		}
 		else {
 			if (features == '')
-				window.open('http://192.168.1.14:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
+				window.open(window.location.href.toString().split(window.location.port)[0] + '8001/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
 				'&request=GetFeature&typeName=' + capa + '&outputFormat=shape-zip');
 			else
-				window.open('http://192.168.1.14:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
+				window.open(window.location.href.toString().split(window.location.port)[0] + '8001/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
 				'&request=GetFeature&typeName=' + capa + '&maxFeatures=' + features + '&outputFormat=shape-zip');		
 		}
 		
@@ -447,7 +487,7 @@
 	
 	// GetCapabilities Dialog
 	$('[id="capabilities"]').click(function(event){
-		var serviceURL = $(this).attr('service_url');
+		var serviceURL = window.location.href.toString().split(window.location.port)[0] + '8001' + $(this).attr('service_url');
 		var serviceName = $(this).attr('service_name');
 		
 		
@@ -499,7 +539,7 @@
 	
 	// Copy Service URL
 	$('[id="copy"]').click(function(event){
-		var service_url = $(this).attr('service_url');
+		var service_url = window.location.href.toString().split(window.location.port)[0] + '8001' + $(this).attr('service_url');
 	    var $temp = $("<input>")
 	    $("body").append($temp);
 	    $temp.val(service_url).select();
@@ -510,7 +550,7 @@
 	
 	// Go to Service
 	$('[id="ir"]').click(function(event){
-		window.open($(this).attr('service_url'));
+		window.open(window.location.href.toString().split(window.location.port)[0] + '8001' +  $(this).attr('service_url'));
 	});
 	
 </script>

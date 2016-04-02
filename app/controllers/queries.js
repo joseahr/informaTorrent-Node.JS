@@ -85,6 +85,8 @@ module.exports = {
 		
 		obtener_denuncias_usuario : helper.select.usuarios.denuncias,
 
+		usuario_denuncias_favoritas : helper.select.usuarios.denuncias_favoritas,
+
 		usuario_por_password_reset_token : helper.select.usuarios.por_reset_token,
     		
     	perfil_otro_usuario : helper.select.usuarios.perfil_otro, 

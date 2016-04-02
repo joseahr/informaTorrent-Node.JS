@@ -118,11 +118,8 @@ html
           button#play.btn.btn-default.btn-sm(style="min-width: 0px; margin-top: 5px; float: left;")
             i.fa.fa-play
           select#anyos
+          #fecha_max(style="margin-top : 10px; position: absolute; text-align : center; left: 4.5em; right: 1.25em;")
     #map.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
-      // Popup info denuncias
-      #popup-visor.ol-popup.hidden(style="z-index: 3;width: 350px;")
-        a#popup-visor-closer.ol-popup-closer(href='#')
-        #popup-visor-content(style="width: 100%; overflow-x: hidden; word-wrap: break-word;")
     // section end
     div(style="position: fixed; bottom: 0px; left: 0; right: 0; height: 1.5em; background : rgba(0,0,0,0.4); color: #fff; padding: 0 15 0 15px")
       i.fa.fa-bullhorn
@@ -136,6 +133,7 @@ html
   script.
     var ip = '#{ip}';
     var usuario_id = '#{locals.user ? locals.user._id : undefined}';
+  script(src='/javascripts/plugins/js-cookie/src/js.cookie.js')
   script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js')
   script(src='//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js')
   // Modernizr
@@ -235,6 +233,4 @@ html
     $('#map').click(function(e){
       //alert('hideee');
       $('[data-toggle="right"], [data-toggle="left"]').popover('hide');
-    });
-
-  
+    });  

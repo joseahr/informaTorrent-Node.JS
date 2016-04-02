@@ -342,6 +342,43 @@ ContPg.prototype.saveDenuncia = function(req, res){
 		});
 }; // Fin saveDenuncia
 
+
+/*
+ * Perfil visible de los usuarios
+ */
+ContPg.prototype.getUserProfile = function(req, res){
+	// Perfil que será visible para los demás usuarios
+	// solo podemos acceder si estamos loggeados
+	var usuario, denuncias_user;
+
+	if(!req.query.id) return res.status(500).send('Debe introducir el parámetro id');
+
+	db.oneOrNone(consultas.perfil_otro_usuario, req.query.id)
+		.then(function(usuario_){
+			if(!usuario_) throw new Error('No existe el usuario con id = ' + req.params.id_usuario);
+			usuario = usuario_;
+			console.log('usuario :' + JSON.stringify(usuario));
+			return db.any(consultas.obtener_denuncias_usuario, usuario._id);
+		})
+		.then (function(denuncias_user_){
+			denuncias_user = denuncias_user_;
+			denuncias_user.forEach(function(denuncia){
+				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+			});
+			return db.any(consultas.usuario_denuncias_favoritas, usuario._id);
+		})
+		.then(function(denuncias_fav){
+			denuncias_fav.forEach(function(denuncia){
+				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+			});
+			res.render('perfil_otro.jade', {user_otro: usuario, denuncias : denuncias_user, denuncias_fav : denuncias_fav});
+		})
+		.catch(function(error){
+			res.status(500).send(error);
+		});
+	
+};
+
 /*
  * Renderizamos el Perfil del usuario
  */
@@ -353,16 +390,17 @@ ContPg.prototype.getProfile = function(req, res) {
 		.then (function(denuncias){
 			
 			denuncias.forEach(function(denuncia){
-				denuncia.descripcion = denuncia.descripcion.replace(/\n/g, "<br />");
-				//denuncia.geometria = JSON.stringify(denuncia.geometria);
-				console.log(denuncia);
 				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-				//denuncia.tipo = denuncia.geometria.type;
-				//denuncia.coordenadas = denuncia.geometria.coordinates;
-				//console.log(denuncia.gid, denuncia.tipo, 'tipo', denuncia.coordenadas, 'coordenadas', denuncia.geometria.type, 'geometria');
-				//denuncia.geometria = undefined;
 			});
-			res.render('profile', { misDenuncias: denuncias });
+
+			denuncias_user = denuncias;
+			return db.any(consultas.usuario_denuncias_favoritas, req.user._id);
+		})
+		.then (function(denuncias_fav){
+			denuncias_fav.forEach(function(denuncia){
+				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+			});
+			res.render('profile', { misDenuncias: denuncias_user, denuncias_fav : denuncias_fav });
 		})
 		.catch (function(error){
 			res.status(500);
@@ -399,7 +437,7 @@ ContPg.prototype.getDenunciasPage = function(req, res){
 		})
 		.then (function(denuncias){
 			denuncias.forEach(function(d){
-				d.geometria = d.geometria_pt || d.geomtria_li || d.geometria_po;
+				d.geometria = d.geometria_pt || d.geometria_li || d.geometria_po;
 			});
 			console.log(denuncias);
 			res.render('denuncias',{denuncias : JSON.stringify(denuncias), 

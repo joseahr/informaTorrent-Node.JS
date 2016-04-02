@@ -29,99 +29,111 @@ app.ExternalWMS = function(opt_options) {
     '<div class="col-xs-5">' +
         '<select name="to[]" id="multiselect_to" class="form-control" size="8" multiple="multiple"></select>' + 
     '</div></div>' +
-    '<button id="add_capas" class="btn btn-success col-lg-12" style="margin-top: 5px">AÑADIR CAPAS</button>'
-  '</div>'}, 
-  message = '<div class="container-fluid"><p> Pega aquí el link hacia el servidor externo</p><input placeholder="ej: http://www.dominio.es/geoserver/wms" id="input_ext" class="col-lg-12" type="text"></input><button id="btn_ext" class="col-lg-12 btn btn-success">CONECTAR CON EL SERVIDOR</button></div>',
-  dialog = new BootstrapDialog({
-    title : 'Añade un servidor WMS externo',
-    message : message, 
-    autodestroy : true, 
-    onshown : function(d){
-      $(dialog.getModalBody()).find('#btn_ext').click(function(e){
-        var wms_ext = $(dialog.getModalBody()).find('#input_ext').val();
-        
-        var regex = new RegExp(/^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/);
-        
-        wms_ext = wms_ext.split('?')[0];
-        
-        console.log(wms_ext.match(regex));
-        
-        if(!wms_ext.match(regex))
-          return BootstrapDialog.show({
-            title : 'Error', 
-            message : 'Debe introducir una URL válida'
-          });
-
-        var xhr = new XMLHttpRequest();
-        var url = wms_ext + '?request=GetCapabilities&service=WMS&version=1.3.0';
-
-        var params = {url : url, method : 'GET'};
-        xhr.open('GET', "/xhr?" + $.param(params), true);
-        //xhr.setRequestHeader('Access-Control-Allow-Headers', '*');
-        xhr.onload = function(){
-          //console.log(xhr.responseText);
-          try {
-            var json_cap = parser.read(xhr.responseText);
-            //console.log(json_cap);
-            var opts = '';
-            json_cap.Capability.Layer.Layer.forEach(function(layer){
-              console.log(layer);
-              // TODO --> Mostrar capas en un recuadro, decirle al usuario que 
-              // elija las que quiera y cargarlas como un grupo de capas
-              opts += '<option value="' + layer.Name + '">' + layer.Name + '</option>';
+    '<button id="add_capas" class="btn btn-success col-lg-12" style="margin-top: 5px">AÑADIR CAPAS</button>' +
+  '</div>'
+  }, 
+  message = '<div class="container-fluid"><p> Pega aquí el link hacia el servidor externo</p><input placeholder="ej: http://www.dominio.es/geoserver/wms" class="form-control col-lg-12" id="input_ext" class="col-lg-12" type="text"></input><button id="btn_ext" style="min-width : 100%" class="col-lg-12 btn btn-success">CONECTAR CON EL SERVIDOR</button></div>',
+  dialog_ = function() {
+    var dialog = new BootstrapDialog({
+      title : 'Añade un servidor WMS externo',
+      message : message, 
+      autodestroy : true, 
+      onshown : function(d){
+        $(dialog.getModalBody()).find('#btn_ext').click(function(e){
+          var wms_ext = $(dialog.getModalBody()).find('#input_ext').val();
+          
+          var regex = new RegExp(/^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/);
+          
+          wms_ext = wms_ext.split('?')[0];
+          
+          console.log(wms_ext.match(regex));
+          
+          if(!wms_ext.match(regex))
+            return BootstrapDialog.show({
+              title : 'Error', 
+              message : 'Debe introducir una URL válida',
+              onshow : function(dialog){$(dialog.getModalHeader()).css('background', 'rgb(200,50,50)')}
             });
 
-            //dialog.setData('url', url);
-            $(dialog.getModalBody()).empty().append($(multiselect(opts)));
-            $(dialog.getModalBody()).find('#multiselect').multiselect({
-              keepRenderingSort : true,
-            });
-            $(dialog.getModalBody()).find('button').css('min-width', '0px');
+          var xhr = new XMLHttpRequest();
+          var url = wms_ext + '?request=GetCapabilities&service=WMS&version=1.3.0';
 
-            $(dialog.getModalBody()).find('#add_capas').click(function(){
-              var layers = [];
-              $('#multiselect_to > option').each(function(){
+          var params = {url : url, method : 'GET'};
+          xhr.open('GET', "/xhr?" + $.param(params), true);
+          //xhr.setRequestHeader('Access-Control-Allow-Headers', '*');
+          xhr.onload = function(){
+            //console.log(xhr.responseText);
+            try {
+              var json_cap = parser.read(xhr.responseText);
+              //console.log(json_cap);
+              var opts = '';
+              json_cap.Capability.Layer.Layer.forEach(function(layer){
+                console.log(layer);
+                // TODO --> Mostrar capas en un recuadro, decirle al usuario que 
+                // elija las que quiera y cargarlas como un grupo de capas
+                opts += '<option value="' + layer.Name + '">' + layer.Name + '</option>';
+              });
 
-                console.log($(this).val());
-                layers.push(new ol.layer.Tile({
-                  title: $(this).val(),
-                  visible: true,
-                  source: new ol.source.TileWMS({
-                    //crossOrigin: 'anonymous', // So important maniguiiiiii
-                    url: wms_ext,
-                    params: {
-                      'FORMAT': 'image/png', 
-                      VERSION : '1.1.0',
-                      LAYERS: $(this).val(),
-                      STYLES: '',
-                    }
-                  })
+              //dialog.setData('url', url);
+              $(dialog.getModalBody()).empty().append($(multiselect(opts)));
+              $(dialog.getModalBody()).find('#multiselect').multiselect({
+                keepRenderingSort : true,
+              });
+              $(dialog.getModalBody()).find('button').css('min-width', '0px');
+
+              $(dialog.getModalBody()).find('#add_capas').click(function(){
+                var layers = [];
+                $('#multiselect_to > option').each(function(){
+
+                  console.log($(this).val());
+                  layers.push(new ol.layer.Tile({
+                    title: $(this).val(),
+                    visible: true,
+                    source: new ol.source.TileWMS({
+                      //crossOrigin: 'anonymous', // So important maniguiiiiii
+                      url: wms_ext,
+                      params: {
+                        'FORMAT': 'image/png', 
+                        VERSION : '1.1.0',
+                        LAYERS: $(this).val(),
+                        STYLES: '',
+                      }
+                    })
+                  }));
+
+                }); // multiselect option each 
+
+                map.addLayer(new ol.layer.Group({
+                  title : wms_ext,
+                  layers : layers
                 }));
 
-              }); // multiselect option each 
+                d.close();
 
-              map.addLayer(new ol.layer.Group({
-                title : wms_ext,
-                layers : layers
-              }));
+              }); // add capas click
 
-            }); // add capas click
+            } catch (e) {
+              BootstrapDialog.show({
+                title : 'Error',
+                message : 'Error conectando al Servidor externo: \n' + e,
+                onshow : function(dialog){
+                  $(dialog.getModalHeader()).css('background', 'rgb(200,50,50)');
+                }
+              });
+            }
+          };
+          xhr.send();
 
-          } catch (e) {
-            alert(e);
-          }
-        };
-        xhr.send();
 
 
-
-      });
-    }
-  });
+        });
+      }
+    });
+    dialog.open();
+  };
 
   function external_wms (){
-    dialog.setMessage(message);
-    dialog.open();
+    dialog_();
   };
 
   button.innerHTML = '<i class="fa fa-external-link"></i>';

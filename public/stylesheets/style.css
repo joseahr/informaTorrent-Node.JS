@@ -1,6 +1,65 @@
+.navbar-default .navbar-nav > .open > a, 
+.navbar-default .navbar-nav > .open > a:hover, 
+.navbar-default .navbar-nav > .open > a:focus
+{
+	text-align: center;
+    background-color: transparent;
+}
+
+.fixed-header-on .navbar-default .navbar-nav > .open > a 
+{
+	color: #55acee;
+}
+
+.dropdown-menu 
+{
+	/*position : relative;*/
+	box-shadow: none;
+	border: none;
+	background: transparent;
+}
+
+.dropdown-menu > li > a
+{
+	text-align: center;
+	color: #000;
+}
+.dropdown-menu > li > a:hover
+{
+	background: #000;
+	color: #fff;
+	border-radius: 5px;
+}
+
+.fixed-header-on .dropdown-menu
+{
+	background: rgba(0,0,0,0.95);
+}
+
+.fixed-header-on .dropdown-menu > li 
+{
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.fixed-header-on .dropdown-menu > li > a 
+{
+	color: #fff;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.fixed-header-on .dropdown-menu > li > a:hover, 
+.fixed-header-on .dropdown-menu > li > a:focus 
+{
+    text-decoration: none;
+    background-color: #55acee;
+    border-radius:  5px;
+}
+
 .menu-item {padding: 5 0 5 5px; margin: 5 0 5 0px; border-radius: 5px;}
 .menu-item:hover { background: rgba(0,59,111,0.3) }
-.menu-item > a:hover { text-decoration: none; color: #003b6f}
+.menu-item > a:hover { text-decoration: none; color: #fff}
 .menu-item > a {color: #000}
 .open {
 	background: none;
@@ -202,7 +261,7 @@ blockquote {
 }
 .section {
 	background-color: #ffffff;
-	padding: 80px 0;
+	padding: 50px 0;
 }
 
 /* Backgrounds
@@ -469,11 +528,11 @@ textarea {
 	-moz-border-radius: 5px;
 	border-radius: 5px;
 }
-.modal-header {
-	background-color: #55acee;
+.modal-header h4 {
 	color: #ffffff;
 }
-.modal-header h4 {
+.modal-header {
+	background-color: #55acee;
 	color: #ffffff;
 }
 .modal-header .close {

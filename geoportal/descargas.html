@@ -185,8 +185,29 @@ var imprimir_mapa = function(){
     var canvas = event.context.canvas;
     var image = new Image();
     image.crossOrigin = "anonymous";
-    image.src = canvas.toDataURL('image/png');
-    window.open(image.src);
+    try {
+    	image.src = canvas.toDataURL('image/png');
+    }
+    catch(e){
+    	BootstrapDialog.show({
+    		title : 'Error exportando mapa', 
+    		message : 'Vuelva a recargar la página y pruebe otra vez. No añada capas de servidores externos.',
+    		onshow : function(dialog){$(dialog.getModalHeader()).css('background', 'rgb(200,50,50)')}
+    	});
+    }
+    //window.open(image.src);
+
+    var a = document.createElement('a');
+
+    a.setAttribute('href', image.src);
+    a.setAttribute('download', 'export_mapa_torrent.png');
+    a.setAttribute('target', 'blank_');
+
+    document.body.appendChild(a);
+    a.click();
+
+    map.renderSync();
+
   });
 
 },

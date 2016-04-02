@@ -63,9 +63,34 @@ app.use(passport.session()); // Sesiones Login Persistentes - Passport
 app.use(flash()); // Flashear mensaje almacenados en la sesión
 
 /***** CORS - Orígenes externos**/
-app.use(function(req, res, next) {
+/*app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});*/
+
+/*
+======================================
+===              I18N              ===
+======================================
+*/
+var i18n = require('i18n-2');
+
+i18n.expressBind(app, {
+  // setup some locales - other locales default to vi silently
+  locales: ['es', 'val', 'en'],
+  // set the default locale
+  defaultLocale: 'es',
+  // set the cookie name
+  cookieName: 'leng',
+
+  directory : __dirname + '/locales'
+});
+
+// set up the middleware
+app.use(function(req, res, next) {
+  req.i18n.setLocaleFromQuery();
+  req.i18n.setLocaleFromCookie();
   next();
 });
 
@@ -76,11 +101,14 @@ var IP = os.networkInterfaces()['ens33'][0]['address']; // IP desde donde ejecut
 
 //var IP = 'http://localhost:3000/'
 
+/*
+======================================
+===      INICIO DEL SERVIDOR       ===
+======================================
+*/
 var server = http.createServer(app);
 server.listen(port);
 console.log('The magic happens on port ' + port);
-
-// multer
 
 //socket io
 var io = require('socket.io').listen(server);
@@ -196,6 +224,7 @@ app.get('/xhr', function(req, res){
 });
 
 app.get('/', function(req, res){
+	console.log(req.i18n.__('hola'));
     res.writeHead(200, {
         "Content-Type": "text/html"
     });
@@ -269,7 +298,7 @@ app.get('/app/getInfoTabla', function(req, res){
 app.get('/app', middle_datos, contHome.getAppHomePage); // Página de Inicio de la aplicación
 
 app.get('/app/perfil', middle_datos, isLoggedIn, contPg.getProfile); // Perfil de usuario
-app.get('/app/usuarios/:id_usuario', middle_datos, isLoggedIn, contPass.getUserProfile);
+app.get('/app/usuarios', middle_datos, isLoggedIn, contPg.getUserProfile);
 app.get('/app/logout', contPass.logout); // Logout
 app.get('/app/login', middle_datos, contPass.getLogin); // Página de Login (modal)
 app.post('/app/login', contPass.postLogin); // POST Login

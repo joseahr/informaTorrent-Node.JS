@@ -69,7 +69,8 @@ app.TrackingDenunciasCerca = function(opt_options) {
     this_.desactivar();
     BootstrapDialog.show({
       title: 'Error tratando de geolocalizar tu dispositivo',
-      message: 'Revise y active las opciones de geolocalización de su dispositivo'
+      message: 'Revise y active las opciones de geolocalización de su dispositivo',
+      onshow : function(dialog){$(dialog.getModalHeader()).css('background', 'rgb(200,50,50)')}
     });
   });
 

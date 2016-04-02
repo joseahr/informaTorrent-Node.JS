@@ -22,3 +22,44 @@ block content
 				.col-md-8
 					.row(style="margin:0 5 0 5px;")
 						div(style={background: 'rgba(0,50,187, 0)', width: 'auto; margin: 0 auto;'}).form-horizontal.text-center
+							#accordion.panel-group(role='tablist', aria-multiselectable='true')
+								.panel.panel-default
+									// Denuncias
+									#headingOne.panel-heading(role='tab')
+										h4.panel-title
+											a(data-toggle='collapse', data-parent='#accordion', href='#mis_denuncias', aria-expanded='true', aria-controls='mis_denuncias')
+												i.fa.fa-files-o
+												| Denuncias
+									#mis_denuncias.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingOne')
+										.panel-body(style='text-align: center;')
+											p.lead ¡Ha realizado 
+												span#has_realizado.lead 
+													if denuncias 
+														|  #{denuncias.length} 
+													else 
+														|  0
+												|  denuncias!
+								.panel.panel-default
+									// Denuncias Favoritas
+									#headingTwo.panel-heading(role='tab')
+										h4.panel-title
+											a(data-toggle='collapse', data-parent='#accordion', href='#favoritas', aria-expanded='true', aria-controls='favoritas')
+												i.fa.fa-star
+												| Denuncias Favoritas
+									#favoritas.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTwo')
+										.panel-body(style='text-align: center;')
+											p.lead ¡Le han gustado 
+												span.lead 
+													if denuncias_fav
+														|  #{denuncias_fav.length} 
+													else 
+														|  0
+												|  denuncias!
+block script
+	// Proj4.js
+	script(src='https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.12/proj4.js')
+	// OpenLayers.js
+	script(src='/javascripts/plugins/ol3/ol.js')
+	script.
+		fillDenuncias(JSON.parse('!{JSON.stringify(denuncias)}'));
+		fillFavoritas(JSON.parse('!{JSON.stringify(denuncias_fav)}'));

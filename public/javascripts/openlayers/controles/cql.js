@@ -25,8 +25,8 @@ app.CQL = function(opt_options) {
   		'</select>' +
   		'<div class="col-lg-12"><div class="input-group space"><span class="input-group-addon"> Filtrar</span>' +
   		"<input id='cql_filter' class='form-control btn-default' type='text' placeholder='ej: gid=&#39;3h039h30b3l1jb9&#39;, titulo like &#39;%ejemplo%&#39;, etc. ' /></div></div>" +
-  		'<div class="col-lg-6"><button class="btn btn-default col-lg-12" id="consultar">CONSULTAR</button></div>' + 
-  		'<div class="col-lg-6"><button class="btn btn-default col-lg-12" id="reset">RESETEAR</button></div>' + 
+  		'<div class="col-lg-12"><button class="btn btn-default col-lg-12" style="min-width : 100%" id="consultar">CONSULTAR</button></div>' + 
+  		'<div class="col-lg-12"><button class="btn btn-default col-lg-12" style="min-width : 100%" id="reset">RESETEAR</button></div>' + 
   		'<div id="columnas" class="col-lg-12 space"></div>' +
   	'</div></div>';
 
@@ -37,7 +37,7 @@ app.CQL = function(opt_options) {
 		  	buttons: [{label: 'Cerrar', action: function(d){d.close();}}],
 		  	draggable: true,
 		  	onshown: function(){ 
-			  	$('.selectpicker').selectpicker('mobile');
+			  	$('.selectpicker').selectpicker({width : '100%'}).selectpicker('mobile');
 			  
 			  	$('.selectpicker').change(function(e){
 				  	var capa_aux = '';

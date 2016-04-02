@@ -36,7 +36,8 @@ var mis_consultas = {
 			por_id_twitter : sql('select', 'usuarios/por_id_twitter.sql'),
 			por_id : sql('select', 'usuarios/por_id.sql'),
 			por_reset_token : sql('select', 'usuarios/por_reset_token.sql'),
-			por_username : sql('select', 'usuarios/por_username.sql')
+			por_username : sql('select', 'usuarios/por_username.sql'),
+			denuncias_favoritas : sql('select', 'usuarios/denuncias_favoritas.sql')
 		}
 	},
 	insert : {

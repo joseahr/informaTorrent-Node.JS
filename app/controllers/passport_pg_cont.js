@@ -347,24 +347,6 @@ Passport.prototype.logout = function(req, res) {
 }
 
 /*
- * Perfil visible de los usuarios
- */
-Passport.prototype.getUserProfile = function(req, res){
-	// Perfil que será visible para los demás usuarios
-	// solo podemos acceder si estamos loggeados
-	
-	db.oneOrNone(consultas.perfil_otro_usuario, req.params.id_usuario)
-		.then(function(usuario){
-			if(!usuario) throw new Error('No existe el usuario con id = ' + req.params.id_usuario);
-			res.render('perfil_otro.jade', {user_otro: usuario});
-		})
-		.catch(function(error){
-			res.status(500).send(error);
-		});
-	
-};
-
-/*
  * Confirmar Usuario Ruta: /app/confirmar/:id_usuario
  */
 

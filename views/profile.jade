@@ -45,7 +45,7 @@ block content
 									#notificaciones.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingOne')
 										.panel-body(style='text-align: center;')
 								.panel.panel-default
-									// Notificaciones
+									// Denuncias
 									#headingTwo.panel-heading(role='tab')
 										h4.panel-title
 											a(data-toggle='collapse', data-parent='#accordion', href='#mis_denuncias', aria-expanded='true', aria-controls='mis_denuncias')
@@ -61,7 +61,7 @@ block content
 														|  0
 												|  denuncias!
 								.panel.panel-default
-									// Notificaciones
+									// Acciones
 									#headingThree.panel-heading(role='tab')
 										h4.panel-title
 											a(data-toggle='collapse', data-parent='#accordion', href='#acciones', aria-expanded='true', aria-controls='acciones')
@@ -76,6 +76,22 @@ block content
 													else 
 														|  0
 												|  acciones!
+								.panel.panel-default
+									// Denuncias Favoritas
+									#headingFour.panel-heading(role='tab')
+										h4.panel-title
+											a(data-toggle='collapse', data-parent='#accordion', href='#favoritas', aria-expanded='true', aria-controls='favoritas')
+												i.fa.fa-star
+												| Denuncias Favoritas
+									#favoritas.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFour')
+										.panel-body(style='text-align: center;')
+											p.lead ¡Te han gustado 
+												span.lead 
+													if denuncias_fav
+														|  #{denuncias_fav.length} 
+													else 
+														|  0
+												|  denuncias!
 block script
 	// OpenLayers.js
 	script(src='/javascripts/plugins/ol3/ol.js')
@@ -83,3 +99,4 @@ block script
 		fillAcciones(JSON.parse('!{JSON.stringify(mis_acciones)}'));
 		fillNotificaciones(JSON.parse('!{JSON.stringify(mis_notificaciones)}'));
 		fillDenuncias(JSON.parse('!{JSON.stringify(misDenuncias)}'));
+		fillFavoritas(JSON.parse('!{JSON.stringify(denuncias_fav)}'));

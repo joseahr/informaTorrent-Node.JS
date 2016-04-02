@@ -50,7 +50,7 @@ app.InfoDenuncia = function(opt_options, denuncia) {
 	  BootstrapDialog.show({
 	  	title: denuncia.titulo,
 	  	message: '<h4 style="width: 100%; color: #fff; background-color: rgba(0,0,0,0.4); margin-top: -10px;text-align:center; border-radius: 5px">' + denuncia.titulo + '</h4>' +
-		  '<div id="desc" class="row" style="margin-top: 15px; word-break: break-all; background-color: #fff">' + 
+		  '<div id="desc" class="row" style="margin-top: 15px; overflow-x: hidden; background-color: #fff">' + 
 			 '<i class="fa fa-tags"> ' + tags + '</i>' +
 			 '<h4>Descripción</h4>' + 
 		  '</div>',

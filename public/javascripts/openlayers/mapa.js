@@ -1,3 +1,4 @@
+var ip = window.location.href.toString().split(':' + window.location.port)[0] + ":8001";
 var mousePositionControl = new ol.control.MousePosition({
   coordinateFormat: ol.coordinate.toStringHDMS,
 }),
@@ -66,11 +67,30 @@ imprimir_mapa = function(){
     + '&srs=EPSG:4258&format=application/pdf');*/
   map.once('postcompose', function(event) {
     var canvas = event.context.canvas;
-    canvas.crossOrigin = "anonymous";
     var image = new Image();
     image.crossOrigin = "anonymous";
-    image.src = canvas.toDataURL('image/png');
-    window.open(image.src);
+    try {
+      image.src = canvas.toDataURL('image/png');
+    }
+    catch(e){
+      BootstrapDialog.show({
+        title : 'Error exportando mapa', 
+        message : 'Vuelva a recargar la página y pruebe otra vez. No añada capas de servidores externos.',
+        onshow : function(dialog){$(dialog.getModalHeader()).css('background', 'rgb(200,50,50)')}
+      });
+    }
+    //window.open(image.src);
+
+    var a = document.createElement('a');
+
+    a.setAttribute('href', image.src);
+    a.setAttribute('download', 'export_mapa_torrent.png');
+    a.setAttribute('target', 'blank_');
+
+    document.body.appendChild(a);
+    a.click();
+
+    map.renderSync();
   });
 
 },
@@ -90,7 +110,7 @@ animacionDenuncia = function(data){
   //console.log(data);
   sourcehm = new ol.source.Vector({
     crossOrigin: 'anonymous',
-    url: 'http://' + ip + ':8080/geoserver/jahr/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=jahr:denuncias_centroides' + 
+    url: ip + '/geoserver/jahr/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=jahr:denuncias_centroides' + 
       '&viewparams=fecha_min:' + data.fecha_min + ';fecha_max:' + data.fecha_max + '&outputFormat=application/json',
     format: new ol.format.GeoJSON({
       extractStyles: false
@@ -122,10 +142,13 @@ interval = function(){
 
   var values = $("#slider_date").dateRangeSlider("values"),
   bounds = $("#slider_date").dateRangeSlider("bounds"),
-  mes = (values.max.getDay() == 31) ? values.max.getMonth() + 1: values.max.getMonth(),
-  dia = (values.max.getDay() == 31) ? 1 : values.max.getDate() + 1;
+  mes = (values.max.getDate() == 31 && values.max.getMonth() <12) ? values.max.getMonth() + 1: values.max.getMonth(),
+  dia = (values.max.getDate() == 31) ? 1 : values.max.getDate() + 1;
   max = new Date(values.min.getFullYear(), mes, dia),
   min = values.min;
+
+  document.getElementById('fecha_max').innerHTML = '<p style=" margin : 0 auto; max-width : 300px; border-radius : 5px; background : rgba(0,0,0,0.5); color : #fff">' + values.min.getDate() + '/' + (values.min.getMonth() + 1) + '/' + values.min.getFullYear() + ' - ' +
+    dia + '/' + (mes + 1) + '/' + values.min.getFullYear() + '</p>';
 
   //console.log(values.max.toString(), bounds.max.toString());
   if(!(values.max.getFullYear() == bounds.max.getFullYear() &&
@@ -134,6 +157,7 @@ interval = function(){
   {
     $("#slider_date").dateRangeSlider("values", min, max);
     animacionDenuncia({fecha_min: formatDate(min), fecha_max: formatDate(max)});
+    $('#fecha_max').show();
     setTimeout(interval, 500);
   }
   else{
@@ -141,6 +165,7 @@ interval = function(){
     $('#play').find('i').attr('class', 'fa fa-play');
     $("#slider_date").dateRangeSlider("enable");
     $('#anyos').selectpicker('show');
+    $('#fecha_max').hide();
     //clearInterval(interval);
   }
 }; 

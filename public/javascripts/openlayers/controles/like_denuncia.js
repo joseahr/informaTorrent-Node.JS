@@ -27,7 +27,8 @@ app.LikeDenuncia = function(opt_options) {
 		  if (aux == 0) {aux++; return;}
 		  BootstrapDialog.alert({
 			  title: 'Error',
-			  message: 'Debes estar registrado para indicar que te gusta esta denuncia'
+			  message: 'Debes estar registrado para indicar que te gusta esta denuncia',
+        onshow : function(dialog){$(dialog.getModalHeader()).css('background', 'rgb(200,50,50)')}
 		  });
 	  }
   });

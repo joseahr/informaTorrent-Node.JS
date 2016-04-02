@@ -2,7 +2,7 @@
  * Variables de las capas de los visores
  */
 
- var ip = ip || '192.168.1.14';
+ var ip = window.location.href.toString().split(':' + window.location.port)[0] + ':8001';
 
 var resolutions = new Array(22),
 matrixIds = new Array(22),
@@ -17,7 +17,7 @@ Tile = function(opciones){
 		visible: true,
 		source: new ol.source.TileWMS({
 			crossOrigin: 'anonymous', // So important maniguiiiiii
-			url: 'http://' + ip + ':8080/geoserver/jahr/wms',
+			url: opciones.url,
 			params: {
 				'FORMAT': format, 
 	            'VERSION': '1.1.0',
@@ -34,7 +34,7 @@ TileWMST = function(opciones){
 		visible: false,
 		source: new ol.source.WMTS({
 			crossOrigin: 'anonymous',
-			url: 'http://' + ip + ':8080/geoserver/gwc/service/wmts',
+			url: opciones.url,
 			layer:opciones.capa,
 			matrixSet: 'EPSG:4326',
 			format: 'image/png',
@@ -61,57 +61,67 @@ for (var i=0; i < 22; i++){
 var orto = Tile({
 	titulo : 'Ortofoto',
 	capa : 'jahr:ortofoto',
+	url : ip + '/geoserver/jahr/wms',
 });
 
 //Municipio
 var municipio = Tile({
 	titulo : 'Municipio',
 	capa : 'jahr:muni_torrent',
+	url : ip + '/geoserver/jahr/wms',
 });
 
 // Manzanas
 var manzanas = Tile({
 	titulo : 'Manzanas',
 	capa : 'jahr:manzanas',
+	url : ip + '/geoserver/jahr/wms',
 });
 
 // Viales
 var viales = Tile({
 	titulo : 'Viales',
 	capa : 'jahr:viales',
+	url : ip + '/geoserver/jahr/wms',
 });
 
 // Caminos
 var caminos = Tile({
 	titulo : 'Caminos',
 	capa : 'jahr:caminos',
+	url : ip + '/geoserver/jahr/wms',
 });
 
 // Etiquetas Viales
 var nom_viales = Tile({
 	titulo : 'Etiquetado Calles',
 	capa : 'jahr:nombres_viales',
+	url : ip + '/geoserver/jahr/wms',
 });
 
 // Portales
 var portales = Tile({
 	titulo : 'Portales',
 	capa : 'jahr:portales',
+	url : ip + '/geoserver/jahr/wms',
 });
 
 // Denuncias
 var denuncias_puntos = Tile({
 	titulo : 'Denuncias Puntual',
 	capa : 'jahr:denuncias_puntos',
+	url : ip + '/geoserver/jahr/wms',
 });
 
 var denuncias_lineas = Tile({
 	titulo : 'Denuncias Lineal',
 	capa : 'jahr:denuncias_lineas',
+	url : ip + '/geoserver/jahr/wms',
 });
 var denuncias_poligonos = Tile({
 	titulo : 'Denuncias Poligonal',
 	capa : 'jahr:denuncias_poligonos',
+	url : ip + '/geoserver/jahr/wms',
 });
 
 //Denuncias Heat Map
@@ -119,7 +129,7 @@ var denunciasHeatMap = new ol.layer.Heatmap({
   title: 'Zonas más conflictivas',
   source: new ol.source.Vector({
   	crossOrigin: 'anonymous',
-    url: 'http://' + ip + ':8080/geoserver/jahr/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=jahr:denuncias_centroides' + 
+    url: ip + '/geoserver/jahr/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=jahr:denuncias_centroides' + 
     	'&outputFormat=application/json',
     format: new ol.format.GeoJSON({
       extractStyles: false
@@ -130,65 +140,243 @@ var denunciasHeatMap = new ol.layer.Heatmap({
 });
 
 /*
+=================================================
+===== Capas Servidor de Torrent en Cascada  =====
+=================================================
+*/
+var arboles = Tile({
+	titulo : 'Árboles Sueltos',
+	capa : 'jahr:Arbol_Aislado',
+	url : ip + '/geoserver/jahr/wms',
+});
+arboles.setVisible(false);
+var areas_recreativas = Tile({
+	titulo : 'Áreas Recreativas',
+	capa : 'jahr:Areas_Recreativas',
+	url : ip + '/geoserver/jahr/wms',
+});
+areas_recreativas.setVisible(false);
+var nom_ejes = Tile({
+	titulo : 'Nombre Ejes',
+	capa : 'jahr:B_EJES_4326',
+	url : ip + '/geoserver/jahr/wms',
+});
+nom_ejes.setVisible(false);
+var nom_ejes_valenciano = Tile({
+	titulo : 'Nombre Ejes Valencià',
+	capa : 'jahr:B_EJES_4326_valenciano',
+	url : ip + '/geoserver/jahr/wms',
+});
+nom_ejes_valenciano.setVisible(false);
+var carpas = Tile({
+	titulo : 'Carpas Falleras',
+	capa : 'jahr:Carpes',
+	url : ip + '/geoserver/jahr/wms',
+});
+carpas.setVisible(false);
+var centros_educativos = Tile({
+	titulo : 'Centros Educativos',
+	capa : 'jahr:Centros_Educativos',
+	url : ip + '/geoserver/jahr/wms',
+});
+centros_educativos.setVisible(false);
+var centros_municipales = Tile({
+	titulo : 'Centros Municipales',
+	capa : 'jahr:Centros_Municipales',
+	url : ip + '/geoserver/jahr/wms',
+});
+centros_municipales.setVisible(false);
+var centros_de_culto = Tile({
+	titulo : 'Centros de Culto',
+	capa : 'jahr:Centros_de_Culto',
+	url : ip + '/geoserver/jahr/wms',
+});
+centros_de_culto.setVisible(false);
+var centros_de_salud = Tile({
+	titulo : 'Centros de Salud',
+	capa : 'jahr:Centros_de_Salud',
+	url : ip + '/geoserver/jahr/wms',
+});
+centros_de_salud.setVisible(false);
+var centros_deportivos = Tile({
+	titulo : 'Centros Deportivos',
+	capa : 'jahr:Deportes',
+	url : ip + '/geoserver/jahr/wms',
+});
+centros_deportivos.setVisible(false);
+var cultura_museos = Tile({
+	titulo : 'Entidades Culturales y Museos',
+	capa : 'jahr:Entidades_Culturales_y_Museos',
+	url : ip + '/geoserver/jahr/wms',
+});
+cultura_museos.setVisible(false);
+var fallas = Tile({
+	titulo : 'Entidades Falleras',
+	capa : 'jahr:Falles',
+	url : ip + '/geoserver/jahr/wms',
+});
+fallas.setVisible(false);
+var farmacias = Tile({
+	titulo : 'Farmacias',
+	capa : 'jahr:Farmacias',
+	url : ip + '/geoserver/jahr/wms',
+});
+farmacias.setVisible(false);
+var gasolineras = Tile({
+	titulo : 'Gasolineras',
+	capa : 'jahr:Gasolineras',
+	url : ip + '/geoserver/jahr/wms',
+});
+gasolineras.setVisible(false);
+var lugares_interes = Tile({
+	titulo : 'Lugares de Interés',
+	capa : 'jahr:Lugares_Interes',
+	url : ip + '/geoserver/jahr/wms',
+});
+lugares_interes.setVisible(false);
+var musica = Tile({
+	titulo : 'Música',
+	capa : 'jahr:Musica',
+	url : ip + '/geoserver/jahr/wms',
+});
+musica.setVisible(false);
+var org_y_empresas = Tile({
+	titulo : 'Organismos Autónomos y Empresas Municipales',
+	capa : 'jahr:Organismos_Autonomos_y_Empresas_Municipales',
+	url : ip + '/geoserver/jahr/wms',
+});
+org_y_empresas.setVisible(false);
+var nom_parajes = Tile({
+	titulo : 'Nombres de Parajes',
+	capa : 'jahr:Nombres_Parajes_',
+	url : ip + '/geoserver/jahr/wms',
+});
+nom_parajes.setVisible(false);
+var parques_y_jardines = Tile({
+	titulo : 'Parques y Jardines',
+	capa : 'jahr:Parques_y_Jardines',
+	url : ip + '/geoserver/jahr/wms',
+});
+parques_y_jardines.setVisible(false);
+var piscinas = Tile({
+	titulo : 'Piscinas',
+	capa : 'jahr:Piscina',
+	url : ip + '/geoserver/jahr/wms',
+});
+piscinas.setVisible(false);
+var comisarias = Tile({
+	titulo : 'Comisarías de Policía',
+	capa : 'jahr:Policia',
+	url : ip + '/geoserver/jahr/wms',
+});
+comisarias.setVisible(false);
+var ropa_amiga = Tile({
+	titulo : 'Ropa Amiga',
+	capa : 'jahr:ROPA_AMIGA',
+	url : ip + '/geoserver/jahr/wms',
+});
+ropa_amiga.setVisible(false);
+var referencias_cat = Tile({
+	titulo : 'Referencias Catastrales',
+	capa : 'jahr:Referencia_Catastral',
+	url : ip + '/geoserver/jahr/wms',
+});
+referencias_cat.setVisible(false);
+var torrent_bici = Tile({
+	titulo : 'Torrent Bici',
+	capa : 'jahr:TorrentBici',
+	url : ip + '/geoserver/jahr/wms',
+});
+torrent_bici.setVisible(false);
+var vados = Tile({
+	titulo : 'Vados',
+	capa : 'jahr:Vados',
+	url : ip + '/geoserver/jahr/wms',
+});
+vados.setVisible(false);
+var tercera_edad = Tile({
+	titulo : 'Tercera Edad',
+	capa : 'jahr:tercera_Edat',
+	url : ip + '/geoserver/jahr/wms',
+});
+tercera_edad.setVisible(false);
+var wifi_torrent = Tile({
+	titulo : 'Wifi Torrent',
+	capa : 'jahr:wifiTORRENT',
+	url : ip + '/geoserver/jahr/wms',
+});
+wifi_torrent.setVisible(false);
+
+/*
  *  Capa de nuestro servidor WMS Teselado (GeoWebCache)
  */
 
 // Ortofoto
 var ortoWMST = TileWMST({
 	titulo : 'WMST - Ortofoto',
-	capa : 'jahr:ortofoto'
+	capa : 'jahr:ortofoto',
+	url : ip + '/geoserver/gwc/service/wmts',
 });
 
 //Municipio
 var municipioWMST = TileWMST({
 	titulo : 'WMST - Municipio',
-	capa : 'jahr:muni_torrent'
+	capa : 'jahr:muni_torrent',
+	url : ip + '/geoserver/gwc/service/wmts',
 });
 
 // Manzanas
 var manzanasWMST = TileWMST({
 	titulo : 'WMST - Manzanas',
-	capa : 'jahr:manzanas'
+	capa : 'jahr:manzanas',
+	url : ip + '/geoserver/gwc/service/wmts',
 });
 
 // Viales
 var vialesWMST = TileWMST({
 	titulo : 'WMST - Viales',
-	capa : 'jahr:viales'
+	capa : 'jahr:viales',
+	url : ip + '/geoserver/gwc/service/wmts',
 });
 
 // Caminos
 var caminosWMST = TileWMST({
 	titulo : 'WMST - Caminos',
-	capa : 'jahr:caminos'
+	capa : 'jahr:caminos',
+	url : ip + '/geoserver/gwc/service/wmts',
 });
 
 // Etiquetas Viales
 var nom_vialesWMST = TileWMST({
 	titulo : 'WMST - Etiquetado Calles',
-	capa : 'jahr:nombres_viales'
+	capa : 'jahr:nombres_viales',
+	url : ip + '/geoserver/gwc/service/wmts',
 });
 
 // Portales
 var portalesWMST = TileWMST({
 	titulo : 'WMST - Portales',
-	capa : 'jahr:portales'
+	capa : 'jahr:portales',
+	url : ip + '/geoserver/gwc/service/wmts',
 });
 
 // Denuncias
 var denuncias_puntos_WMST = TileWMST({
 	titulo : 'WMST - Denuncias Puntual',
-	capa : 'jahr:denuncias_puntos'
+	capa : 'jahr:denuncias_puntos',
+	url : ip + '/geoserver/gwc/service/wmts',
 });
 
 var denuncias_lineas_WMST = TileWMST({
 	titulo : 'WMST - Denuncias Lineal',
-	capa : 'jahr:denuncias_lineas'
+	capa : 'jahr:denuncias_lineas',
+	url : ip + '/geoserver/gwc/service/wmts',
 });
 
 var denuncias_poligonos_WMST = TileWMST({
 	titulo : 'WMST - Denuncias Poligonal',
-	capa : 'jahr:denuncias_poligonos'
+	capa : 'jahr:denuncias_poligonos',
+	url : ip + '/geoserver/gwc/service/wmts',
 });
 
 /*
@@ -234,16 +422,28 @@ var groupCapasBase = new ol.layer.Group({
 	layers: [layerVectorVacia, ignBase, ortoPNOA]
 });
 
-// Grupo de Capas 2.--> Cartografía de nuestro servidor WMS
-// orto, municipio, manzanas, viales, caminos, nom_viales, portales
 var groupCartoTorrentWMS = new ol.layer.Group({
 	title: 'Cartografía de Torrent WMS',
-	layers: [orto, municipio, manzanas, viales, caminos, nom_viales, portales, 
-	    denuncias_puntos, denuncias_lineas, denuncias_poligonos, denunciasHeatMap]
+	layers: [orto, municipio, manzanas, viales, caminos, /*nom_viales,*/ portales, 
+	    denuncias_puntos, denuncias_lineas, denuncias_poligonos, denunciasHeatMap,
+	    ]
 });
+
+var torrent_cascada = new ol.layer.Group({
+	title : 'WMS de Torrent en cascada',
+	layers : [	    // Carto Oficial
+	    arboles, areas_recreativas, nom_ejes, nom_ejes_valenciano, carpas,
+	    centros_educativos, centros_municipales, centros_de_culto, centros_de_salud,
+	    centros_deportivos, cultura_museos, fallas, farmacias, gasolineras, 
+	    lugares_interes, musica, org_y_empresas, nom_parajes, parques_y_jardines, 
+	    piscinas, comisarias, ropa_amiga, referencias_cat, torrent_bici, vados,
+	    tercera_edad, wifi_torrent
+	]
+});
+
 var groupCartoTorrentWMST = new ol.layer.Group({
 	title: 'Cartografía de Torrent WMS Teselado',
 	layers: [ortoWMST, municipioWMST, manzanasWMST, vialesWMST, 
-	    caminosWMST, nom_vialesWMST, portalesWMST, 
+	    caminosWMST, /*nom_vialesWMST,*/ portalesWMST, 
 	    denuncias_puntos_WMST, denuncias_lineas_WMST, denuncias_poligonos_WMST]
 }); 

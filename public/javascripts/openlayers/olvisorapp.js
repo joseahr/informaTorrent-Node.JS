@@ -1,14 +1,7 @@
 /**
  * Elements that make up the popup.
  */
-var container = document.getElementById('popup-visor'),
-content = document.getElementById('popup-visor-content'),
-closer = document.getElementById('popup-visor-closer'),
-seleccionada = '',
-overlay = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
-  element: container,
-  autoPan: false
-})),
+var seleccionada = '',
 select = new ol.interaction.Select(),
 duration = 6000,
 flash = function(feature) {
@@ -56,8 +49,9 @@ cambiar_imagen = function(denuncia, boton, d_body){
 	var imagenes = denuncia.imagenes;
 	if(!imagenes) {
 		BootstrapDialog.alert({
-			'title' : 'Imágenes', 
-			message : 'La denuncia no contiene imágenes'
+			title : 'Imágenes', 
+			message : 'La denuncia no contiene imágenes',
+			inshow : function(dialog){$(dialog.getModalHeader()).css('background', 'rgb(200,50,50)')}
 		});
 		return;
 	}
@@ -90,7 +84,6 @@ cambiar_imagen = function(denuncia, boton, d_body){
 sel_dialog = new BootstrapDialog({
 	autodestroy : true
 });
-
 
 /****************  INIT  ********/
 map.addInteraction(select); // Seleccionar feature
@@ -132,18 +125,13 @@ denuncias.forEach(function(denuncia){
 });
 
 map.addLayer(vector);
-map.addOverlay(overlay);
+//map.addOverlay(overlay);
 
 /*******************    EVENTOS   *************/
 vector.getSource().on('addfeature', function(e) {
+	//alert(e.feature.getGeometry().getType());
 	flash(e.feature);
 });
-
-closer.onclick = function() {
-	overlay.setPosition(undefined);
-  	closer.blur();
-  	return false;
-};
 
 select.on('select', function(e){
 	if(! e.selected[0]) return;
@@ -195,7 +183,7 @@ select.on('select', function(e){
 
 		sel_dialog.onShown(function(dialog){
 			dialog.setMessage('<h4 style="width: 100%; color: #fff; background-color: rgba(0,0,0,0.4); margin-top: -10px;text-align:center; border-radius: 5px">' + denuncia.titulo + '</h4>' +
-			'<div class="row" style="margin-top: 15px; word-break: break-all; background-color: #fff">' + 
+			'<div class="row" style="margin-top: 15px; overflow-x: hidden; background-color: #fff">' + 
 				'<i class="fa fa-tags"> ' + tags + '</i>' +
 				'<div class="col-lg-12 text-center"><img class="img img-thumbnail" id="imagenes_denuncia" src="' + getGeoserverMiniatura(denuncia, 500) + '" style="width: 300px; height: 300px; object-fit: cover; margin: 10 0 10 0px;"></img></div>' +
 				'<h4>Descripción</h4>' + 
@@ -218,5 +206,5 @@ select.on('select', function(e){
 		overlay.setPosition(ol.extent.getCenter(f.getGeometry().getExtent()));*/
 
 	});
-	$(container).removeClass('hidden');
+	//$(container).removeClass('hidden');
 });
