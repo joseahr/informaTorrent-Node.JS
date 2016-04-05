@@ -76,11 +76,15 @@ Denuncia.prototype.denuncia = function(req, res){
 ====================================================
 */
 Denuncia.prototype.pagina_nueva_denuncia = function(req, res){
-
+	// Creamos un string hexadecimal aleatorio que servirá de identificador
+	// del directorio temporal
 	crypto.randomBytes(25, function(ex, buf) {
+		// Obtenemos el String
   		var token = buf.toString('hex');
+  		// Creamos una carpeta en el directorio temporal
 		mkdirp(path.join(config.TEMPDIR, token), function (err){
-			if(err) throw err;
+			if(err) console.log(err);
+			// renderizamos la página de nueva denuncia pasándole el token
 			res.render('nueva', {random : token});
 		}); // Crea un directorio si no existe
 	});
@@ -95,14 +99,16 @@ Denuncia.prototype.pagina_nueva_denuncia = function(req, res){
 ====================================================
 */
 Denuncia.prototype.eliminar_imagen_temporal = function(req, res){
-	var tempdir = req.query.tempdir;
-	var filename = req.query.filename;
+	// Parámetros para eliminar imagen del directorio temporal
+	var tempdir = req.query.tempdir; // identificador del directorio temporal
+	var filename = req.query.filename; // nombre de la imagen a eliminar
 
+	// Comprobamos parámetros
 	if(!(tempdir && filename))
 		return res.status(500).send('Error borrando la imagen:\n Debe introducir los parámetros tempdir y filename en el QueryString');
-
+	// Path de la imagen 
 	var path_image = path.join(path.join(config.TEMPDIR, tempdir), filename);
-	
+	// Eliminamos la imagen
 	fs.unlink(path_image, function(error){
 		if(error) return res.status(500).send('Error borrando la imagen:\n' + error);
 		res.send('Imagen eliminada correctamente');
@@ -119,28 +125,32 @@ Denuncia.prototype.eliminar_imagen_temporal = function(req, res){
 ====================================================
 */
 Denuncia.prototype.subir_imagen_temporal = function(req, res){
+	// Encapsulamos el middleware multer dentro del
+	// manejador de rutas
 	multer_temp_denuncia(req, res, function(error){
-		
+		// Enviamos un mensaje de error
 		if(error) {
 			console.log(error.toString());
 			return res.status(500).send({type: 'error', msg: error});
 		}
-		
+		// obetenemos la imagen subida
 		var file = req.file;
+		// obtenemos su extension
 		var extension = path.extname(file.path);
 		
-		console.log('patttth ' + file.path);
-		
+		//console.log('patttth ' + file.path);
+		// Si la extensión no está dentro de nuestros formatos soportados
 		if(!extension.match(formatsAllowed)){
 			// Eliminamos la imagen subida si no es de uno de los formatos permitidos
 			var to = path.join('./public/files/temp', path.basename(file.path));
+			// Eliminamos la imagen
 			fs.unlink(to, function(error_){
 				if(error_) console.log('error unlink ' + error_);
 				return res.status(413).send({type: 'error', msg: 'Formato no permitido'});
 			});
 		}
 		else {
-			// Todo ok
+			// La imagen se ha subido correctamente y es de un formato soportado
 			return res.send({
 				type: 'success', 
 				msg: 'Archivo subido correctamente a '+to+' ('+(file.size.toFixed(2)) +' kb)'
@@ -159,54 +169,63 @@ Denuncia.prototype.subir_imagen_temporal = function(req, res){
 ====================================================
 */
 var añadir_comentario = function(req, res){
-	
+	// Comprobamos que se ha accedido mediante un método POST
 	if(req.method.toLowerCase() != 'post')
 		return res.status(500).send('La acción requiere ser enviada a través de POST');
-
+	// Parámetros para añadir comentario
 	var denuncia, notificacion;
 	var contenido = req.body.contenido;
 	var user_id = req.user._id;
 	var id_denuncia = req.query.id;
 	
-	
+	// Comprobamos parámetros
 	if (!contenido || !user_id || !id_denuncia) return res.status(500).send('Fallo insertando comentario');
+	if (!validator.isLength(contenido, 10, 1000)) return res.status(500).send('Fallo insertando comentario.\n El contenido del comentario debe tener entre 10 y 1000 caracteres');
+	//console.log(consultas.añadir_comentario);
 	
-	console.log(consultas.añadir_comentario);
-	
+	// ejecutamos la consulta para añadir comentario
 	db.none(consultas.añadir_comentario, [user_id, id_denuncia, contenido])
 		.then(function(){
+			// ejecutamos consulta para obtener la denuncia comentada
 			return db.one(consultas.denuncia_por_id, id_denuncia);
 		})
 		.then(function(denuncia_){
+			// Obtenemos la denuncia comentada
 			denuncia = denuncia_;
+			// Asignamos geometría
 			denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-			//denuncia.tipo = denuncia.geometria.type;
-			//denuncia.coordenadas = denuncia.geometria.coordinates;
-			//denuncia.geometria = undefined;
+			// Formateamos los datos --> contenido del comentario
 			var datos = JSON.stringify({contenido : contenido});
+			// Si es el propio usuario el que comenta su denuncia no enviamos la notificación
 			if(denuncia.id_usuario == user_id){
 				var err = new Error();
 				err.mismo_user = true;
 				throw err;
 			}
+			// Si no ejecutmos la consulta para añadir notificación
 			else return db.one(consultas.notificar_denuncia_comentada, 
 					[id_denuncia, user_id, denuncia.id_usuario, datos]);
 		})
 		.then(function(notificacion_){
+			// Si hay notificación
 			notificacion = notificacion_;
+			// Y el cliente está conectado
 			if(clients[denuncia.id_usuario]){
+				// Emitimos la notificación a todos sus sockets abiertos
 				for(var socketId in clients[denuncia.id_usuario]){
 					clients[denuncia.id_usuario][socketId].emit('denuncia_comentada', 
 						{denuncia: denuncia, from: req.user, noti: notificacion});
 				}
 			}
 			else {
-				console.log('el usuario de la denuncia comentada está conectado');
+				console.log('el usuario de la denuncia comentada está desconectado');
 			}
+			// Enviamos al usuario que ha comentado un mensaje de success
 			res.send({success: true, contenido: contenido});
 		})
 		.catch(function(error){
 			console.log(error);
+			// Si el error es que es el propio usuario enviar mensaje de success
 			if(error.mismo_user) res.send({success: true, contenido: contenido});
 			else res.status(500).send(error);
 		});
@@ -224,144 +243,176 @@ var añadir_comentario = function(req, res){
 Denuncia.prototype.guardar = function(req, res){
 	
 	
-	var errormsg = '';
+	var errormsg = ''; // String para mensajes de error
 	
 	var usuarios_cerca = [];
-	var from;
+	var usu_from; // Usuario denuncia
 	var imagenes = []; // Lista de imágenes a guardar en la base de datos
-	var titulo = req.body.titulo.replace(/["' # $ % & + ` -]/g, " ");
-	var contenido = req.body.contenido;
-	var wkt = req.body.wkt;
+	var titulo = req.body.titulo.replace(/["' # $ % & + ` -]/g, " "); // titulo de la denuncia
+	var contenido = req.body.contenido;  // Contenido de la denucnia
+	var wkt = req.body.wkt; // geometría de la denuncia
 		
 	var user_id = validator.escape(req.user._id); // id_usuario
 	var tempDirID = req.body.tempDir; // nombre del directorio temporal donde se guardan las imágenes
 	
 	var tags_ = req.body.tags.length > 0 ? req.body.tags : [];  // tags introducidos por el usuarios
-	console.log(tags_);
+	//console.log(tags_);
 	
-	var denuncia_io = req.body;
-	denuncia_io.id_usuario = user_id;
+	var denuncia_io = req.body; // copia de la denuncia
+	denuncia_io.id_usuario = user_id; // asignamos id de usuario
+	denuncia_io.wkt = wkt; // Asignamos la geometría a la denuncia
+
 	// comprobando datos de la denuncia
 	if(tags_.length < 2) errormsg += '· La denuncia debe contener al menos dos tags. \n';
 	if(!validator.isLength(titulo, 5, 50)) errormsg += '· El título debe tener entre 5 y 50 caracteres.\n';
 	if(!validator.isLength(contenido, 50, 10000)) errormsg += '· El contenido debe tener entre 50 y 10000 caracteres.\n';
 	if(wkt == undefined) errormsg += '· Debe agregar un punto, línea o polígono\n';	
 	
-	// Si hay algún error en los datos devolvemos la denuncia
+	// Si hay algún error en los datos devolvemos los errores
 	if(errormsg.length > 0)
 		return res.send({type: 'error', msg: errormsg});
 	
-	var tabla = wkt.match(/LINESTRING/g) ? 'denuncias_lineas' : (wkt.match(/POLYGON/g) ? 'denuncias_poligonos': 'denuncias_puntos');
-	
+	// ejecutamos consulta para comprobar que la geometría es correcta	
 	dbCarto.one(consultas.comprobar_geometria(wkt) , wkt)
 		.then(function(geom_check){
+			// Si la geometría no está en torrent 
 			if (geom_check.st_contains == false)
 				throw new Error('La geometría debe estar dentro de Torrent.');
-			else if(wkt.match(/LINESTRING/g) && geom_check.st_length > 500)
-				throw new Error('La geometría lineal no debe superar los 500 metros de longitud.');
-			else if(wkt.match(/POLYGON/g) && geom_check.st_area > 10000)
-				throw new Error('La geometría poligonal no debe superar un area mayor de 10.000 metros cuadrados.');
-			
+			// Si la geometría lineal supera los 200 metros
+			else if(wkt.match(/LINESTRING/g) && geom_check.st_length > 200)
+				throw new Error('La geometría lineal no debe superar los 200 metros de longitud.');
+			// Si la geometría poligonal supera los 5000 metros cuadrados
+			else if(wkt.match(/POLYGON/g) && geom_check.st_area > 5000)
+				throw new Error('La geometría poligonal no debe superar un area mayor de 5000 metros <sup>2</sup>.');
+			// Ejecutamos la tarea para añadir denuncia, tags, imágenes
 			return db.task(function * (t){
 				// t = this = contexto bdd
-				var q = []; // consultas a ejecutar --> añadir imagenes y tags
-				
-				let denuncia = yield this.one(consultas.insert_denuncia, [titulo, contenido, user_id]);
+				var q = []; // Consultas a ejecutar --> añadir imagenes y tags
 
+				// Ejecutamos la consulta síncrona (ES-6) para añadir una denuncia, asignamos el resultado
+				// de la consulta a la variable denuncia 
+				let denuncia = yield this.one(consultas.insert_denuncia, [titulo, contenido, user_id]);
+				// Asignamos a la variable denuncia_io la denuncia 
+				denuncia_io = denuncia;
+
+				// Leemos el directorio temporal asignado a la denuncia
 				var files = fs.readdirSync(config.TEMPDIR + "/" + tempDirID);
+				// Si hay imágenes
 				if (files){
+					// Creamos una carpeta dentro del directorio final de denuncia con la id de la denuncia
 					fs.mkdirSync(path.join(config.UPLOADDIR, denuncia.gid));
+					// Recorremos los archivos para moverlos al directorio final que hemos creado
 					files.forEach(function(ruta, index, that) {
-					    console.log('img: ' + path.basename(ruta));
-					    
-						var from = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
+					    //console.log('img: ' + path.basename(ruta));
+					    // String --> path desde donde tengo que mover el archivo
+						var from_ = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
+						// String --> path final donde se alojará el archivo
 						var to = path.join(config.UPLOADDIR, denuncia.gid + "/" + tempDirID + "-" + path.basename(ruta));
+						// path relativo para almacenar en la base de datos
 						var path_ = "/files/denuncias/" + denuncia.gid + "/" + path.basename(to); 
-						// Movemos la imagen desde la carpeta temporal hasta la carpeta final
+						// Añadimos la consulta para añadir las imágenes a la base de datos
 						q.push(t.none(consultas.añadir_imagen_denuncia, [path_, denuncia.gid]));
-						fs.renameSync(from, to);
+						fs.renameSync(from_, to);
 					});
 				}
+				// Añadimos la consulta para añadir la geometría de la denuncia
 				q.push(t.none(consultas.añadir_geometria(wkt), [denuncia.gid, wkt]));
-				
-				denuncia_io = denuncia;
-				
+				// Recorremos los tags añadidos
 				tags_.forEach(function(tag){
+					// Añadimos la consulta para añadir tag
 					q.push(t.none(consultas.añadir_tag_denuncia, [denuncia.gid, tag]));
 				});
-				
+				// Ejecutamos las consultas
 				return t.batch(q);
 				
 			});
 			
 		})
-		.then (function(){
-			// TODO: Socket.on('new denuncia added') ponerlo aquiiiiii!!!
-			
-			// Buscar usuarios cerca, emitir notificacion
+		.then (function(){			
+			// La denuncia se ha añadido correctamente
 			console.log(denuncia_io + ' new denuncia addedd');
-			denuncia_io.wkt = wkt;
+			// Emitimos a todos los usuarios y a mi
+			// que hemos añadido una denuncia
 			for(var socketId in global.clients[req.user._id]){
+				// A todos menos a mi 
 				global.clients[req.user._id][socketId].broadcast.emit('new_denuncia', {denuncia: denuncia_io});
-				global.clients[req.user._id][socketId].emit('new_denuncia', {denuncia: denuncia_io});
+				// Me la emito a todos mis sockets abiertos
+				for (var sid in global.clients[req.user._id])
+					global.clients[req.user._id][sid].emit('new_denuncia', {denuncia: denuncia_io});
 				break;
 			}
-			
+			// Ejecutamos la conulta para buscar usuarios cerca  informarles de que
+			// hemos añadido una denuncia cerca de su ubicación
 			return db.any(consultas.usuarios_cerca_de_denuncia, [wkt, req.user._id]);
 			
 		})
 		.then(function(usuarios){
+			// Si no hay usuarios cerca...
 			if(usuarios.length == 0) {
-				//throw new Error('No hay usuarios cerca de la denuncia');
+
 				console.log('////////////');
 				console.log('NO HAY USUARIOS AFECTADOS');
+				// Enviamos un mensaje de que la denuncia se ha guardado correctamente
 				res.send({
 					type: 'success', 
 					msg: 'Denuncia guardada correctamente',
 					denuncia: denuncia_io,
 					num_usuarios_afectados : usuarios.length
 				});
+				// para que no siga haciendo nada y no tengamos problemas
 				var err = new Error('No hay usuarios cerca de la denuncia');
+				// Lanzamos un error específico
 				err.no_users_found = true;
 				throw err;
 			}
+			// Si hay usuarios cerca...
 			else {
+				// Asignamos a la variable usuarios_cerca los usuarios
 				usuarios_cerca = usuarios;
+				// Ejecutamos la consulta para obtener la info del usuario que emite l denuncia
 				return db.one(consultas.usuario_por_id, req.user._id);
 			}
 		})
 		.then(function(usuario){
-			from = usuario;
-			console.log(denuncia_io.gid);
+			// Asignamos a la variable usu_from el usuario propietario de la denuncia
+			usu_from = usuario;
+			// Ejecutamos la consulta para obtener la info de la denuncia que hemos añadido
 			return db.one(consultas.denuncia_por_id, denuncia_io.gid);
 		})
 		.then(function(denuncia_){
-			//denuncia_.tipo = denuncia_.geometria.type;
-			//denuncia_.coordenadas = denuncia_.geometria.coordinates;
-			//denuncia_.geometria = undefined;
+			// Obetenemos denuncia y asignamos geometría
 			denuncia_.geometria = denuncia_.geometria_pt || denuncia_.geometria_li || denuncia_.geometria_po;
+			// Asignamos a la variable denuncia_io la denuncia que hemos obtenido
 			denuncia_io = denuncia_;
+			// Ejecutamos tarea
 			return db.tx(function (t){
-				var q = [];
+				var q = []; // Consultas
+				// Recorremos los usuarios cerca
 				usuarios_cerca.forEach(function(user){
+					// Guardamos la distancia buffer del usuario en una variable
 					var datos = JSON.stringify({distancia : user.distancia});
+					// Añadimos la consulta para añadir notificación en la base de datos
 					q.push(db.one(consultas.notificar_denuncia_cerca, 
 						[denuncia_io.gid, req.user._id, user._id, datos]));
 				});
-				return t.batch(q); // Devuelve una lista de promesas que ddeben evaluarse
+				// Ejecutamos la conulta
+				return t.batch(q);
 			});
-
 		})
 		.then(function(notificaciones){
-			console.log('notificaciones');
+			//console.log('notificaciones');
+			// Recorremos las notificaciones
 			notificaciones.forEach(function(notificacion){
+				// Si el usuario a que se notific est´a conectado...
 				for(var socketId in global.clients[notificacion.id_usuario_to]){
-					console.log(socketId);
+					//console.log(socketId);
 					console.log('El usuario ' + notificacion.id_usuario_from + ' ha publicado una denuncia carca de la ubicación del usuario ' + notificacion.id_usuario_to);
+					// Emitimos un evento para notificar al usuario de una denuncia cerca
 					clients[notificacion.id_usuario_to][socketId].emit('denuncia_cerca', 
-						{denuncia: denuncia_io, from: from, noti: notificacion});	
+						{denuncia: denuncia_io, from: usu_from, noti: notificacion});	
 				}
 			});
+			// Enviamos la respuesta satisfactoria de denuncia añadida
 			res.send({
 				type: 'success', 
 				msg: 'Denuncia guardada correctamente',
@@ -372,7 +423,8 @@ Denuncia.prototype.guardar = function(req, res){
 		.catch(function(error){
 			console.log('Error insertando nueva denuncia ' + error);
 			//console.log('headeeerSENT', res.headersSent);
-			if(!error.no_users_found) res.send({type: 'error', msg: error.toString()})
+			// Si el error es distinto a que no se han encontrado usuarios cerca...
+			if(!error.no_users_found) res.status(500).send({type: 'error', msg: error.toString()})
 		});
 }; // Fin saveDenuncia
 
@@ -388,6 +440,7 @@ Denuncia.prototype.guardar = function(req, res){
 ====================================================
 */
 Denuncia.prototype.pagina_denuncias = function(req, res){
+
 	var numDenuncias = 0;
 	var maxPages = 1;
 	var page = req.query.page; 
@@ -446,9 +499,6 @@ var pagina_denuncia = function(req,res){
 			if (!denuncia) throw new Error('Denuncia no encontrada');
 
 			denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-			//console.log(denuncia);
-			//denuncia.geometria = JSON.stringify(denuncia.geometria);
-			//denuncia.descripcion = denuncia.descripcion.replace(/\n?\r\n/g, '<br />' );
 			res.render('denuncia', {denuncia: denuncia, user: req.user});
 		})
 		.catch(function(error){

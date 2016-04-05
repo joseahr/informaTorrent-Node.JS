@@ -107,11 +107,11 @@ html
                             span.caret
                           ul.dropdown-menu(style="width: 100%")
                             li.dropdown
-                              a(href="javascript:window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?lang=es&' + (window.location.href.split('?')[1] || ''))") Castellano
+                              a(href="javascript:window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?lang=es&' + (window.location.href.split('?').length > 1 && window.location.href.split('?')[1].match('lang') ? window.location.href.split('?')[1].replace(/&lang(=[^&]*)?|^lang(=[^&]*)?&?/, '') : window.location.href.split('?')[1]))") Castellano
                             li.dropdown
-                              a(href="javascript:window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?lang=val&' + (window.location.href.split('?')[1] || ''))") Valencià
+                              a(href="javascript:window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?lang=val&' + (window.location.href.split('?').length > 1 && window.location.href.split('?')[1].match('lang') ? window.location.href.split('?')[1].replace(/&lang(=[^&]*)?|^lang(=[^&]*)?&?/, '') : window.location.href.split('?')[1]))") Valencià
                             li.dropdown
-                              a(href="javascript:window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?lang=en&' + (window.location.href.split('?')[1] || ''))") English
+                              a(href="javascript:window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?lang=en&' + (window.location.href.split('?').length > 1 && window.location.href.split('?')[1].match('lang') ? window.location.href.split('?')[1].replace(/&lang(=[^&]*)?|^lang(=[^&]*)?&?/, '') : window.location.href.split('?')[1]))") English
                 // navbar end
               // main-navigation end
             // header-right end
@@ -147,6 +147,7 @@ html
       var id_usuario = '#{id_usuario}';
     // Plugins Javascript situados al final de la página, así el contenido carga antes
     // JQuery y Bootstrap
+    script(src='/javascripts/plugins/js-cookie/src/js.cookie.js')
     script(type='text/javascript', src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js')
     script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js', integrity='sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS', crossorigin='anonymous')
     // Modernizr

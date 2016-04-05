@@ -230,9 +230,12 @@ app.Lateral = function(opt_options) {
 					{
 						//console.log(res.denuncia);
 						// Ha habido éxito subiendo la denuncia
+						var str = res.num_usuarios_afectados == 0 ? 
+							'¡No hay usuarios cerca de la ubicación de la denuncia!' : 
+							'¡Hay ' + res.num_usuarios_afectados + ' usuarios cerca de la ubicación de la denuncia!';
 						BootstrapDialog.show({
 							type: BootstrapDialog.TYPE_SUCCESS,
-							title: 'Denuncia añadida correctamente',
+							title: 'Denuncia añadida correctamente\n ' + str,
 							message: res.msg,
 							closable: false,
 							onshown : function(dialog){

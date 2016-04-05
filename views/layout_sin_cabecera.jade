@@ -106,11 +106,11 @@ html
                             span.caret
                           ul.dropdown-menu(style="width: 100%")
                             li.dropdown
-                              a(href="javascript:window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?lang=es&' + (window.location.href.split('?')[1] || ''))") Castellano
+                              a(href="javascript:window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?lang=es&' + (window.location.href.split('?').length > 1 && window.location.href.split('?')[1].match('lang') ? window.location.href.split('?')[1].replace(/&lang(=[^&]*)?|^lang(=[^&]*)?&?/, '') : window.location.href.split('?')[1]))") Castellano
                             li.dropdown
-                              a(href="javascript:window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?lang=val&' + (window.location.href.split('?')[1] || ''))") Valencià
+                              a(href="javascript:window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?lang=val&' + (window.location.href.split('?').length > 1 && window.location.href.split('?')[1].match('lang') ? window.location.href.split('?')[1].replace(/&lang(=[^&]*)?|^lang(=[^&]*)?&?/, '') : window.location.href.split('?')[1]))") Valencià
                             li.dropdown
-                              a(href="javascript:window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?lang=en&' + (window.location.href.split('?')[1] || ''))") English
+                              a(href="javascript:window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?lang=en&' + (window.location.href.split('?').length > 1 && window.location.href.split('?')[1].match('lang') ? window.location.href.split('?')[1].replace(/&lang(=[^&]*)?|^lang(=[^&]*)?&?/, '') : window.location.href.split('?')[1]))") English
                 // navbar end
               // main-navigation end
             // header-right end
@@ -127,6 +127,7 @@ html
       |  
       span#numdenun  !{locals.datos_app.num_denun_total} 
       span#numusu.pull-right
+    script(src='/javascripts/plugins/js-cookie/src/js.cookie.js')
     script.
       var ip = '#{locals.ip}';
       var id_usuario = '#{locals.id_usuario}';
