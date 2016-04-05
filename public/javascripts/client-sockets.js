@@ -62,7 +62,7 @@ num_denuncias_io.on('denuncia_no_likeada', function(data){
 	$('.noti_tot').empty();
 	$('.noti_tot').append(not_tot);
 	
-	var html =  getNotificacionRow(data.noti);
+	var html =  getNotificacionRow(data.noti, traducciones);
 	$('#notificaciones > .panel-body').prepend($(html));
 	
 	if(notificaciones) notificaciones.unshift(data.noti);
@@ -95,7 +95,7 @@ num_denuncias_io.on('denuncia_likeada', function(data){
 	$('.noti_tot').empty();
 	$('.noti_tot').append(not_tot);
 	
-	var html = getNotificacionRow(data.noti);
+	var html = getNotificacionRow(data.noti, traducciones);
 	$('#notificaciones > .panel-body').prepend($(html));
 	
 	if(notificaciones) notificaciones.unshift(data.noti);
@@ -124,7 +124,7 @@ num_denuncias_io.on('denuncia_cerca', function(data){
 	$('.noti_tot').empty();
 	$('.noti_tot').append(not_tot);
 	
-	var html = getNotificacionRow(data.noti);
+	var html = getNotificacionRow(data.noti, traducciones);
 	$('#notificaciones > .panel-body').prepend($(html));
 	
 	if(notificaciones) notificaciones.unshift(data.noti);
@@ -152,7 +152,7 @@ num_denuncias_io.on('denuncia_comentada', function(data){
 	$('.noti_tot').empty();
 	$('.noti_tot').append(not_tot);
 	
-	var html = getNotificacionRow(data.noti);
+	var html = getNotificacionRow(data.noti, traducciones);
 	$('#notificaciones > .panel-body').prepend($(html));
 	
 	if(notificaciones) notificaciones.unshift(data.noti);

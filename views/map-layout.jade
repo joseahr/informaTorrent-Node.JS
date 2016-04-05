@@ -67,38 +67,38 @@ html
           if user
             |  #{user.profile.username}
           else
-            |  Usuario invitado
+            |  #{contenido.usuario_invitado}
       .col-xs-12(style="padding: 0px")
           .menu-item.col-xs-12
             a(href="/app") 
               i.fa.fa-home
-              |  Inicio
+              |  #{contenido.inicio}
           .menu-item.col-xs-12
             a(href="/app/visor") 
               i.fa.fa-globe
-              |  Visor tiempo real
+              |  #{contenido.visor_tiempo_real}
           .menu-item.col-xs-12
             a(href="/app/denuncias?page=1") 
               i.fa.fa-list
-              |  Denuncias
+              |  #{contenido.denuncias}
           if user
             .menu-item.col-xs-12
               a(href="#" id="notificaciones")
                 i.fa.fa-inbox
-                |  Notificaciones
+                |  #{contenido.notificaciones}
                 span(style="margin-left: 5px;").badge.noti_up #{nuevas}
             .menu-item.col-xs-12
               a(href="/app/perfil") 
                 i.fa.fa-user
-                |  Mi perfil
+                |  #{contenido.mi_perfil}
             .menu-item.col-xs-12
               a(href="/app/denuncias/nueva") 
                 i.fa.fa-plus-circle
-                |  Nueva denuncia
+                |  #{contenido.nueva_denuncia}
             .menu-item.col-xs-12
               a(href="/app/logout") 
                 i.fa.fa-sign-out
-                |  Cerrar sesión
+                |  #{contenido.cerrar_sesion}
     ul
       li(style="position: absolute; top: 8.5em; left: 0.5em;z-index: 1; border-radius: 5px;")
         a(class="navbar-toggle" data-toggle="sidebar" data-target=".sidebar" href="#" style="padding: 0px; margin: 0px;")
@@ -181,6 +181,9 @@ html
   script(src="https://cdn.socket.io/socket.io-1.3.7.js")
   script(src="/javascripts/plugins/bootstrap-sidebar/dist/js/sidebar.js")
   script.
+
+    var traducciones = JSON.parse('!{JSON.stringify(contenido)}');
+
     var id_usuario = '#{id_usuario}';
     if(id_usuario != 'undefined')
       var notificaciones = JSON.parse('!{JSON.stringify(mis_notificaciones)}');
@@ -192,7 +195,7 @@ html
       var message = '';
 
       notificaciones.forEach(function(noti){
-        message += getNotificacionRow(noti);
+        message += getNotificacionRow(noti, traducciones);
       });
 
       d.setMessage(message);

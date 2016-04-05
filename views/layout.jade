@@ -46,8 +46,8 @@ html
               // name-and-slogan
               .site-name-and-slogan.smooth-scroll
                 .site-name
-                  a(href='/') Informa Torrent
-                .site-slogan Tu portal de denuncias
+                  a(href='/') #{contenido.titulo}
+                .site-slogan #{contenido.slogan}
             // header-left end
           .col-md-8
             // header-right start
@@ -71,19 +71,19 @@ html
                     #navbar-collapse-1.collapse.navbar-collapse.scrollspy.smooth-scroll
                       ul.nav.navbar-nav.navbar-right(style="height: 100%;")
                         li(style="height: 100%")
-                          a(href='/app/#banner' style="height: 100%") Inicio
+                          a(href='/app/#banner' style="height: 100%") #{contenido.inicio}
                         if(!locals.user)
                           li(style="height: 100%")
-                            a(href="/app/#iniciar" style="height: 100%") Iniciar Sesión
+                            a(href="/app/#iniciar" style="height: 100%") #{contenido.iniciar_sesion}
                           li(style="height: 100%")
-                            a(href='/app/#registrarse' style="height: 100%") Registrarse
+                            a(href='/app/#registrarse' style="height: 100%") #{contenido.registrarse}
                           li(style="height: 100%")
-                            a(href='/app/#olvidaste' style="height: 100%") ¿Olvidaste contraseña?
+                            a(href='/app/#olvidaste' style="height: 100%") #{contenido.olvidaste}
                         else
                           li(style="height: 100%")
-                            a(href='/app/visor' style="height: 100%") Visor Tiempo Real
+                            a(href='/app/visor' style="height: 100%") #{contenido.visor_tiempo_real}
                           li(style="height: 100%")
-                            a(href='/app/denuncias?page=1' style="height: 100%") Denuncias
+                            a(href='/app/denuncias?page=1' style="height: 100%") #{contenido.denuncias}
                           li(style="height: 100%")
                             a(href='#' style="height: 70px;" data-toggle="dropdown").media
                               div.pull-left
@@ -94,14 +94,24 @@ html
                                 span.caret
                             ul.dropdown-menu(style="width: 100%")
                               li.dropdown
-                                a(href="/app/profile#headingOne") Notificaciones
-                                  span(style="float: right; margin-top: -20px;").badge.noti_up #{nuevas}
+                                a(href="/app/perfil#headingOne") #{contenido.notificaciones}
+                                  span(style="margin-left : 5px").badge.noti_up #{nuevas}
                               li.dropdown
-                                a(href="/app/profile") Mi perfil
+                                a(href="/app/perfil") #{contenido.mi_perfil}
                               li.dropdown
-                                a(href="/app/denuncias/nueva") Nueva denuncia
+                                a(href="/app/denuncias/nueva") #{contenido.nueva_denuncia}
                               li.dropdown
-                                a(href="/app/logout") Cerrar Sesión
+                                a(href="/app/logout") #{contenido.cerrar_sesion}
+                        li(style="height: 100%")
+                          a(href='#' style="height: 70px;" data-toggle="dropdown") Idioma
+                            span.caret
+                          ul.dropdown-menu(style="width: 100%")
+                            li.dropdown
+                              a(href="javascript:window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?lang=es&' + (window.location.href.split('?')[1] || ''))") Castellano
+                            li.dropdown
+                              a(href="javascript:window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?lang=val&' + (window.location.href.split('?')[1] || ''))") Valencià
+                            li.dropdown
+                              a(href="javascript:window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?lang=en&' + (window.location.href.split('?')[1] || ''))") English
                 // navbar end
               // main-navigation end
             // header-right end
@@ -115,10 +125,10 @@ html
           .row
             .col-md-8.col-md-offset-2.object-non-visible(data-animation-effect='rollIn')
               h1.text-center
-                | Informa 
+                | #{contenido.titulo.split(" ")[0]}
                 span Torrent
               p.lead.text-center
-                | La app con la que podrás contribuir a la mejora de Torrent
+                | !{contenido.subtitulo}
     // banner end
 
     // Contenido
@@ -126,7 +136,7 @@ html
     block content
     div(style="position: fixed; z-index: 5; bottom: 0px; left: 0; right: 0; background : rgba(0,0,0,0.5); color: #fff; padding:2 20 2 20px")
       i.fa.fa-bullhorn
-      |  HOY
+      |  #{contenido.hoy}
       span#numdenunhoy  !{locals.datos_app.num_denun_hoy}
       |  | TOTAL
       |  
@@ -162,6 +172,14 @@ html
     // FUNCIONALIDADES SOCKET.IO
     script(src="/javascripts/client-sockets.js")
     script.
+
+      var traducciones = JSON.parse('!{JSON.stringify(contenido)}');
+
+      $("h1, h2").each(function(){
+        var fontSize = $(this).css('font-size');
+        console.log(fontSize);
+        $(this).fitText(1.1, {maxFontSize: fontSize});
+      });
       var sms = {};
       if ('#{message.error}' != '') {
         sms.type = 'type-error';

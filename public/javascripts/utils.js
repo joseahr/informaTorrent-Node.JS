@@ -74,9 +74,9 @@ function getFechaFormatted(fecha){
 	return dia + '-' + mes + '-' + año + '  ' + hora + ':' + minutos + ':' + segundos;
 }
 
-function getIconoNotificacion(noti){
+function getIconoNotificacion(noti, traduc){
 	var tipo = noti.tipo;
-	var html='IR A DENUNCIA ' + '<a target="_blank" href="/app/denuncia/' + noti.denuncia.gid + '"><span class="fa-stack fa-lg">' +
+	var html= traduc.ir_a_denuncia + ' <a target="_blank" href="/app/denuncia/' + noti.denuncia.gid + '"><span class="fa-stack fa-lg">' +
 			   		'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB"></i>' +
 			   		'<i class="fa fa-angle-right fa-stack-1x fa-inverse"></i>' +
 			   '</span></a>';
@@ -107,51 +107,52 @@ function getIconoNotificacion(noti){
 	}
 }
 
-function getInfoNotificacion(noti){
+function getInfoNotificacion(noti, traduc){
 	var id_usuario_from = noti.id_usuario_from;
 	var username = noti.profile_from.username;
 	if(noti.tipo == 'DENUNCIA_CERCA'){
 		return '<p><a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
-				'publicó una denuncia cerca de tu ubicación</p><p>Distancia : ' + noti.datos.distancia.toFixed(3) + ' metros</p>' +
-				'<div style="overflow-x: hidden">Denuncia : ' + noti.denuncia.titulo + '</div>';
+				traduc.usuario_add_denuncia_cerca + '</p><p>' + traduc.distancia + ' : ' + noti.datos.distancia.toFixed(3) + ' ' + traduc.metros + '</p>' +
+				'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';
 	}
 	else if(noti.tipo == 'COMENTARIO_DENUNCIA'){
 		return '<p><a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
-				'comentó: <div style="overflow-x: hidden">"' + decodeURIComponent(noti.datos.contenido).substring(0,20)  + '..."</div> en tu denuncia</p>' + 
-				'<div style="overflow-x: hidden">Denuncia : ' + noti.denuncia.titulo + '</div>';
+				traduc.comento + ': <i>"' + $(decodeURIComponent(noti.datos.contenido)).text().substring(0,20)  + 
+				'...</i>" ' + traduc.en_tu_denuncia + '</p>' + 
+				'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';
 	}
 	else if(noti.tipo == 'LIKE_DENUNCIA'){
 		return '<p><a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
-				'ha indicado que le gusta tu denuncia</p>' + 
-				'<div style="overflow-x: hidden">Denuncia : ' + noti.denuncia.titulo + '</div>';			
+				traduc.usuario_like_denuncia + '</p>' + 
+				'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';			
 	}
 	else if(noti.tipo === 'NO_LIKE_DENUNCIA'){
 		return '<p><a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
-				'ha indicado que ya no le gusta tu denuncia</p>' + 
-				'<div style="overflow-x: hidden">Denuncia : ' + noti.denuncia.titulo + '</div>';			
+				traduc.usuario_no_like_denuncia + '</p>' + 
+				'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';			
 	}		
 }
 
-function getInfoAccion(noti){
+function getInfoAccion(noti, traduc){
 	var id_usuario_to = noti.id_usuario_to;
 	var username = noti.profile_to.username;
 	if(noti.tipo == 'DENUNCIA_CERCA'){
-		return '<p>Has publicado una denuncia cerca de <a href="/app/usuarios?id=' + id_usuario_to + '">' + username + '</a></p>' +
-				'<p>Distancia : ' + noti.datos.distancia.toFixed(3) + ' metros</p>' +
-				'<div style="overflow-x: hidden">Denuncia : ' + noti.denuncia.titulo + '</div>';
+		return '<p>' + traduc.has_publicado_denuncia_cerca + ' <a href="/app/usuarios?id=' + id_usuario_to + '">' + username + '</a></p>' +
+				'<p>' + traduc.distancia + ' : ' + noti.datos.distancia.toFixed(3) + ' ' + traduc.metros + '</p>' +
+				'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';
 	}
 	else if(noti.tipo == 'COMENTARIO_DENUNCIA'){
-		return '<p>Comentaste: <i>"' + decodeURIComponent(noti.datos.contenido).substring(0,20)  + '..."</i> en la denuncia de ' +
+		return '<p>' + traduc.comentaste + ': <i>"' + $(decodeURIComponent(noti.datos.contenido)).text().substring(0,20)  + '..."</i> ' + traduc.en_la_denuncia_de + ' ' +
 			'<a href="/app/usuarios?id=' + id_usuario_to + '">' + username + '</a></p>' + 
-			'<div style="overflow-x: hidden">Denuncia : ' + noti.denuncia.titulo + '</div>';
+			'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';
 	}
 	else if(noti.tipo == 'LIKE_DENUNCIA'){
-		return '<p>Te ha gustado la denuncia de <a href="/app/usuarios?id=' + id_usuario_to + '">' + username + '</a></p>' +
-			'<div style="overflow-x: hidden">Denuncia : ' + noti.denuncia.titulo + '</div>';		
+		return '<p>' + traduc.me_gusta_denuncia + ' <a href="/app/usuarios?id=' + id_usuario_to + '">' + username + '</a></p>' +
+			'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';		
 	}
 	else if(noti.tipo === 'NO_LIKE_DENUNCIA'){
-		return '<p>Indicaste que ya no te gusta la denuncia de <a href="/app/usuarios?id=' + id_usuario_to + '">' + username + '</a></p>' +
-			'<div style="overflow-x: hidden">Denuncia : ' + noti.denuncia.titulo + '</div>';			
+		return '<p>' + traduc.no_me_gusta_denuncia + ' <a href="/app/usuarios?id=' + id_usuario_to + '">' + username + '</a></p>' +
+			'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';			
 	}		
 }
 
@@ -239,7 +240,7 @@ function fillFavoritas (denuncias){
 	
 };
 
-function getNotificacionRow(notificacion){
+function getNotificacionRow(notificacion, trad){
 	var fecha = new Date(notificacion.fecha);
 	
 	var color = notificacion.vista ? 'fff' : 'fff8e7';
@@ -252,24 +253,24 @@ function getNotificacionRow(notificacion){
 					'<img onclick="window.open(&#39;/app/usuarios?id=' + notificacion.id_usuario_from + '&#39;)" src="' + notificacion.profile_from.picture + '" style="width: 100px; height: 100px;" class=" media-object img-circle img-thumbnail">' +
 					'<img onclick="window.open(&#39;/app/denuncia?id=' + notificacion.denuncia.gid + '&#39;)" src="' + getGeoserverMiniatura(notificacion.denuncia, 100) + '" style="width: 100px; height: 100px;" class=" media-object img-thumbnail">' +
 				'</a>' + 
-				'<div class="media-body" style="padding: 30 20 30 20px; text-align: left; overflow-x: hidden; ">' + getInfoNotificacion(notificacion) + '</div>'+ 
+				'<div class="media-body" style="padding: 30 20 30 20px; text-align: left; overflow-x: hidden; ">' + getInfoNotificacion(notificacion, trad) + '</div>'+ 
 			'</div>' + 
-			'<p style="clear: both; text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getIconoNotificacion(notificacion) + '</p>' + 
+			'<p style="clear: both; text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getIconoNotificacion(notificacion, trad) + '</p>' + 
 		'</div>' + 
 		'</div>';
 }
 
-function fillNotificaciones(notificaciones){
+function fillNotificaciones(notificaciones, trad){
 	var html = '';
 	notificaciones.forEach(function(notificacion){
 		console.log(JSON.stringify(notificacion));
 		
-		html += getNotificacionRow(notificacion);
+		html += getNotificacionRow(notificacion, trad);
 	});
 	$('#notificaciones > .panel-body').append(html);
 };
 
-function getAccionRow(notificacion){
+function getAccionRow(notificacion, trad){
 	var fecha = new Date(notificacion.fecha);
 
 	console.log(noti.id_denuncia);
@@ -282,18 +283,18 @@ function getAccionRow(notificacion){
 				'<img onclick="window.open(&#39;/app/usuarios?id=' + notificacion.id_usuario_to + '&#39;)" src="' + notificacion.profile_to.picture + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-circle img-thumbnail">' +
 				'<img onclick="window.open(&#39;/app/denuncia?id=' + notificacion.denuncia.gid + '&#39;)" src="' + getGeoserverMiniatura(notificacion.denuncia, 100) + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-thumbnail">' +
 			'</a>' +  
-			'<div class="media-body" style="padding: 30 20 30 20px; text-align: left;overflow-x: hidden; ">' + getInfoAccion(notificacion) + '</div>'+ 								
+			'<div class="media-body" style="padding: 30 20 30 20px; text-align: left;overflow-x: hidden; ">' + getInfoAccion(notificacion, trad) + '</div>'+ 								
 		'</div>' + 
-		'<p style="clear: both; text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getIconoNotificacion(notificacion) + '</p>' + 
+		'<p style="clear: both; text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getIconoNotificacion(notificacion, trad) + '</p>' + 
 		'</div>' + 
 	'</div>';
 }
 
-function fillAcciones(acciones){
+function fillAcciones(acciones, trad){
 	var html = '';
 	acciones.forEach(function(notificacion){
 
-		html += getAccionRow(notificacion);
+		html += getAccionRow(notificacion, trad);
 	});
 	$('#acciones > .panel-body').append(html);
 };

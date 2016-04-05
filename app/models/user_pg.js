@@ -1,6 +1,7 @@
 var bcrypt   = require('bcrypt-nodejs');
 var crypto = require('crypto');
 var nodemailer = require('nodemailer');
+var config = require('../../config/mailer.js');
 
 function generateHash (password) {
     return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
@@ -19,14 +20,14 @@ function sendEmailConfirmation (user){
     var smtpTransport = nodemailer.createTransport('SMTP', {
         service: 'gmail',
         auth: {
-          user: 'joherro123',
-          pass: '321:Hermo'
+          user: config.user,
+          pass: config.pass
         }
       });
     console.log(user.local.email);
       var mailOptions = {
         to: user.local.email,
-        from: 'joherro123@gmail.com',
+        from: config.from,
         subject: 'informaTorrent! - Confirma tu cuenta',
         text: 'Querido usuario,' + user.local.email + '\n\n Bienvenido a nuestra aplicación de denuncias.\n Confirma tu cuenta de usuario accediendo a este link:\n http://localhost:3000/app/confirmar/' + user._id + '' 
       };

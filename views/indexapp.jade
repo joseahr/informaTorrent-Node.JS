@@ -6,9 +6,9 @@ block content
         .container
           .row
             .col-md-12
-              h1#iniciar.title.text-center Iniciar
-                span  Sesión
-              p.lead.text-center Inicia Sesión con tu cuenta de usuario
+              h1#iniciar.title.text-center #{contenido.iniciar_sesion.split(" ")[0]}
+                span  !{contenido.iniciar_sesion.split(" ")[1]}
+              p.lead.text-center !{contenido.inicia_sesion_info}
               .space
               .row
                 form(action="/app/login" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', margin: '0 auto',  width: '80%'}).form-horizontal
@@ -18,41 +18,41 @@ block content
                     .input-group(style={'margin-top':'5px'})
                       span.input-group-addon
                         i.fa.fa-envelope-o.fa-fw
-                      input.form-control.btn-default(type='text', name="email", placeholder='Correo electrónico o Nombre de usuario')
+                      input.form-control.btn-default(type='text', name="email", placeholder='#{contenido.usuario_o_email}')
                   .col-md-6
                     .input-group(style={'margin-top':'5px'})
                       span.input-group-addon
                         i.fa.fa-key.fa-fw
-                      input.form-control.btn-default(type='password', name="password", placeholder='Contraseña')
+                      input.form-control.btn-default(type='password', name="password", placeholder='#{contenido.contraseña}')
                   .col-lg-12(style={float:'none', margin: '0 auto'})
                     .input-group(style={'padding-top':'5px'})
                       span.input-group-addon
                         i.fa.fa-sign-in.fa-fw
-                      input.form-control.btn-success(type="submit", value="Iniciar Sesión")
+                      input.form-control.btn-success(type="submit", value="#{contenido.iniciar_sesion}")
               .space
-              p.lead.text-center O con tu cuenta de Twitter o Facebook
+              p.lead.text-center !{contenido.inicia_sesion_rs}
               .row
                 div(style={padding: '5%', background: 'rgba(0,50,187, 0.1)',margin: '0 auto', width: '80%'}).form-horizontal.container-fluid
-                  .col-md-6
+                  .col-md-6(style="margin-bottom : 10px")
                     .input-group
                       span.input-group-addon
                         i.fa.fa-facebook.fa-fw(style={color: '#3b5998'})
                       a(href="/app/auth/facebook")
-                        input.form-control.btn-default.facebook-button(type="button" value="Iniciar Sesión")
+                        input.form-control.btn-default.facebook-button(type="button" value="#{contenido.iniciar_sesion}")
                   .col-md-6
                     .input-group
                       span.input-group-addon
                         i.fa.fa-twitter.fa-fw(style={color: '#1dcaff'})
                       a(href="/app/auth/twitter")
-                        input.form-control.btn-default.twitter-button.text-center(type="button" value="Iniciar Sesión")
+                        input.form-control.btn-default.twitter-button.text-center(type="button" value="#{contenido.iniciar_sesion}")
       // Registrarse
       .section.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
         .container
           .row
             .col-md-12
-              h1#registrarse.title.text-center Nuevo
-                span  Usuario
-              p.lead.text-center Crea una cuenta de usuario
+              h1#registrarse.title.text-center !{contenido.nuevo}
+                span  !{contenido.usuario}
+              p.lead.text-center !{contenido.crear_cuenta_usuario}
               .space
               .row
                 form.form-horizontal.container-fluid(action="/app/signup" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', float: 'none', width: '80%'})
@@ -63,50 +63,50 @@ block content
                     .input-group(style={'margin-top':'5px'})
                       span.input-group-addon
                         i.fa.fa-envelope-o.fa-fw
-                      input.form-control.btn-default(type='text', name="email", placeholder='Correo electrónico')
+                      input.form-control.btn-default(type='text', name="email", placeholder='#{contenido.email}')
                   // Contraseña
                   .col-md-4(style={'margin-top':'5px'})
                     .input-group
                       span.input-group-addon
                         i.fa.fa-key.fa-fw
-                      input.form-control.btn-default(type='password', name="password", placeholder='Contraseña')
+                      input.form-control.btn-default(type='password', name="password", placeholder='#{contenido.contraseña}')
                   // Repetir Contraseña
                   .col-md-4(style={'margin-top':'5px'})
                     .input-group
                       span.input-group-addon
                         i.fa.fa-key.fa-fw
-                      input.form-control.btn-default(type='password', name="repassword", placeholder='Reescriba Contraseña')
+                      input.form-control.btn-default(type='password', name="repassword", placeholder='#{contenido.repetir_contraseña}')
                   // Nombre de Usuario
                   .col-md-4
                     .input-group(style={'margin-top':'5px'})
                       span.input-group-addon
                         i.fa.fa-user.fa-fw
-                      input.form-control.btn-default(type='text', name="username", placeholder='Nombre de Usuario')
+                      input.form-control.btn-default(type='text', name="username", placeholder='#{contenido.username}')
                   // Nombre
                   .col-md-4(style={'margin-top':'5px'})
                     .input-group
                       span.input-group-addon
                         i.fa.fa-user.fa-fw
-                      input.form-control.btn-default(type='text', name="name", placeholder='Nombre')
+                      input.form-control.btn-default(type='text', name="name", placeholder='#{contenido.nombre}')
                   // Apellidos
                   .col-md-4(style={'margin-top':'5px'})
                     .input-group
                       span.input-group-addon
                         i.fa.fa-user.fa-fw
-                      input.form-control.btn-default(type='text', name="surname", placeholder='Apellidos')
+                      input.form-control.btn-default(type='text', name="surname", placeholder='#{contenido.apellidos}')
                   .col-lg-12.container-fluid(style={margin: '0 auto', float: 'none'})
                     .input-group(style={'padding-top':'5px'})
                       span.input-group-addon
                         i.fa.fa-sign-in.fa-fw
-                      input.form-control.btn-success(type="submit", value="Registrar")
+                      input.form-control.btn-success(type="submit", value="#{contenido.registrarse}")
       // olvidaste contraseña
       .section.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
         .container
           .row
             .col-md-12
-              h1#olvidaste.title.text-center Recuperar
-                span  Contraseña
-              p.lead.text-center Se enviará un e-mail a tu correo con los datos necesarios para recuperar tu contraseña
+              h1#olvidaste.title.text-center #{contenido.recuperar}
+                span  #{contenido.contraseña}
+              p.lead.text-center !{contenido.recuperar_contraseña_info}
               .space
               .row
                 form(action="/app/forgot" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', margin: '0 auto',  width: '80%'}).form-horizontal
@@ -116,9 +116,9 @@ block content
                     .input-group(style={'margin-top':'5px'})
                       span.input-group-addon
                         i.fa.fa-envelope-o.fa-fw
-                      input.form-control.btn-default(type='text', name="email", placeholder='Correo electrónico o Nombre de usuario')
+                      input.form-control.btn-default(type='text', name="email", placeholder='#{contenido.usuario_o_email}')
                   .col-lg-12(style={float:'none', margin: '0 auto'})
                     .input-group(style={'padding-top':'5px'})
                       span.input-group-addon
                         i.fa.fa-send.fa-fw
-                      input.form-control.btn-success(type="submit", value="Enviar e-mail")
+                      input.form-control.btn-success(type="submit", value="#{contenido.enviar_email}")

@@ -5,7 +5,7 @@ var fs, // file System
 	exec, // Ejecutar comandos
 	denunciasPorPagina = 10,
 	maxPaginas = 0,
-	config = require('../../config.js'),
+	config = require('../../config/upload.js'),
 	User, // modelo de usuario
 	validator, // validator 
 	db, 
@@ -18,7 +18,7 @@ var fs, // file System
 /*
  * Constructor
  */
-function ContPg(fs_, path_, dir_, exec_, User_, validator_, 
+function Denuncia(fs_, path_, dir_, exec_, User_, validator_, 
 		db_, dbCarto_, consultas_, multer_imagen_perfil_, multer_temp_denuncia_){
 	fs = fs_;
 	path = path_;
@@ -33,8 +33,17 @@ function ContPg(fs_, path_, dir_, exec_, User_, validator_,
 	multer_temp_denuncia = multer_temp_denuncia_.single('file');
 }
 
-/* Denuncia Controller */
-ContPg.prototype.denunciaCont = function(req, res){
+/*
+====================================================
+== ALL --> /app/denuncia?id=id&action=action      ==
+	
+	Controlador para las denuncias
+	GET --> denuncia_page, denuncia_edit_page
+	POST --> añadir_coment, delete_denuncia, update_denuncia
+
+====================================================
+*/
+Denuncia.prototype.denuncia = function(req, res){
 	var action = req.query.action || 'get_denuncia_page';
 
 	console.log('denuncia action ' + action);
@@ -43,24 +52,30 @@ ContPg.prototype.denunciaCont = function(req, res){
 		return res.status(500).send('Ruta no encontrada. Debe introducir al menos la id de la denuncia');
 
 	switch (action){
-		case 'get_denuncia_page' : getDenunciaPage(req, res);
+		case 'get_denuncia_page' : pagina_denuncia(req, res);
 			break;
-		case 'get_edit_page' : getEdit(req, res);
+		case 'get_edit_page' : pagina_editar(req, res);
 			break;
-		case 'edit' : updateDenuncia(req, res);
+		case 'edit' : editar(req, res);
 			break;
-		case 'delete' : deleteDenuncia(req, res);
+		case 'delete' : eliminar(req, res);
 			break;
-		case 'add_coment' : addComentario(req, res);
+		case 'add_coment' : añadir_comentario(req, res);
 			break;
-		default : getDenunciaPage(req, res);
+		default : pagina_denuncia(req, res);
 	}
 };
 
 /*
- * Renderizamos la página para añadir una denuncia
- */
-ContPg.prototype.renderNueva = function(req, res){
+====================================================
+== GET --> /app/denuncias/nueva                   ==
+	
+	Renderizamos la página para añadir una nueva 
+	denuncia
+
+====================================================
+*/
+Denuncia.prototype.pagina_nueva_denuncia = function(req, res){
 
 	crypto.randomBytes(25, function(ex, buf) {
   		var token = buf.toString('hex');
@@ -72,9 +87,14 @@ ContPg.prototype.renderNueva = function(req, res){
 }
 
 /*
- * Eliminar imagen de la carpeta temporal
- */
-ContPg.prototype.deleteTempImage = function(req, res){
+====================================================
+== POST -->                                       ==
+	
+	Eliminar imagen del directorio temporal
+
+====================================================
+*/
+Denuncia.prototype.eliminar_imagen_temporal = function(req, res){
 	var tempdir = req.query.tempdir;
 	var filename = req.query.filename;
 
@@ -91,9 +111,14 @@ ContPg.prototype.deleteTempImage = function(req, res){
 }
 
 /*
- * Subir una imagen a la carpeta temporal
- */
-ContPg.prototype.uploadTempImage = function(req, res){
+====================================================
+== POST --> /app/fileupload                       ==
+	
+	Subimos una imagen al directorio temporal
+
+====================================================
+*/
+Denuncia.prototype.subir_imagen_temporal = function(req, res){
 	multer_temp_denuncia(req, res, function(error){
 		
 		if(error) {
@@ -126,9 +151,14 @@ ContPg.prototype.uploadTempImage = function(req, res){
 }
 
 /*
- * Añadimos un comentario en una denuncia.
- */
-var addComentario = function(req, res){
+====================================================
+== POST --> /app/denuncia?id=id&action=add_coment ==
+	
+	Añade un comentario a la denuncia
+
+====================================================
+*/
+var añadir_comentario = function(req, res){
 	
 	if(req.method.toLowerCase() != 'post')
 		return res.status(500).send('La acción requiere ser enviada a través de POST');
@@ -183,11 +213,15 @@ var addComentario = function(req, res){
 
 };
 
-/* 
- * Guardamos la denuncia
- */
+/*
+====================================================
+== POST --> /app/denuncias/nueva/save             ==
+	
+	Creamos una nueva denuncia
 
-ContPg.prototype.saveDenuncia = function(req, res){
+====================================================
+*/
+Denuncia.prototype.guardar = function(req, res){
 	
 	
 	var errormsg = '';
@@ -344,75 +378,16 @@ ContPg.prototype.saveDenuncia = function(req, res){
 
 
 /*
- * Perfil visible de los usuarios
- */
-ContPg.prototype.getUserProfile = function(req, res){
-	// Perfil que será visible para los demás usuarios
-	// solo podemos acceder si estamos loggeados
-	var usuario, denuncias_user;
-
-	if(!req.query.id) return res.status(500).send('Debe introducir el parámetro id');
-
-	db.oneOrNone(consultas.perfil_otro_usuario, req.query.id)
-		.then(function(usuario_){
-			if(!usuario_) throw new Error('No existe el usuario con id = ' + req.params.id_usuario);
-			usuario = usuario_;
-			console.log('usuario :' + JSON.stringify(usuario));
-			return db.any(consultas.obtener_denuncias_usuario, usuario._id);
-		})
-		.then (function(denuncias_user_){
-			denuncias_user = denuncias_user_;
-			denuncias_user.forEach(function(denuncia){
-				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-			});
-			return db.any(consultas.usuario_denuncias_favoritas, usuario._id);
-		})
-		.then(function(denuncias_fav){
-			denuncias_fav.forEach(function(denuncia){
-				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-			});
-			res.render('perfil_otro.jade', {user_otro: usuario, denuncias : denuncias_user, denuncias_fav : denuncias_fav});
-		})
-		.catch(function(error){
-			res.status(500).send(error);
-		});
+====================================================
+== GET --> /app/denuncias?page=pagina             ==
 	
-};
+	Renderizamos la página con las denuncias según
+	el número de la página que se pase.
+	En cada página hay 10 denuncias.
 
-/*
- * Renderizamos el Perfil del usuario
- */
-ContPg.prototype.getProfile = function(req, res) {
-	// En cualquier otro caso renderizamos
-	console.log('mi PErfil');
-	var denuncias_user = [];
-	db.query(consultas.obtener_denuncias_usuario, req.user._id)
-		.then (function(denuncias){
-			
-			denuncias.forEach(function(denuncia){
-				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-			});
-
-			denuncias_user = denuncias;
-			return db.any(consultas.usuario_denuncias_favoritas, req.user._id);
-		})
-		.then (function(denuncias_fav){
-			denuncias_fav.forEach(function(denuncia){
-				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-			});
-			res.render('profile', { misDenuncias: denuncias_user, denuncias_fav : denuncias_fav });
-		})
-		.catch (function(error){
-			res.status(500);
-			res.send(error.toString());
-		});
-
-};
-
-/*
- *  Ruta /app/denuncias?page=1,2,3....
- */
-ContPg.prototype.getDenunciasPage = function(req, res){
+====================================================
+*/
+Denuncia.prototype.pagina_denuncias = function(req, res){
 	var numDenuncias = 0;
 	var maxPages = 1;
 	var page = req.query.page; 
@@ -454,9 +429,15 @@ ContPg.prototype.getDenunciasPage = function(req, res){
 };
 
 /*
- * Ruta /app/denuncia/:id_denuncia
- */
-var getDenunciaPage = function(req,res){
+==========================================================
+== GET --> /app/denuncia?id=id&action=get_denuncia_page ==
+	
+	Renderiza la pagina de la denuncia seleccionada.
+	Si se omite el parámetro action surge el mismo efecto
+
+==========================================================
+*/
+var pagina_denuncia = function(req,res){
 
 	var id_denuncia = req.query.id;
 
@@ -477,9 +458,17 @@ var getDenunciaPage = function(req,res){
 };
 
 /*
- * Ruta app/deleteImagen?path=path_denuncia
- */
-ContPg.prototype.deleteImagenDenuncia = function(req, res){
+======================================================
+==      POST --> /app/deleteImagen?path=path        ==
+	
+	Elimina la imagen de la denuncia seleccionada
+
+	TODO : Comprobar que el usuario que elimina la imagen 
+	es el propietario de la denuncia
+
+======================================================
+*/
+Denuncia.prototype.eliminar_imagen = function(req, res){
 	if(!req.query.path){
 		return res.status(500).send('no hay path');
 	}
@@ -500,8 +489,16 @@ ContPg.prototype.deleteImagenDenuncia = function(req, res){
 	}
 }
 
+/*
+======================================================
+== GET --> /app/denuncia?id=id&action=get_edit_page ==
+	
+	Renderizamos la página para editar una denuncia
+	con la denuncia que hemos seleccionado
 
-var getEdit = function(req, res){
+======================================================
+*/
+var pagina_editar = function(req, res){
 	var id = req.query.id;
 	if(!id){
 		//Mostar error
@@ -536,9 +533,14 @@ var getEdit = function(req, res){
 
 
 /*
- *  Ruta /app/delete/
- */
-var deleteDenuncia = function(req, res){
+====================================================
+== POST --> /app/denuncia?id=id&action=delete     ==
+	
+	Eliminamos la denuncia seleccionada
+
+====================================================
+*/
+var eliminar = function(req, res){
 	
 	if(req.method.toLowerCase() != 'post')
 		return res.status(500).send('La acción requiere ser enviada a través de POST');
@@ -583,9 +585,14 @@ var deleteDenuncia = function(req, res){
 };
 
 /*
- * Update Denuncia
- */
-var updateDenuncia = function(req, res){
+=======================================================
+== POST --> /app/denuncia?id=id_denuncia&action=edit ==        
+	
+	Actualizamos la denuncia con los nuevos datos
+
+=======================================================
+*/
+var editar = function(req, res){
 
 	if(req.method.toLowerCase() != 'post')
 		return res.status(500).send('La acción requiere ser enviada a través de POST');
@@ -712,193 +719,16 @@ var updateDenuncia = function(req, res){
 }; // Fin saveDenuncia
 
 
-ContPg.prototype.getUpdateProfilePage = function(req, res){
-	res.render('editarPerfil.jade', {user: req.user});
-}
+/*
+====================================================
+==              GET --> /app/visor                ==
+	
+	Renderizamos la página del visor de denuncias
+	con las denuncias de las últimas 24 horas
 
-ContPg.prototype.updateProfile = function(req, res){
-	
-	var user = req.user;
-	
-	var nombre_usuario = req.body.username;
-	var nombre = req.body.nombre;
-	var apellidos = req.body.apellidos;
-	
-	var nueva_password = req.body.password;
-	var nueva_password_rep = req.body.repassword;
-	
-	var changedPassword = false;
-	var changedProfile = false;
-	
-	// Validar
-	if(nueva_password && !validator.isLength(nueva_password,5,20)){
-		return res.send({error: true, msg: 'La contraseña debe tener entre 5 y 20 caracteres'});
-	}
-	
-	if(nueva_password != nueva_password_rep){
-		return res.send({error: true, msg: 'Las contraseñas deben coincidir'});	
-	}
-	else if(nueva_password){
-		user.password = User.generateHash(nueva_password);
-		changedPassword = true;
-	}
-	
-	if(nombre && !validator.isLength(nombre, 2, 10)){
-		return res.send({error: true, msg: 'El nombre debe tener entre 2 y 10 caracteres'});
-	}
-	else if(nombre){
-		user.profile.nombre = nombre;
-		changedProfile = true;
-	}
-	
-	if(apellidos && !validator.isLength(apellidos, 3, 15)){
-		return res.send({error: true, msg: 'Los apellidos deben tener entre 3 y 15 caracteres'});
-
-	}
-	else if(apellidos){
-		user.profile.apellidos = apellidos;
-		changedProfile = true;
-	}
-	
-	if(nombre_usuario && !validator.isLength(nombre_usuario, 5, 15)){
-		return res.send({error: true, msg: 'El nombre de usuario debe tener entre 5 y 10 caracteres'});
-
-	}
-	
-	var aux = nombre_usuario || '1';
-	db.query(consultas.usuario_por_username, aux)
-		.then(function(usuario){
-			if(usuario[0]) throw new Error('El nombre de usuario ya existe');
-			user.profile.username = nombre_usuario || user.profile.username;
-			return db.none(consultas.actualizar_info_usuario, [user.password, JSON.stringify(user.profile), user._id]);
-		})
-		.then(function(){
-			res.status(200).send({error: false, msg: 'Perfil actualizado correctamente'});
-		})
-		.catch(function(error){
-			res.send({error: true, msg: error.toString()})
-		});
-	
-}
-
-
-
-var formatsAllowed = 'png|jpg|jpeg|gif'; // Podríamos poner más
-
-ContPg.prototype.changeProfilePicture = function(req, res) {
-	
-	multer_imagen_perfil(req, res, function(error){
-		
-		if(error) return res.status(500).send({type: 'error', msg: 'Error subiendo archivo. ' + error});
-		
-		// La imagen se subió correctamente
-		//console.log('imagen subida guay ' + JSON.stringify(req.files.file));
-		var file = req.file;
-		var extension = path.extname(file.path);
-		
-		console.log('patttth ' + file.path);
-		
-		if(!extension.match(formatsAllowed)){
-			// Eliminamos la imagen subida si no es de uno de los formatos permitidos
-			fs.unlink(path.join('./public/files/usuarios', path.basename(file.path)), function(error_){
-				if(error_) console.log('error unlink ' + error_);
-				return res.status(413).send({type: 'error', msg: 'Formato no permitido'});
-			});
-		}
-		else {
-	        var user = req.user;
-	        var sub = '/files/usuarios'
-	        if(user.profile.picture.indexOf(sub) > -1){
-	        	console.log('eliminando imagen anterior');
-	        	// Tenía una imagen subida
-	        	fs.unlink(path.join('./public', user.profile.picture), function(err){
-	        		if(err) console.log(err); // No debería ocurrir
-	        	});
-	        }
-	        
-	    	user.profile.picture = path.join('/files/usuarios', path.basename(file.path));
-	        
-	        db.none(consultas.actualizar_perfil, [JSON.stringify(user.profile), user._id])
-	        	.then(function(){
-	        		for (var socketId in global.clients[req.user._id])
-	        			global.clients[req.user._id][socketId].emit('imagen cambiá', {path : user.profile.picture});
-	        		res.send({
-	        			type: 'success', 
-	        			msg: 'Imagen de Perfil cambiada correctamente.',
-	        			path: user.profile.picture
-	        		});
-	        	})
-	        	.catch(function(error){
-	        		res.status(500).send(error);
-	        	});
-		}
-		
-	});
-		
-};
-
-
-ContPg.prototype.getEditLoc = function(req,res){
-	
-	db.one(consultas.obtener_loc_preferida, req.user._id)
-		.then(function(location){
-			res.render('editarLoc.jade', {loc_pref: location.loc_pref});
-		})
-		.catch(function(error){
-			res.status(500).send(error);
-		});
-	
-}
-
-ContPg.prototype.postChangeLoc = function(req, res){
-	
-	var wkt = req.body.wkt;
-	
-	console.log(wkt + " WKTTTTTTTTTTTTT");
-	
-	dbCarto.one(consultas.comprobar_geometria(wkt), wkt)
-		.then(function(check_geom){
-			if(!check_geom.st_contains) throw new Error('La geometría debe estar en torrent');
-			
-			return db.none(consultas.actualizar_loc_pref, [wkt, req.body.distancia, req.user._id]);
-			
-		})
-		.then(function(){
-			res.send({error: false, msg: 'Ubicación preferida cambiada correctamente'});
-		})
-		.catch(function(error){
-			res.status(500).send({error: true , msg : error.toString()});
-		});
-	
-}
-
-ContPg.prototype.changeImageGravatar = function(req, res){
-	
-	var user = req.user;
-	var sub = '/files/usuarios'
-	if(user.profile.picture.indexOf(sub) > -1){
-    	fs.unlink(path.join('./public', user.profile.picture), function(err){
-    		console.log('imagen anterior eliminada');
-    		if(err) console.log(err); // No debería ocurrir
-    	});
-	}
-	
-	user.profile.picture = req.body.gravatar;
-	
-	db.none(consultas.actualizar_perfil, [JSON.stringify(user.profile), user._id])
-		.then(function(){
-    		for (var socketId in global.clients[req.user._id])
-    			global.clients[req.user._id][socketId].emit('imagen cambiá', {path : user.profile.picture});
-			res.send({msg: 'Imagen de perfil actualizada correctamente', path: req.body.gravatar});
-		})
-		.catch(function(error){
-			res.status(500).send(error);
-		});
-	
-}
-
-
-ContPg.prototype.getVisorPage = function(req, res){
+====================================================
+*/
+Denuncia.prototype.pagina_visor = function(req, res){
 	
 	db.query(consultas.denuncias_visor)
 		.then(function(denuncias){
@@ -911,9 +741,16 @@ ContPg.prototype.getVisorPage = function(req, res){
 		})
 		.catch(function(error){
 			res.status(500).send(error);
-		});
-	
+		});	
 }
 
+/*
+====================================================
+==                 module.exports                 ==
+	
+	Exportamos el objeto para que las rutas 
+	sean accesibles en server.js
 
-module.exports = ContPg;
+====================================================
+*/
+module.exports = Denuncia;

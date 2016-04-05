@@ -18,10 +18,10 @@ block content
 							div(style={'border-top-left-radius': '10px' , 'border-top-right-radius': '10px', background: 'url(http://www.lovevalencia.com/wp-content/uploads/2011/07/torrent-e1311319357479.jpg)', 'background-size':'100% 60%','background-repeat':'no-repeat', width: '100%', padding:'40 0 40 0px'}).text-center
 								img.img-circle.img-responsive.img-thumbnail(src="#{user.profile.picture}" style={'margin': '0 auto', 'width':'200px','height':'200px'})
 							.col-lg-12.text-center(style={'margin-bottom' : '40px'})
-								a.btn.btn-default.col-lg-12(href="/app/denuncias/nueva" style={width : '100%'}) Nueva Denuncia
-								a.btn.btn-default.col-lg-12(href="/app/perfil/editar" style = {'margin-top':'5px', width : '100%'}) Editar Perfil
-								a.btn.btn-default.col-lg-12( href="/app/perfil/editar_loc" style = {'margin-top':'5px', width : '100%'}) Editar localización
-								a.btn.btn-danger.col-lg-12(href="/app/logout" style = {'margin-top':'5px', width : '100%'}) Cerrar Sesión
+								a.btn.btn-default.col-lg-12(href="/app/denuncias/nueva" style={width : '100%'}) #{contenido.nueva + " " + contenido.denuncia}
+								a.btn.btn-default.col-lg-12(href="/app/perfil/editar" style = {'margin-top':'5px', width : '100%'}) #{contenido.editar + " " + contenido.perfil}
+								a.btn.btn-default.col-lg-12( href="/app/perfil/editar_loc" style = {'margin-top':'5px', width : '100%'}) #{contenido.editar + " " + contenido.localizacion}
+								a.btn.btn-danger.col-lg-12(href="/app/logout" style = {'margin-top':'5px', width : '100%'}) #{contenido.cerrar_sesion}
 				// Columna Central
 				.col-md-8
 					.row(style="margin:0 5 0 5px;")
@@ -34,7 +34,7 @@ block content
 											a(data-toggle='collapse' data-parent='#accordion' href='#notificaciones' aria-expanded='true' aria-controls='notificaciones')
 												.col-lg-12.text-center
 													i.fa.fa-inbox
-													|  Notificaciones
+													|  #{contenido.notificaciones}
 												div(style="position: absolute;top: 30%;left:1%;")
 													span.badge(style="background:#5BC0DE;float:left").noti_tot 
 														if mis_notificaciones
@@ -50,7 +50,7 @@ block content
 										h4.panel-title
 											a(data-toggle='collapse', data-parent='#accordion', href='#mis_denuncias', aria-expanded='true', aria-controls='mis_denuncias')
 												i.fa.fa-files-o
-												| Mis Denuncias
+												| #{contenido.denuncias}
 									#mis_denuncias.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTwo')
 										.panel-body(style='text-align: center;')
 											p.lead ¡Has realizado 
@@ -66,7 +66,7 @@ block content
 										h4.panel-title
 											a(data-toggle='collapse', data-parent='#accordion', href='#acciones', aria-expanded='true', aria-controls='acciones')
 												i.fa.fa-files-o
-												| Mis Acciones
+												| #{contenido.acciones}
 									#acciones.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingThree')
 										.panel-body(style='text-align: center;')
 											p.lead ¡Has realizado 
@@ -82,7 +82,7 @@ block content
 										h4.panel-title
 											a(data-toggle='collapse', data-parent='#accordion', href='#favoritas', aria-expanded='true', aria-controls='favoritas')
 												i.fa.fa-star
-												| Denuncias Favoritas
+												| #{contenido.denuncias_fav}
 									#favoritas.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFour')
 										.panel-body(style='text-align: center;')
 											p.lead ¡Te han gustado 
@@ -96,7 +96,7 @@ block script
 	// OpenLayers.js
 	script(src='/javascripts/plugins/ol3/ol.js')
 	script.
-		fillAcciones(JSON.parse('!{JSON.stringify(mis_acciones)}'));
-		fillNotificaciones(JSON.parse('!{JSON.stringify(mis_notificaciones)}'));
+		fillAcciones(JSON.parse('!{JSON.stringify(mis_acciones)}'), traducciones);
+		fillNotificaciones(JSON.parse('!{JSON.stringify(mis_notificaciones)}'), traducciones);
 		fillDenuncias(JSON.parse('!{JSON.stringify(misDenuncias)}'));
 		fillFavoritas(JSON.parse('!{JSON.stringify(denuncias_fav)}'));

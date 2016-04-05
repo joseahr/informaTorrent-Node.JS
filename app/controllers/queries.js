@@ -1,4 +1,5 @@
 var helper = require('../queries/helper.js');
+
 module.exports = {
 		
 		//Insert

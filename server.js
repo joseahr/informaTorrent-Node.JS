@@ -37,6 +37,9 @@ var cookieParser = require('cookie-parser'); // Módulo cookieParser - Se encarg
 var session      = require('express-session'); // Módulo de sesiones de express
 var bodyParser = require('body-parser'); // BodyParser - Se encarga de parsear el cuerpo de las peticiones
 
+var i18n = require('i18n-2'); // i18n
+var locales = require(__dirname + '/app/controllers/locales.js'); // traducciones
+var multer = require('multer');
 
 //process.on('uncaughtException', function (err) {
 //    console.log(err);
@@ -74,7 +77,6 @@ app.use(flash()); // Flashear mensaje almacenados en la sesión
 ===              I18N              ===
 ======================================
 */
-var i18n = require('i18n-2');
 
 i18n.expressBind(app, {
   // setup some locales - other locales default to vi silently
@@ -82,15 +84,22 @@ i18n.expressBind(app, {
   // set the default locale
   defaultLocale: 'es',
   // set the cookie name
-  cookieName: 'leng',
+  cookieName: 'locale',
 
   directory : __dirname + '/locales'
 });
 
 // set up the middleware
 app.use(function(req, res, next) {
-  req.i18n.setLocaleFromQuery();
   req.i18n.setLocaleFromCookie();
+  if(req.query.lang){
+  	req.i18n.setLocaleFromQuery();
+  	if(req.query.lang == 'es' || req.query.lang == 'en' || req.query.lang == 'val')
+  		res.cookie('locale', req.query.lang);
+  }
+
+  //locales.getTranslations(req, res);
+
   next();
 });
 
@@ -115,8 +124,8 @@ var io = require('socket.io').listen(server);
 
 // Requires para controladores
 var dir = require('node-dir'),
-	exec = require( 'child_process' ).exec,
-	configUploadImagenes = require('./config.js'),
+	exec = require('child_process').exec,
+	configUploadImagenes = require('./config/upload.js'),
 	crypto = require('crypto'),
 	mkdirp = require('mkdirp'),
 	User = require('./app/models/user_pg')
@@ -128,255 +137,112 @@ var dir = require('node-dir'),
 require('./config/config_passport_pg')(passport, db, queries); // pass passport for configuration
 require('./app/controllers/sockets.js')(io, path, mkdirp, exec, configUploadImagenes, validator, db, queries, pgp); // SOCKET.IO LADO DEL SERVIDOR
 
-/*
- * Tarea que va a hacer cada hora en busca de archivos en la carpeta temporal desfasados
- */
-var tarea = require('node-schedule');
-var regla = new tarea.RecurrenceRule();
+var contHome = require('./app/routes/home.js'), // Página principal, manejo de mensajes
+	Usuario = require('./app/routes/usuarios.js'), 
+	Denuncia = require('./app/routes/denuncias.js'),
+	Geoportal = require('./app/routes/geoportal.js');
 
-regla.minute = 0;
-
-var limpiador_directorio = tarea.scheduleJob(regla, function(){
-	console.log('ejecutando limpieza de carpeta temporal ');
-	fs.readdir(configUploadImagenes.TEMPDIR, function(error, files){
-		if(error) console.log('error recorriendo dir : ', error);
-		files.forEach(function(file){
-			console.log(file);
-			var estadisticas = fs.lstatSync(path.join(configUploadImagenes.TEMPDIR, file)); 
-			//console.log('estadisticas : ', estadisticas, 'ctime', estadisticas.ctime);
-			var ahora = new Date().getTime();
-			var fecha_archivo_mas_una_hora = new Date(estadisticas.ctime).getTime() + 3600000;
-			
-			if(ahora >= fecha_archivo_mas_una_hora){
-				// Borrar archivo que está en carpeta temporal mas de una hora
-				console.log('archivo/directorio viejo ' + file);
-				exec("rm -r '" + path.join(configUploadImagenes.TEMPDIR, file) + "'", function(error_){
-					if(error_) console.log(error_);
-					else console.log(' archivo ' + file + ' eliminado por ser viejo ' + estadisticas.ctime);
-				});
-				
-			} else {
-				console.log('archivo/directorio aun joven para eliminar ' + file + ' XD ctime ' + estadisticas.ctime);
-			}
-			
-		});
-	});
-});
-
-//Multer - Subida de Imágenes
-var multer = require('multer');
-
-var filename_perfil_img = function(req, file, cb){
-	console.log('fileeeee' + JSON.stringify(file));
-	var random = Math.floor(Math.random() * 1000);
-	cb(null, req.user._id + '-' + random + path.extname(file.originalname));
-};
-
-var filename_temp_img = function(req, file, cb){
-	console.log(req.query.tempdir);
-	if(!req.query.tempdir) req.query.tempdir = '';
-	console.log('fileeeee' + JSON.stringify(file));
-	cb(null, path.join(req.query.tempdir, file.originalname));
-}
-
-function crearMulter(dest, filename){
-	return multer({
-		limits: {
-			fileSize: 3 * 1024 * 1024 // 3 mb
-		},
-		storage: multer.diskStorage({
-			destination: function(req, file, cb){
-				console.log('destttttttttttt' + dest);
-				cb(null, dest);
-			},
-			filename: filename,
-		})
-	});
-}
-
-var contHome = require('./app/controllers/home.js'); // Página principal, manejo de mensajes
-var contPass_ = require('./app/controllers/passport_pg_cont.js'); // Iniciar sesión registrar...
-var contPass = new contPass_(crypto, nodemailer, validator, User, db, queries);
-var contPg_ = require('./app/controllers/pg.js');
-var contPg = new contPg_(fs, path, dir, exec, User, validator, 
+Geoportal = new Geoportal(db, dbCarto);
+Usuario = new Usuario(crypto, nodemailer, validator, User, db, queries);
+Denuncia = new Denuncia(fs, path, dir, exec, User, validator, 
 		db, dbCarto, queries, 
 		crearMulter('./public/files/usuarios', filename_perfil_img), 
 		crearMulter('./public/files/temp', filename_temp_img)); // Guardar, editar, eliminar denuncia, coments, imgs...
 
 
+
+
 /*
  * Geoportal, lo servimos como archivos estáticos
  */
+
+// XHR
+app.get('/xhr', Geoportal.request);
+
 // Index
-var request = require('request');
-app.get('/xhr', function(req, res){
-	var url = req.query.url;
-	console.log(url);
-	if(!url)
-		return res.status(500).send('Debe introducir el parámetro url y method');
-
-	request(url, function (error, response, body) {
-	  if (!error && response.statusCode == 200) {
-	    res.status(200).send(body);
-	  }
-	  else return res.status(500).send(error);
-	});
-});
-
-app.get('/', function(req, res){
-	console.log(req.i18n.__('hola'));
-    res.writeHead(200, {
-        "Content-Type": "text/html"
-    });
-    fs.readFile('./geoportal/index.html', "utf-8", function(err, data) {
-        if (err) throw err;
-        res.write(data.toString());
-        res.end();
-    });
-});
+app.get('/', Geoportal.index);
 
 // Visor
-app.get('/visor', function(req, res){
-    res.writeHead(200, {
-        "Content-Type": "text/html"
-    });
-    fs.readFile('./geoportal/visor.html', "utf-8", function(err, data) {
-        if (err) throw err;
-        res.write(data.toString());
-        res.end();
-    });
-});
+app.get('/visor', Geoportal.visor);
 
 // Descargas
-app.get('/descargas', function(req, res){
-    res.writeHead(200, {
-        "Content-Type": "text/html"
-    });
-    fs.readFile('./geoportal/descargas.html', "utf-8", function(err, data) {
-        if (err) throw err;
-        res.write(data.toString());
-        res.end();
-    });
-});
+app.get('/descargas', Geoportal.descargas);
+
+app.get('/app/getInfoTabla', Geoportal.info_tabla);
 
 
-// Servicios
-app.get('/servicios', function(req, res){
-    res.writeHead(200, {
-        "Content-Type": "text/html"
-    });
-    fs.readFile('./geoportal/servicios.html', "utf-8", function(err, data) {
-        if (err) throw err;
-        res.write(data.toString());
-        res.end();
-    });
-});
 
-app.get('/app/getInfoTabla', function(req, res){
-	var nombre_tabla = req.query.tabla || '';
-	console.log(nombre_tabla);
-	if (nombre_tabla.match(/denuncias/g))
-		db.query(queries.obtener_info_tabla_geoportal, nombre_tabla)
-			.then(function(info){
-				res.send({cols: info});
-			})
-			.catch(function(error){
-				console.log('error tablas ' + error);
-				res.send({cols: []});
-			});
-	else
-		dbCarto.query(queries.obtener_info_tabla_geoportal, nombre_tabla)
-			.then(function(info){
-				res.send({cols: info});
-			})
-			.catch(function(error){
-				console.log('error tablas ' + error);
-				res.send({cols: []});
-			});
-});
+app.get('/app', middle_datos, contHome.pagina_principal); // Página de Inicio de la aplicación
 
-app.get('/app', middle_datos, contHome.getAppHomePage); // Página de Inicio de la aplicación
+app.get('/app/perfil', middle_datos, isLoggedIn, Usuario.mi_perfil); // Perfil de usuario
+app.get('/app/usuarios', middle_datos, isLoggedIn, Usuario.perfil_visible);
+app.get('/app/logout', Usuario.cerrar_sesion); // Logout
+app.get('/app/login', middle_datos, Usuario.pagina_login); // Página de Login
+app.post('/app/login', Usuario.autenticar_local); // POST Login
+app.get('/app/signup', middle_datos, Usuario.pagina_registro); // Página de Registro
+app.post('/app/signup', Usuario.registrarse_local); // POST SignUP
 
-app.get('/app/perfil', middle_datos, isLoggedIn, contPg.getProfile); // Perfil de usuario
-app.get('/app/usuarios', middle_datos, isLoggedIn, contPg.getUserProfile);
-app.get('/app/logout', contPass.logout); // Logout
-app.get('/app/login', middle_datos, contPass.getLogin); // Página de Login (modal)
-app.post('/app/login', contPass.postLogin); // POST Login
-app.get('/app/signup', middle_datos, contPass.getSignUp); // Página de Registro (modal)
-app.post('/app/signup', contPass.postSignUp); // POST SignUP
+app.get('/app/auth/facebook', Usuario.autenticar_facebook); // Inicio de Sesión con FB
+app.get('/app/auth/facebook/callback', Usuario.autenticar_facebook_callback); // Callback Passport FB
 
-app.get('/app/auth/facebook', contPass.getFBAuth); // Inicio de Sesión con FB
-app.get('/app/auth/facebook/callback', contPass.getFBCallback); // Callback Passport FB
-
-app.get('/app/auth/twitter', contPass.getTWAuth); // Inicio de Sesión con TW
-app.get('/app/auth/twitter/callback',contPass.getTWCallback); //Callbacl Passport TW
+app.get('/app/auth/twitter', Usuario.autenticar_twitter); // Inicio de Sesión con TW
+app.get('/app/auth/twitter/callback', Usuario.autenticar_twitter_callback); //Callbacl Passport TW
 
 //app.post('/app/connect/local', contPass.connectLocal); // Linkear cuenta local
 
-app.get('/app/connect/facebook', contPass.connectFB); // Linkear Cuenta FB
-app.get('/app/connect/facebook/callback',contPass.connectFBCallback); // Linkear Cuenta FB Callback
+app.get('/app/connect/facebook', Usuario.conectar_facebook); // Linkear Cuenta FB
+app.get('/app/connect/facebook/callback', Usuario.conectar_facebook_callback); // Linkear Cuenta FB Callback
 
-app.get('/app/connect/twitter', isLoggedIn, contPass.connectTW); //Linkear una cuenta TW
-app.get('/app/connect/twitter/callback', isLoggedIn, contPass.connectTWCallback); // Linkear una cuenta TW Callback
+app.get('/app/connect/twitter', isLoggedIn, Usuario.conectar_twitter); //Linkear una cuenta TW
+app.get('/app/connect/twitter/callback', isLoggedIn, Usuario.conectar_twitter_callback); // Linkear una cuenta TW Callback
 
 //app.get('/app/unlink/local', contPass.isLoggedIn, contPass.unlinkLocal); // Unlink Cuenta Local
-app.get('/app/unlink/facebook', isLoggedIn, contPass.unlinkFB); // Unlink Cuenta FB
-app.get('/app/unlink/twitter', isLoggedIn, contPass.unlinkTW); // Unlink cuenta TW
+app.get('/app/unlink/facebook', isLoggedIn, Usuario.unlink_facebook); // Unlink Cuenta FB
+app.get('/app/unlink/twitter', isLoggedIn, Usuario.unlink_twitter); // Unlink cuenta TW
 
-app.post('/app/forgot', contPass.postForgot); // Envía un mail para elegir nueva contraseña
-app.post('/app/reset/:token', middle_datos, contPass.postResetToken); // Cambia la contraseña del usuario que la haya olvidado
+app.post('/app/forgot', Usuario.olvidaste_pass); // Envía un mail para elegir nueva contraseña
+app.post('/app/reset/:token', middle_datos, Usuario.cambiar_pass_token); // Cambia la contraseña del usuario que la haya olvidado
 
-app.get('/app/reset/:token', middle_datos, contPass.getResetToken); // Formulario para cambiar la contraseña de un usuario qu la haya olvidado
-app.get('/app/forgot', middle_datos, contPass.getForgot); // Formulario para recuperar la contraseña
+app.get('/app/reset/:token', middle_datos, Usuario.get_cambiar_pass_token); // Formulario para cambiar la contraseña de un usuario qu la haya olvidado
+app.get('/app/forgot', middle_datos, Usuario.get_olvidaste_pass); // Formulario para recuperar la contraseña
 
-app.get('/app/changePass', middle_datos, isLoggedIn, contPass.getChangePass);
-app.post('/app/changePass', isLoggedIn, contPass.postChangePass); // Cambiar contraseña
+app.get('/app/changePass', middle_datos, isLoggedIn, Usuario.get_cambiar_pass);
+app.post('/app/changePass', isLoggedIn, Usuario.post_cambiar_pass); // Cambiar contraseña
 
-app.post('/app/fileUpload', isLoggedIn, contPg.uploadTempImage); // Subir imagen de una denuncia a una carpeta temporal Random
-app.get('/app/deleteFile', isLoggedIn, contPg.deleteTempImage); // Elimina una imagen de la carpeta temporal
-app.get('/app/denuncias/nueva', middle_datos, isLoggedIn, contPg.renderNueva);
+app.get('/app/confirmar/:idUsuario', middle_datos, Usuario.confirmar);
 
-app.all('/app/denuncia', middle_datos, isLoggedIn, contPg.denunciaCont);
+app.post('/app/perfil/editar', isLoggedIn, Usuario.actualizar_perfil);
 
-app.post('/app/denuncias/nueva/save', isLoggedIn, contPg.saveDenuncia);
+app.get('/app/perfil/editar', middle_datos, isLoggedIn, Usuario.pagina_actualizar_perfil);
 
-app.get('/app/denuncias', middle_datos, isLoggedIn, contPg.getDenunciasPage);//Ruta que nos mostrará las denuncias ordenadas por fecha
+app.post('/app/perfil/cambiar_imagen', isLoggedIn, Usuario.cambiar_imagen_perfil);
 
-//app.get('/app/denuncia', middle_datos, contPg.getDenunciaPage);// Ruta que nos muestra la informacion de una denuncia
+app.get('/app/perfil/editar_loc', middle_datos, isLoggedIn, Usuario.pagina_editar_localizacion);
 
-app.get('/app/confirmar/:idUsuario', middle_datos, contPass.confirmUser);
+app.post('/app/perfil/editar_loc', isLoggedIn, Usuario.editar_localizacion);
 
-//app.get('/app/eliminar', isLoggedIn, contPg.deleteDenuncia);
-//app.get('/app/editar', middle_datos, isLoggedIn, contPg.getEdit);
-
-//app.get('/app/getImagenesDenuncia', contPg.getImagenesDenuncia);
-
-app.get('/app/deleteImagen', contPg.deleteImagenDenuncia);
+app.post('/app/perfil/gravatar', isLoggedIn, Usuario.cambiar_imagen_perfil_gravatar);
 
 
-app.post('/app/perfil/editar', isLoggedIn, contPg.updateProfile);
+app.post('/app/fileUpload', isLoggedIn, Denuncia.subir_imagen_temporal); // Subir imagen de una denuncia a una carpeta temporal Random
+app.get('/app/deleteFile', isLoggedIn, Denuncia.eliminar_imagen_temporal); // Elimina una imagen de la carpeta temporal
+app.get('/app/denuncias/nueva', middle_datos, isLoggedIn, Denuncia.pagina_nueva_denuncia);
 
-app.get('/app/perfil/editar', middle_datos, isLoggedIn, contPg.getUpdateProfilePage);
+app.all('/app/denuncia', middle_datos, isLoggedIn, Denuncia.denuncia);
 
-app.post('/app/perfil/cambiar_imagen', isLoggedIn, contPg.changeProfilePicture);
+app.post('/app/denuncias/nueva/save', isLoggedIn, Denuncia.guardar);
 
-app.get('/app/perfil/editar_loc', middle_datos, isLoggedIn, contPg.getEditLoc);
+app.get('/app/denuncias', middle_datos, isLoggedIn, Denuncia.pagina_denuncias);//Ruta que nos mostrará las denuncias ordenadas por fecha
 
-app.post('/app/perfil/editar_loc', isLoggedIn, contPg.postChangeLoc);
+app.get('/app/deleteImagen', Denuncia.eliminar_imagen);
 
-app.post('/app/perfil/gravatar', isLoggedIn, contPg.changeImageGravatar);
+app.get('/app/visor', middle_datos, Denuncia.pagina_visor);
 
-app.get('/app/visor', middle_datos, contPg.getVisorPage);
+/* Ruta no encontrada 404 */
+app.use(function(req, res, next){
+	res.status(404).send('Ruta ' + req.url + ' no encontrada');
+});
 
-/*
- * Middlewares de Error y ruta *
- */
-
-//app.get('*', function(req, res, next) {
-//	console.log('ruta no encontrada');
-//	req.flash('error', 'Ruta no encontrada');
-//	res.redirect('/app');
-//});
 
 /**
  * Función que se ejecutará en la mayoría de las peticiones para saber si 
@@ -417,6 +283,8 @@ function isLoggedIn(req, res, next) {
 **/
 function middle_datos (req, res, next){
 
+	var traducciones = locales.getTranslations(req, res);
+
 	if(req.method.toLowerCase() == 'post'){
 		console.log('middle datos method post continue');
 		return next();
@@ -426,6 +294,7 @@ function middle_datos (req, res, next){
 
 	var variables_locales = {
 		ip: IP,
+		contenido : traducciones,
 		message: {
 			error: req.flash('error'),
 			success: req.flash('success'),
@@ -481,4 +350,69 @@ function middle_datos (req, res, next){
 			next(); // siguiente ruta o middleware
 		});
 	
+};
+
+/*
+ * Tarea que va a hacer cada hora en busca de archivos en la carpeta temporal desfasados
+ */
+var tarea = require('node-schedule');
+var regla = new tarea.RecurrenceRule();
+
+regla.minute = 0;
+
+tarea.scheduleJob(regla, function(){
+	console.log('ejecutando limpieza de carpeta temporal ');
+	fs.readdir(configUploadImagenes.TEMPDIR, function(error, files){
+		if(error) console.log('error recorriendo dir : ', error);
+		files.forEach(function(file){
+			console.log(file);
+			var estadisticas = fs.lstatSync(path.join(configUploadImagenes.TEMPDIR, file)); 
+			//console.log('estadisticas : ', estadisticas, 'ctime', estadisticas.ctime);
+			var ahora = new Date().getTime();
+			var fecha_archivo_mas_una_hora = new Date(estadisticas.ctime).getTime() + 3600000;
+			
+			if(ahora >= fecha_archivo_mas_una_hora){
+				// Borrar archivo que está en carpeta temporal mas de una hora
+				console.log('archivo/directorio viejo ' + file);
+				exec("rm -r '" + path.join(configUploadImagenes.TEMPDIR, file) + "'", function(error_){
+					if(error_) console.log(error_);
+					else console.log(' archivo ' + file + ' eliminado por ser viejo ' + estadisticas.ctime);
+				});
+				
+			} else {
+				console.log('archivo/directorio aun joven para eliminar ' + file + ' XD ctime ' + estadisticas.ctime);
+			}
+			
+		});
+	});
+});
+
+//Multer - Subida de Imágenes
+
+var filename_perfil_img = function(req, file, cb){
+	console.log('fileeeee' + JSON.stringify(file));
+	var random = Math.floor(Math.random() * 1000);
+	cb(null, req.user._id + '-' + random + path.extname(file.originalname));
+};
+
+var filename_temp_img = function(req, file, cb){
+	console.log(req.query.tempdir);
+	if(!req.query.tempdir) req.query.tempdir = '';
+	console.log('fileeeee' + JSON.stringify(file));
+	cb(null, path.join(req.query.tempdir, file.originalname));
+};
+
+function crearMulter(dest, filename){
+	return multer({
+		limits: {
+			fileSize: 3 * 1024 * 1024 // 3 mb
+		},
+		storage: multer.diskStorage({
+			destination: function(req, file, cb){
+				console.log('destttttttttttt' + dest);
+				cb(null, dest);
+			},
+			filename: filename,
+		})
+	});
 };
