@@ -1,1 +1,1 @@
-select count(*) from denuncias as numdenuncias
+SELECT count(*) AS numdenuncias FROM denuncias

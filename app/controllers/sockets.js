@@ -41,6 +41,7 @@ module.exports = function(io, path, mkdirp, exec, config, validator, db, consult
 
 					console.log('primera conexión ' + this.id_usuario + ' ; socket_id: ' + this.id);
 					// Emitimos el evento con el fin de actualizar el número de usuarios conectados
+					this.emit('num_usuarios_conectados', {num_usuarios: Object.keys(clients).length});
 					this.broadcast.emit('num_usuarios_conectados', {num_usuarios: Object.keys(clients).length});
 				}
 			}

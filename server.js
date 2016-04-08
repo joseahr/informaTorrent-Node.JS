@@ -110,15 +110,7 @@ var IP = os.networkInterfaces()['ens33'][0]['address']; // IP desde donde ejecut
 
 //var IP = 'http://localhost:3000/'
 
-/*
-======================================
-===      INICIO DEL SERVIDOR       ===
-======================================
-*/
 var server = http.createServer(app);
-server.listen(port);
-console.log('The magic happens on port ' + port);
-
 //socket io
 var io = require('socket.io').listen(server);
 
@@ -148,8 +140,6 @@ Denuncia = new Denuncia(fs, path, dir, exec, User, validator,
 		db, dbCarto, queries, 
 		crearMulter('./public/files/usuarios', filename_perfil_img), 
 		crearMulter('./public/files/temp', filename_temp_img)); // Guardar, editar, eliminar denuncia, coments, imgs...
-
-
 
 
 /*
@@ -240,8 +230,27 @@ app.get('/app/visor', middle_datos, Denuncia.pagina_visor);
 
 /* Ruta no encontrada 404 */
 app.use(function(req, res, next){
-	res.status(404).send('Ruta ' + req.url + ' no encontrada');
+	console.log('wiiii');
+	var error = new Error('Ruta ' + req.url + ' no encontrada');
+	error.status = 404;
+	next(error);
 });
+
+/* Ruta para manejar errores */
+app.use(function(err, req, res, next){
+	//console.log('weeee');
+	if(err.status)
+		res.status(err.status).send(err.toString());
+});
+
+
+/*
+======================================
+===      INICIO DEL SERVIDOR       ===
+======================================
+*/
+server.listen(port);
+console.log('Servidor Node escuchando en el puerto ' + port);
 
 
 /**
@@ -389,13 +398,13 @@ tarea.scheduleJob(regla, function(){
 
 //Multer - Subida de Imágenes
 
-var filename_perfil_img = function(req, file, cb){
+function filename_perfil_img(req, file, cb){
 	console.log('fileeeee' + JSON.stringify(file));
 	var random = Math.floor(Math.random() * 1000);
 	cb(null, req.user._id + '-' + random + path.extname(file.originalname));
 };
 
-var filename_temp_img = function(req, file, cb){
+function filename_temp_img(req, file, cb){
 	console.log(req.query.tempdir);
 	if(!req.query.tempdir) req.query.tempdir = '';
 	console.log('fileeeee' + JSON.stringify(file));

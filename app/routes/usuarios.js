@@ -8,7 +8,9 @@ var crypto;
 var nodemailer;
 var validator;
 var User;
-var config = require('../../config/mailer.js')
+var config = require('../../config/mailer.js');
+var formatsAllowed = 'png|jpg|jpeg|gif'; // Podríamos poner más
+
 /*
  * Constructor
  */
@@ -30,21 +32,21 @@ function Usuario(crypto_, nodemailer_, validator_, User_, db_, q_){
 Usuario.prototype.get_cambiar_pass = function(req, res){
 	if(!req.user || !req.user.local.valid)
 	{
-		req.flash('error', 'Debe estar loggeado');
+		req.flash('error', req.i18n.__('debe_estar_logeado'));
 		return res.redirect('/app#iniciar')
 	}
 	res.render('cambiarPass.jade');
 };
 
-Usuario.prototype.post_cambiar_pass = function(req, res){
+Usuario.prototype.post_cambiar_pass = function(req, res, next){
 	if(!req.user || !req.user.local.valid)
 	{
-		req.flash('error', 'Debe estar loggeado');
+		req.flash('error', req.i18n.__('debe_estar_logeado'));
 		return res.redirect('/app#iniciar')
 	}
 	
 	if (req.body.password_nueva != req.body.password_nueva_repeat){
-		req.flash('error', 'Los campos "contraseña" y "repetir contraseña" deben tener el mismo valor.');
+		req.flash('error', req.i18n.__('contraseña_coincidir'));
 		return res.redirect('back');
 	}
 	
@@ -54,18 +56,19 @@ Usuario.prototype.post_cambiar_pass = function(req, res){
 	
 	db.one(consultas.usuario_por_email, req.user.local.email)
 		.then(function(user){
-			console.log('password_original: ' + password_original);
-			console.log('password_original_verdadera: ' + user.password);
+			//console.log('password_original: ' + password_original);
+			//console.log('password_original_verdadera: ' + user.password);
 			if(!User.validPassword(password_original, user.password))
-				throw new Error('La contraseña introducida no coincide con la original');
+				throw new Error(req.i18n.__('contraseña_coincide_original'));
 			user.local.password = User.generateHash(password_nueva);
 			return db.none(consultas.actualizar_local_usuario, [JSON.stringify(user.local), user._id]);
 		})
 		.then(function(){
-			req.flash('success', 'La contraseña se actualizó correctamente');
+			req.flash('success', req.i18n.__('contraseña_actualizada'));
 		})
 		.catch(function(error){
-			res.status(500).send(error);
+			error.status = 500;
+			next(error);
 		});
 };
 
@@ -73,10 +76,10 @@ Usuario.prototype.post_cambiar_pass = function(req, res){
 /*
  * POST reset/:token
  */
-Usuario.prototype.cambiar_pass_token = function(req, res) {
+Usuario.prototype.cambiar_pass_token = function(req, res, next) {
 	
     if (req.body.password != req.body.passwordRepeat){
-        req.flash('error', 'Las contraseñas deben coincidir.');
+        req.flash('error', req.i18n.__('contraseña_coincidir'));
         return res.redirect('back');
     }
 	
@@ -85,21 +88,23 @@ Usuario.prototype.cambiar_pass_token = function(req, res) {
 		.then(function(user){
 			user_ = user;
 			if(!user)
-				throw new Error('La URL solicitada no es válida o ha expirado.');
+				throw new Error(req.i18n.__('url_no_valida_expirada'));
 			db.none(consultas.actualizar_password_reset_token, [User.generateHash(req.body.password), user._id]);
 		})
 		.then(function(){
-			req.flash('Contraseña actualizada correctamente.');
+			req.flash(req.i18n.__('contraseña_actualizada'));
 			req.logIn(user_, function(err) {
 				if(err) throw err;
-				enviar_email(user_.local.email)
+				enviar_email(user_.local.email, req)
 		    });
 		})
 		.catch(function(error){
-			res.status(500).send(error.toString());
+			error.status = 500;
+			next(error);
+			//res.status(500).send(error.toString());
 		});
 	
-		var enviar_email = function(email){
+		var enviar_email = function(email, req){
 		
 			var smtpTransport = nodemailer.createTransport('SMTP', {
 				service: 'gmail',
@@ -111,9 +116,8 @@ Usuario.prototype.cambiar_pass_token = function(req, res) {
 			var mailOptions = {
 				to: email,
 				from: config.from,
-				subject: 'informaTorrent! - Contraseña Actualizada',
-				text: 'Querido usuario,\n\n' +
-					'Este mensaje se ha generado automáticamente para avisarte de que la contraseña de la cuenta vinculada al e-mail ' + email + ' ha sido actualizada satisfactoriamente.\n Gracias por usar nuestra aplicación!'
+				subject: req.i18n.__('email_actualizar_contraseña_titulo'),
+				text:  req.i18n.__('email_actualizar_contraseña_contenido_1') + email + req.i18n.__('email_actualizar_contraseña_contenido_2')
 			};
 			smtpTransport.sendMail(mailOptions, function(err) {
 				return res.redirect('/app');
@@ -124,7 +128,7 @@ Usuario.prototype.cambiar_pass_token = function(req, res) {
 /*
  * GET reset/:token
  */
-Usuario.prototype.get_cambiar_pass_token = function(req, res) {
+Usuario.prototype.get_cambiar_pass_token = function(req, res, next) {
 	
 	db.oneOrNone(consultas.usuario_por_password_reset_token, req.params.token)
 		.then(function(user){
@@ -137,7 +141,9 @@ Usuario.prototype.get_cambiar_pass_token = function(req, res) {
 			}
 		})
 		.catch(function(error){
-			res.status(500).send(error);
+			error.status = 500;
+			next(error);
+			//res.status(500).send(error);
 		});
 };
 
@@ -154,7 +160,7 @@ Usuario.prototype.get_olvidaste_pass = function(req, res){
 Usuario.prototype.olvidaste_pass = function(req, res, next) {
 	
 	if(!req.body.email) {
-		req.flash('error', 'Debe introducir un e-mail válido.');
+		req.flash('error', req.i18n.__('parametro_no_valido') + ': email');
 		res.redirect('back');
 	}
 
@@ -164,7 +170,7 @@ Usuario.prototype.olvidaste_pass = function(req, res, next) {
         db.oneOrNone(consultas.usuario_por_email_o_username, req.body.email.toLowerCase())
         	.then(function(user){
         		if(!user) {
-        			req.flash('error', 'No existe ninguna cuenta con el username o e-mail ' + req.body.email);
+        			req.flash('error', req.i18n.__('usuario_email_no_existe') + req.body.email);
         			return res.redirect('back');
         		}
         		user_ = user;
@@ -175,7 +181,9 @@ Usuario.prototype.olvidaste_pass = function(req, res, next) {
         		enviar_email(token, user_.local.email);
         	})
         	.catch(function(error){
-        		res.status(500).send(error);
+        		error.status = 500;
+        		next(error);
+        		//res.status(500).send(error);
         	});
         
         var enviar_email = function(token, email){
@@ -189,14 +197,13 @@ Usuario.prototype.olvidaste_pass = function(req, res, next) {
               var mailOptions = {
                 to: email,
                 from: config.from,
-                subject: 'informaTorrent! - Recupera tu contraseña',
-                text: 'Si has recibido este correo es porque usted (u otra persona) ha olvidado sus credenciales.\n\n' +
-                  'Si desea completar el proceso para cambiar su contraseña, por favor, diríjase al siguiente enlace:\n\n' +
+                subject: req.i18n.__('email_actualizar_contraseña_aviso_titulo'),
+                text: req.i18n.__('email_actualizar_contraseña_aviso_contenido_1') + 
                   'http://' + req.headers.host + '/app/reset/' + token + '\n\n' +
-                  'Si por el contrario usted no solicitó esta acción, ignore el mensaje y su contraseña seguirá siendo la misma.\n'
+                  req.i18n.__('email_actualizar_contraseña_aviso_contenido_2')
               };
               smtpTransport.sendMail(mailOptions, function(err) {
-                req.flash('info', 'Se ha enviado un e-mail a ' + email + ' con las instrucciones convenientes.');
+                req.flash('info', req.i18n.__('email_enviado') + email + req.i18n.__('email_instrucciones'));
                 res.redirect('/app');
               });
         }      
@@ -212,7 +219,7 @@ Usuario.prototype.unlink_twitter = function(req, res) {
     
     db.none(consultas.deslincar_twitter, user._id)
     	.then(function(){
-    		req.flash('success', 'Cuenta de Twitter deslinqueada correctamente.');
+    		req.flash('success', req.i18n.__('cuenta_de') + ' Twitter ' + req.i18n.__('deslinqueada'));
     		res.redirect('/app/perfil');
     	})
     	.catch(function(error){
@@ -224,16 +231,18 @@ Usuario.prototype.unlink_twitter = function(req, res) {
 /*
  * Desconectar - Deslinkear cuenta FB Asociada
  */
-Usuario.prototype.unlink_facebook = function(req, res) {
+Usuario.prototype.unlink_facebook = function(req, res, next) {
     var user           = req.user;
     
     db.none(consultas.deslincar_facebook, user._id)
     	.then(function(){
-    		req.flash('success', 'Cuenta de Facebook deslinqueada correctamente.');
+    		req.flash('success', req.i18n.__('cuenta_de') + ' Twitter ' + req.i18n.__('deslinqueada'));
     		res.redirect('/app/perfil');
     	})
     	.catch(function(error){
-    		res.status(500).send(error);
+    		error.status = 500;
+    		next(error);
+    		//res.status(500).send(error);
     	});
 }
 
@@ -356,41 +365,47 @@ Usuario.prototype.cerrar_sesion = function(req, res) {
  * Confirmar Usuario Ruta: /app/confirmar/:id_usuario
  */
 
-Usuario.prototype.confirmar = function(req, res){
+Usuario.prototype.confirmar = function(req, res, next){
 	var iduser = req.params.idUsuario;
 	var user_;
 	db.oneOrNone(consultas.usuario_por_id , iduser)
 		.then(function(user){
 			if(user.local.valid) 
-				throw new Error('El usuario ya es válido.');
+				throw new Error(req.i18n.__('usuario_valido'));
 			user.local.valid = true;
 			user_ = user;
 			return db.none(consultas.actualizar_local_usuario, [JSON.stringify(user.local) , user._id]);
 		})
 		.then(function(){
 			req.logIn(user_, function(error){
-				req.flash('success', 'Tu cuenta se ha confirmado correctamente.');
+				req.flash('success', req.i18n.__('cuenta_confirmada'));
 				return res.redirect('/app/perfil');
 			});
 		})
 		.catch(function(error){
-			res.status(500).send(error);
+			error.status = 500;
+			next(error);
+			//res.status(500).send(error);
 		});
 };
 
 /*
  * Perfil visible de los usuarios
  */
-Usuario.prototype.perfil_visible = function(req, res){
+Usuario.prototype.perfil_visible = function(req, res, next){
 	// Perfil que será visible para los demás usuarios
 	// solo podemos acceder si estamos loggeados
 	var usuario, denuncias_user;
 
-	if(!req.query.id) return res.status(500).send('Debe introducir el parámetro id');
+	if(!req.query.id) {
+		var error = new Error(req.i18n.__('faltan_parametros') + ': id');
+		error.status = 500;
+		return next(error);
+	};
 
 	db.oneOrNone(consultas.perfil_otro_usuario, req.query.id)
 		.then(function(usuario_){
-			if(!usuario_) throw new Error('No existe el usuario con id = ' + req.params.id_usuario);
+			if(!usuario_) throw new Error(req.i18n.__('parametro_no_valido') + ' id = ' + req.params.id_usuario);
 			usuario = usuario_;
 			console.log('usuario :' + JSON.stringify(usuario));
 			return db.any(consultas.obtener_denuncias_usuario, usuario._id);
@@ -409,7 +424,9 @@ Usuario.prototype.perfil_visible = function(req, res){
 			res.render('perfil_otro.jade', {user_otro: usuario, denuncias : denuncias_user, denuncias_fav : denuncias_fav});
 		})
 		.catch(function(error){
-			res.status(500).send(error);
+			error.status = 500;
+			next(error);
+			//res.status(500).send(error);
 		});
 	
 };
@@ -417,7 +434,7 @@ Usuario.prototype.perfil_visible = function(req, res){
 /*
  * Renderizamos el Perfil del usuario
  */
-Usuario.prototype.mi_perfil = function(req, res) {
+Usuario.prototype.mi_perfil = function(req, res, next) {
 	// En cualquier otro caso renderizamos
 	console.log('mi PErfil');
 	var denuncias_user = [];
@@ -435,11 +452,14 @@ Usuario.prototype.mi_perfil = function(req, res) {
 			denuncias_fav.forEach(function(denuncia){
 				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
 			});
+			console.log('rendering profile...');
+			//res.send('perfil');
 			res.render('profile', { misDenuncias: denuncias_user, denuncias_fav : denuncias_fav });
 		})
 		.catch (function(error){
-			res.status(500);
-			res.send(error.toString());
+			error.status = 500;
+			next(error);
+			//res.status(500).send(error.toString());
 		});
 
 };
@@ -464,11 +484,11 @@ Usuario.prototype.actualizar_perfil = function(req, res){
 	
 	// Validar
 	if(nueva_password && !validator.isLength(nueva_password,5,20)){
-		return res.send({error: true, msg: 'La contraseña debe tener entre 5 y 20 caracteres'});
+		return res.status(500).send({error: true, msg: req.i18n.__('contraseña_parametros')});
 	}
 	
 	if(nueva_password != nueva_password_rep){
-		return res.send({error: true, msg: 'Las contraseñas deben coincidir'});	
+		return res.status(500).send({error: true, msg: req.i18n.__('contraseña_coincidir')});	
 	}
 	else if(nueva_password){
 		user.password = User.generateHash(nueva_password);
@@ -476,7 +496,7 @@ Usuario.prototype.actualizar_perfil = function(req, res){
 	}
 	
 	if(nombre && !validator.isLength(nombre, 2, 10)){
-		return res.send({error: true, msg: 'El nombre debe tener entre 2 y 10 caracteres'});
+		return res.status(500).send({error: true, msg: req.i18n.__('nombre_params')});
 	}
 	else if(nombre){
 		user.profile.nombre = nombre;
@@ -484,7 +504,7 @@ Usuario.prototype.actualizar_perfil = function(req, res){
 	}
 	
 	if(apellidos && !validator.isLength(apellidos, 3, 15)){
-		return res.send({error: true, msg: 'Los apellidos deben tener entre 3 y 15 caracteres'});
+		return res.status(500).send({error: true, msg: req.i18n.__('apellidos_params')});
 
 	}
 	else if(apellidos){
@@ -493,35 +513,31 @@ Usuario.prototype.actualizar_perfil = function(req, res){
 	}
 	
 	if(nombre_usuario && !validator.isLength(nombre_usuario, 5, 15)){
-		return res.send({error: true, msg: 'El nombre de usuario debe tener entre 5 y 10 caracteres'});
+		return res.status(500).send({error: true, msg: req.i18n.__('nombre_usuario_params')});
 
 	}
 	
 	var aux = nombre_usuario || '1';
 	db.query(consultas.usuario_por_username, aux)
 		.then(function(usuario){
-			if(usuario[0]) throw new Error('El nombre de usuario ya existe');
+			if(usuario[0]) throw new Error(req.i18n.__('nombre_usuario_existe'));
 			user.profile.username = nombre_usuario || user.profile.username;
 			return db.none(consultas.actualizar_info_usuario, [user.password, JSON.stringify(user.profile), user._id]);
 		})
 		.then(function(){
-			res.status(200).send({error: false, msg: 'Perfil actualizado correctamente'});
+			res.send({error: false, msg: req.i18n.__('perfil_actualizado')});
 		})
 		.catch(function(error){
-			res.send({error: true, msg: error.toString()})
+			res.status(500).send({error: true, msg: error.toString()})
 		});
 	
 }
-
-
-
-var formatsAllowed = 'png|jpg|jpeg|gif'; // Podríamos poner más
 
 Usuario.prototype.cambiar_imagen_perfil = function(req, res) {
 	
 	multer_imagen_perfil(req, res, function(error){
 		
-		if(error) return res.status(500).send({type: 'error', msg: 'Error subiendo archivo. ' + error});
+		if(error) return res.status(500).send({type: 'error', msg: req.i18n.__('error_subiendo_archivo') + error});
 		
 		// La imagen se subió correctamente
 		//console.log('imagen subida guay ' + JSON.stringify(req.files.file));
@@ -534,7 +550,7 @@ Usuario.prototype.cambiar_imagen_perfil = function(req, res) {
 			// Eliminamos la imagen subida si no es de uno de los formatos permitidos
 			fs.unlink(path.join('./public/files/usuarios', path.basename(file.path)), function(error_){
 				if(error_) console.log('error unlink ' + error_);
-				return res.status(413).send({type: 'error', msg: 'Formato no permitido'});
+				return res.status(413).send({type: 'error', msg: req.i18n.__('formato_no_permitido')});
 			});
 		}
 		else {
@@ -556,7 +572,7 @@ Usuario.prototype.cambiar_imagen_perfil = function(req, res) {
 	        			global.clients[req.user._id][socketId].emit('imagen cambiá', {path : user.profile.picture});
 	        		res.send({
 	        			type: 'success', 
-	        			msg: 'Imagen de Perfil cambiada correctamente.',
+	        			msg: req.i18n.__('imagen_perfil_actualizada'),
 	        			path: user.profile.picture
 	        		});
 	        	})
@@ -570,14 +586,16 @@ Usuario.prototype.cambiar_imagen_perfil = function(req, res) {
 };
 
 
-Usuario.prototype.pagina_editar_localizacion = function(req,res){
+Usuario.prototype.pagina_editar_localizacion = function(req,res, next){
 	
 	db.one(consultas.obtener_loc_preferida, req.user._id)
 		.then(function(location){
 			res.render('editarLoc.jade', {loc_pref: location.loc_pref});
 		})
 		.catch(function(error){
-			res.status(500).send(error);
+			error.status = 500;
+			next(error);
+			//res.status(500).send(error);
 		});
 }
 
@@ -589,13 +607,13 @@ Usuario.prototype.editar_localizacion = function(req, res){
 	
 	dbCarto.one(consultas.comprobar_geometria(wkt), wkt)
 		.then(function(check_geom){
-			if(!check_geom.st_contains) throw new Error('La geometría debe estar en torrent');
+			if(!check_geom.st_contains) throw new Error(req.i18n.__('denuncia_geometria_dentro'));
 			
 			return db.none(consultas.actualizar_loc_pref, [wkt, req.body.distancia, req.user._id]);
 			
 		})
 		.then(function(){
-			res.send({error: false, msg: 'Ubicación preferida cambiada correctamente'});
+			res.send({error: false, msg: req.i18n.__('ubicacion_preferida_actualizada')});
 		})
 		.catch(function(error){
 			res.status(500).send({error: true , msg : error.toString()});
@@ -603,10 +621,14 @@ Usuario.prototype.editar_localizacion = function(req, res){
 	
 }
 
+Usuario.prototype.editar_distancia_aviso = function(req, res){
+	
+}
+
 Usuario.prototype.cambiar_imagen_perfil_gravatar = function(req, res){
 	
 	var user = req.user;
-	var sub = '/files/usuarios'
+	var sub = '/files/usuarios';
 	if(user.profile.picture.indexOf(sub) > -1){
     	fs.unlink(path.join('./public', user.profile.picture), function(err){
     		console.log('imagen anterior eliminada');
@@ -620,7 +642,7 @@ Usuario.prototype.cambiar_imagen_perfil_gravatar = function(req, res){
 		.then(function(){
     		for (var socketId in global.clients[req.user._id])
     			global.clients[req.user._id][socketId].emit('imagen cambiá', {path : user.profile.picture});
-			res.send({msg: 'Imagen de perfil actualizada correctamente', path: req.body.gravatar});
+			res.send({msg: req.i18n.__('imagen_perfil_actualizada'), path: req.body.gravatar});
 		})
 		.catch(function(error){
 			res.status(500).send(error);

@@ -12,7 +12,7 @@ app.LikeDenuncia = function(opt_options) {
   this_ = this,
   aux = 0;
   
-  num_denuncias_io.emit('te_pregunto_que_si_me_gusta_esta_puta_mierda_de_denuncia?', {denuncia: denuncia, usuario_id: usuario_id});
+  num_denuncias_io.emit('te_pregunto_que_si_me_gusta_esta_puta_mierda_de_denuncia?', {denuncia: denuncia, usuario_id: id_usuario});
 
   num_denuncias_io.on('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?', 
   function(data){
@@ -34,7 +34,7 @@ app.LikeDenuncia = function(opt_options) {
   });
   
   function like_ (){
-	  num_denuncias_io.emit('le_he_dao_al_boton_de_me_gusta_haz_lo_que_tengas_que_hacer', {denuncia: denuncia, usuario_id: usuario_id});
+	  num_denuncias_io.emit('le_he_dao_al_boton_de_me_gusta_haz_lo_que_tengas_que_hacer', {denuncia: denuncia, usuario_id: id_usuario});
   }
 
   button.innerHTML = '<i class="fa fa-thumbs-o-up"></i>';

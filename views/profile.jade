@@ -44,6 +44,13 @@ block content
 													span.badge(style="background:#D9534F;float:right").noti_up #{nuevas}
 									#notificaciones.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingOne')
 										.panel-body(style='text-align: center;')
+											p.lead ¡#{contenido.tienes}
+												span#has_realizado.lead 
+													if nuevas
+														|  #{nuevas} 
+													else 
+														|  0
+												|  #{nuevas == 1 ? contenido.noti_sin_leer : contenido.notis_sin_leer}!
 								.panel.panel-default
 									// Denuncias
 									#headingTwo.panel-heading(role='tab')
@@ -53,13 +60,13 @@ block content
 												| #{contenido.denuncias}
 									#mis_denuncias.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTwo')
 										.panel-body(style='text-align: center;')
-											p.lead ¡Has realizado 
+											p.lead ¡#{contenido.has_publicado}
 												span#has_realizado.lead 
 													if misDenuncias 
 														|  #{misDenuncias.length} 
 													else 
 														|  0
-												|  denuncias!
+												|  #{misDenuncias.length == 1 ? contenido.denuncia.toLowerCase() : contenido.denuncias.toLowerCase()}!
 								.panel.panel-default
 									// Acciones
 									#headingThree.panel-heading(role='tab')
@@ -69,13 +76,13 @@ block content
 												| #{contenido.acciones}
 									#acciones.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingThree')
 										.panel-body(style='text-align: center;')
-											p.lead ¡Has realizado 
+											p.lead ¡#{contenido.has_realizado} 
 												span#has_realizado.lead 
 													if mis_acciones
 														|  #{mis_acciones.length} 
 													else 
 														|  0
-												|  acciones!
+												|  #{mis_acciones.length == 1? contenido.accion.toLowerCase() : contenido.acciones.toLowerCase() }!
 								.panel.panel-default
 									// Denuncias Favoritas
 									#headingFour.panel-heading(role='tab')
@@ -85,13 +92,13 @@ block content
 												| #{contenido.denuncias_fav}
 									#favoritas.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingFour')
 										.panel-body(style='text-align: center;')
-											p.lead ¡Te han gustado 
+											p.lead ¡!{denuncias_fav.length == 1 ? contenido.te_ha_gustado : contenido.te_han_gustado} 
 												span.lead 
 													if denuncias_fav
 														|  #{denuncias_fav.length} 
 													else 
 														|  0
-												|  denuncias!
+												|  #{denuncias_fav.length == 1 ? contenido.denuncia.toLowerCase() : contenido.denuncias.toLowerCase()}!
 block script
 	// OpenLayers.js
 	script(src='/javascripts/plugins/ol3/ol.js')

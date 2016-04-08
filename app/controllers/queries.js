@@ -82,6 +82,8 @@ module.exports = {
 
   		denuncias_visor : helper.select.denuncias.visor,
 
+  		denuncia_por_path_imagen : helper.select.denuncias.por_path_imagen,
+
 
 		
 		obtener_denuncias_usuario : helper.select.usuarios.denuncias,
@@ -141,6 +143,8 @@ module.exports = {
 	  	actualizar_perfil : helper.update.usuarios.perfil,
 		
   		actualizar_loc_pref : helper.update.usuarios.localizacion_preferida,
+
+  		actualizar_distancia_aviso : helper.update.usuarios.distancia_aviso,
 		
 		actualizar_local_usuario : helper.update.usuarios.local,
     	

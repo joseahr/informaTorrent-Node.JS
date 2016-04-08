@@ -235,8 +235,8 @@ app.Lateral = function(opt_options) {
 							'¡Hay ' + res.num_usuarios_afectados + ' usuarios cerca de la ubicación de la denuncia!';
 						BootstrapDialog.show({
 							type: BootstrapDialog.TYPE_SUCCESS,
-							title: 'Denuncia añadida correctamente\n ' + str,
-							message: res.msg,
+							title: 'Denuncia añadida correctamente',
+							message: res.msg + '\n ' + str,
 							closable: false,
 							onshown : function(dialog){
 								setTimeout(function(){

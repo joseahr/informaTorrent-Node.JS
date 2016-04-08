@@ -1,0 +1,1 @@
+update usuarios set (distancia_aviso) = ($1) where _id = $2

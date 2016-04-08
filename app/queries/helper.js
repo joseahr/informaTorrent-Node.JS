@@ -19,6 +19,7 @@ var mis_consultas = {
 			sin_where : sql('select', 'denuncias/sin_where.sql'),
 			me_gusta : sql('select', 'denuncias/me_gusta.sql'),
 			visor : sql('select', 'denuncias/visor.sql'),
+			por_path_imagen : sql('select', 'denuncias/por_path_imagen.sql')
 		},
 		geoportal : {
 			info_tabla : sql('select', 'geoportal/info_tabla.sql')
@@ -75,6 +76,7 @@ var mis_consultas = {
 			facebook : sql('update', 'usuarios/facebook.sql'),
 			local : sql('update', 'usuarios/local.sql'),
 			localizacion_preferida : sql('update', 'usuarios/localizacion_preferida.sql'),
+			distancia_aviso : sql('update', 'usuarios/distancia_aviso.sql'),
 			notificacion_vista : sql('update', 'usuarios/notificacion_vista.sql'),
 			perfil : sql('update', 'usuarios/perfil.sql'),
 			reset_token : sql('update', 'usuarios/reset_token.sql'),

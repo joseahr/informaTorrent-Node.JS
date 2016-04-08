@@ -14,7 +14,9 @@ var fs, // file System
 	multer_imagen_perfil,
 	multer_temp_denuncia,
 	crypto = require('crypto'),
-	mkdirp = require('mkdirp');
+	mkdirp = require('mkdirp'),
+	formatsAllowed = 'png|jpg|jpeg|gif'; // Podríamos poner más
+
 /*
  * Constructor
  */
@@ -43,26 +45,28 @@ function Denuncia(fs_, path_, dir_, exec_, User_, validator_,
 
 ====================================================
 */
-Denuncia.prototype.denuncia = function(req, res){
+Denuncia.prototype.denuncia = function(req, res, next){
+	// Acción a realizar sobre la denuncia
 	var action = req.query.action || 'get_denuncia_page';
 
-	console.log('denuncia action ' + action);
+	//console.log('denuncia action ' + action);
 
-	if(!req.query.id)
-		return res.status(500).send('Ruta no encontrada. Debe introducir al menos la id de la denuncia');
+	// Si no se ha añadido la id de la denuncia enviamos error
+	if(!req.query.id){
+		var err = new Error(req.i18n.__('ruta_no_encontrada') + '.\n' + req.i18n.__('al_menos_id'));
+		err.status = 500;
+		return next(err);
+		//return res.status(500).send('Ruta no encontrada. Debe introducir al menos la id de la denuncia');
+	}
 
+	// llamamos a la función conveniente según la acción
 	switch (action){
-		case 'get_denuncia_page' : pagina_denuncia(req, res);
-			break;
-		case 'get_edit_page' : pagina_editar(req, res);
-			break;
-		case 'edit' : editar(req, res);
-			break;
-		case 'delete' : eliminar(req, res);
-			break;
-		case 'add_coment' : añadir_comentario(req, res);
-			break;
-		default : pagina_denuncia(req, res);
+		case 'get_denuncia_page' : pagina_denuncia(req, res, next);break;
+		case 'get_edit_page' : pagina_editar(req, res, next);break;
+		case 'edit' : editar(req, res, next);break;
+		case 'delete' : eliminar(req, res, next);break;
+		case 'add_coment' : añadir_comentario(req, res, next);break;
+		default : pagina_denuncia(req, res, next);
 	}
 };
 
@@ -75,7 +79,7 @@ Denuncia.prototype.denuncia = function(req, res){
 
 ====================================================
 */
-Denuncia.prototype.pagina_nueva_denuncia = function(req, res){
+Denuncia.prototype.pagina_nueva_denuncia = function(req, res, next){
 	// Creamos un string hexadecimal aleatorio que servirá de identificador
 	// del directorio temporal
 	crypto.randomBytes(25, function(ex, buf) {
@@ -83,7 +87,10 @@ Denuncia.prototype.pagina_nueva_denuncia = function(req, res){
   		var token = buf.toString('hex');
   		// Creamos una carpeta en el directorio temporal
 		mkdirp(path.join(config.TEMPDIR, token), function (err){
-			if(err) console.log(err);
+			if(err) {
+				err.status = 500;
+				return next(err);
+			}
 			// renderizamos la página de nueva denuncia pasándole el token
 			res.render('nueva', {random : token});
 		}); // Crea un directorio si no existe
@@ -98,20 +105,27 @@ Denuncia.prototype.pagina_nueva_denuncia = function(req, res){
 
 ====================================================
 */
-Denuncia.prototype.eliminar_imagen_temporal = function(req, res){
+Denuncia.prototype.eliminar_imagen_temporal = function(req, res, next){
 	// Parámetros para eliminar imagen del directorio temporal
 	var tempdir = req.query.tempdir; // identificador del directorio temporal
 	var filename = req.query.filename; // nombre de la imagen a eliminar
 
 	// Comprobamos parámetros
-	if(!(tempdir && filename))
-		return res.status(500).send('Error borrando la imagen:\n Debe introducir los parámetros tempdir y filename en el QueryString');
+	if(!(tempdir && filename)){
+		var error = new Error(req.i18n.__('error_borrando_imagen') + req.i18n.__('error_borrando_imagen_params'));
+		error.status = 500;
+		return next(error);
+	}
 	// Path de la imagen 
 	var path_image = path.join(path.join(config.TEMPDIR, tempdir), filename);
 	// Eliminamos la imagen
 	fs.unlink(path_image, function(error){
-		if(error) return res.status(500).send('Error borrando la imagen:\n' + error);
-		res.send('Imagen eliminada correctamente');
+		if(error) {
+			error = new Error(req.i18n.__('error_borrando_imagen') + error);
+			error.status = 500;
+			return next(error);
+		}
+		res.send(req.i18n.__('imagen_eliminada'));
 	});
 	
 }
@@ -131,22 +145,25 @@ Denuncia.prototype.subir_imagen_temporal = function(req, res){
 		// Enviamos un mensaje de error
 		if(error) {
 			console.log(error.toString());
-			return res.status(500).send({type: 'error', msg: error});
+			error = new Error({type: 'error', msg: error.toString()});
+			res.status(500).send(error);
 		}
 		// obetenemos la imagen subida
 		var file = req.file;
 		// obtenemos su extension
 		var extension = path.extname(file.path);
 		
-		//console.log('patttth ' + file.path);
+		console.log('patttth ' + file.path);
 		// Si la extensión no está dentro de nuestros formatos soportados
 		if(!extension.match(formatsAllowed)){
 			// Eliminamos la imagen subida si no es de uno de los formatos permitidos
 			var to = path.join('./public/files/temp', path.basename(file.path));
-			// Eliminamos la imagen
+			// Eliminamos la imagen del directorio temporal
 			fs.unlink(to, function(error_){
 				if(error_) console.log('error unlink ' + error_);
-				return res.status(413).send({type: 'error', msg: 'Formato no permitido'});
+				// Enviamos error
+				var error = new Error(req.i18n.__('formato_no_permitido'));
+				return res.status(413).send(error.toString());
 			});
 		}
 		else {
@@ -170,8 +187,10 @@ Denuncia.prototype.subir_imagen_temporal = function(req, res){
 */
 var añadir_comentario = function(req, res){
 	// Comprobamos que se ha accedido mediante un método POST
-	if(req.method.toLowerCase() != 'post')
-		return res.status(500).send('La acción requiere ser enviada a través de POST');
+	if(req.method.toLowerCase() != 'post'){
+		var error = new Error(req.i18n.__('accion_post'));
+		return res.status(500).send(error);
+	}
 	// Parámetros para añadir comentario
 	var denuncia, notificacion;
 	var contenido = req.body.contenido;
@@ -179,8 +198,15 @@ var añadir_comentario = function(req, res){
 	var id_denuncia = req.query.id;
 	
 	// Comprobamos parámetros
-	if (!contenido || !user_id || !id_denuncia) return res.status(500).send('Fallo insertando comentario');
-	if (!validator.isLength(contenido, 10, 1000)) return res.status(500).send('Fallo insertando comentario.\n El contenido del comentario debe tener entre 10 y 1000 caracteres');
+	if (!contenido || !user_id || !id_denuncia) {
+		var error = new Error(req.i18n.__('error_comentario'));
+		return res.status(500).send(error);
+	}
+	if (!validator.isLength(contenido, 10, 1000)) {
+		var error = new Error(req.i18n.__('error_comentario') +  req.i18n.__('error_comentario_params'));
+		return res.status(500).send(error);
+
+	}
 	//console.log(consultas.añadir_comentario);
 	
 	// ejecutamos la consulta para añadir comentario
@@ -224,10 +250,10 @@ var añadir_comentario = function(req, res){
 			res.send({success: true, contenido: contenido});
 		})
 		.catch(function(error){
-			console.log(error);
+			//console.log(error);
 			// Si el error es que es el propio usuario enviar mensaje de success
 			if(error.mismo_user) res.send({success: true, contenido: contenido});
-			else res.status(500).send(error);
+			else return res.status(500).send(error);
 		});
 
 };
@@ -263,27 +289,27 @@ Denuncia.prototype.guardar = function(req, res){
 	denuncia_io.wkt = wkt; // Asignamos la geometría a la denuncia
 
 	// comprobando datos de la denuncia
-	if(tags_.length < 2) errormsg += '· La denuncia debe contener al menos dos tags. \n';
-	if(!validator.isLength(titulo, 5, 50)) errormsg += '· El título debe tener entre 5 y 50 caracteres.\n';
-	if(!validator.isLength(contenido, 50, 10000)) errormsg += '· El contenido debe tener entre 50 y 10000 caracteres.\n';
-	if(wkt == undefined) errormsg += '· Debe agregar un punto, línea o polígono\n';	
+	if(tags_.length < 2) errormsg += req.i18n.__('denuncia_tags') + '\n';
+	if(!validator.isLength(titulo, 5, 50)) errormsg += req.i18n.__('denuncia_titulo') + '\n';
+	if(!validator.isLength(contenido, 50, 10000)) errormsg += req.i18n.__('denuncia_contenido') + '\n';
+	if(wkt == undefined) errormsg += req.i18n.__('denuncia_geometria') + '\n';	
 	
 	// Si hay algún error en los datos devolvemos los errores
 	if(errormsg.length > 0)
-		return res.send({type: 'error', msg: errormsg});
+		return res.status(500).send({type: 'error', msg: errormsg});
 	
 	// ejecutamos consulta para comprobar que la geometría es correcta	
 	dbCarto.one(consultas.comprobar_geometria(wkt) , wkt)
 		.then(function(geom_check){
 			// Si la geometría no está en torrent 
 			if (geom_check.st_contains == false)
-				throw new Error('La geometría debe estar dentro de Torrent.');
+				throw new Error(req.i18n.__('denuncia_geometria_dentro'));
 			// Si la geometría lineal supera los 200 metros
 			else if(wkt.match(/LINESTRING/g) && geom_check.st_length > 200)
-				throw new Error('La geometría lineal no debe superar los 200 metros de longitud.');
+				throw new Error(req.i18n.__('denuncia_geometria_lineal'));
 			// Si la geometría poligonal supera los 5000 metros cuadrados
 			else if(wkt.match(/POLYGON/g) && geom_check.st_area > 5000)
-				throw new Error('La geometría poligonal no debe superar un area mayor de 5000 metros <sup>2</sup>.');
+				throw new Error(req.i18n.__('denuncia_geometria_poligonal') + ' m<sup>2</sup>.');
 			// Ejecutamos la tarea para añadir denuncia, tags, imágenes
 			return db.task(function * (t){
 				// t = this = contexto bdd
@@ -439,44 +465,70 @@ Denuncia.prototype.guardar = function(req, res){
 
 ====================================================
 */
-Denuncia.prototype.pagina_denuncias = function(req, res){
-
+Denuncia.prototype.pagina_denuncias = function(req, res, next){
+	// Parámetros por defecto 
 	var numDenuncias = 0;
 	var maxPages = 1;
-	var page = req.query.page; 
-	if (!validator.isNumeric(page.toString())){
-		page = 1;
-		console.log('pagina no numerica');
+	// Página que solicita el usuario
+	var page = req.query.page;
+	// Comprobamos que la página es numérica
+	if (!page){
+		var error = new Error(req.i18n.__('faltan_parametros') + ': page');
+		error.status = 500;
+		return next(error);
 	}
-	if(page <= 0) page = 1;
-	
+	if (!validator.isNumeric(page.toString())){
+		// Si no es numérica error
+		var error = new Error(req.i18n.__('parametro_no_valido'));
+		error.status = 500;
+		return next(error);
+	}
+	// Si la página es menor o igual a 0 error
+	if(page <= 0){
+		var error = new Error(req.i18n.__('parametro_no_valido'));
+		error.status = 500;
+		return next(error);
+	};
+	// Lista de denuncias de la página solicitada
 	var denuncias = [];
-	
+	//Ejecutamos la consulta para obtener el número de denuncias 
 	db.one(consultas.numero_denuncias)
 		.then(function(num_denuncias){
-			console.log('num_denuncias', num_denuncias);
+			// Obtenemos el número de denuncias totales
+			//console.log('num_denuncias', num_denuncias);
+			// Asignamos el número de denuncis a una variable global
 			numDenuncias = num_denuncias.numdenuncias;
 			//if (Math.ceil(numDenuncias/10) > 0)
+			// Calculamos el número máximo de página
 			maxPages = Math.ceil(numDenuncias/10);
-			console.log('numDenuncias', numDenuncias, 'maxPages', maxPages);
-			if (page > maxPages) page = maxPages;
+			//console.log('numDenuncias', numDenuncias, 'maxPages', maxPages);
+			// Si la página solicitada es mayor que el número de páginas que puede haber
+			// Asignamos la máxima página
+			if (page > maxPages) {
+				var error = new Error(req.i18n.__('parametro_no_valido'));
+				throw error;
+			}
+			// Ejecutamos la consulta para obtener las denuncias recientes por página
 			return db.query(consultas.obtener_denuncias_recientes_por_pagina, page);
 			
 		})
 		.then (function(denuncias){
+			// Obtenemos las denuncias y las recorremos
 			denuncias.forEach(function(d){
+				// Asignamos la geometría a la denuncia
 				d.geometria = d.geometria_pt || d.geometria_li || d.geometria_po;
 			});
-			console.log(denuncias);
-			res.render('denuncias',{denuncias : JSON.stringify(denuncias), 
-				   user : req.user,
-				   page: page,
-				   maxPages: maxPages
+			//console.log(denuncias);
+			// Respondemos renderizando la página con las denuncias
+			res.render('denuncias',{
+				denuncias : JSON.stringify(denuncias), 
+				page: page,
+				maxPages: maxPages
 			});
 		})
 		.catch(function(error){
-			res.status(500);
-			res.send(error);
+			error.status = 500;
+			next(error);
 		});
 
 };
@@ -490,20 +542,22 @@ Denuncia.prototype.pagina_denuncias = function(req, res){
 
 ==========================================================
 */
-var pagina_denuncia = function(req,res){
-
+var pagina_denuncia = function(req,res, next){
+	// Id de la denuncia solicitada
 	var id_denuncia = req.query.id;
-
+	// Ejecutamos la consulta para obtener la denuncia
 	db.one(consultas.denuncia_por_id, id_denuncia)
 		.then(function(denuncia){
-			if (!denuncia) throw new Error('Denuncia no encontrada');
-
+			// Si la denuncia no existe lanzamos un error
+			if (!denuncia) throw new Error(req.i18n.__('denuncia_no_encontrada'));
+			// Si existe asignamos la geometría a la denuncia
 			denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-			res.render('denuncia', {denuncia: denuncia, user: req.user});
+			// renderizamos la página de la denuncia con la denuncia
+			res.render('denuncia', {denuncia: denuncia});
 		})
 		.catch(function(error){
-			res.status(500);
-			res.send(error);
+			error.status = 500;
+			next(error);
 		});
 };
 
@@ -519,18 +573,31 @@ var pagina_denuncia = function(req,res){
 ======================================================
 */
 Denuncia.prototype.eliminar_imagen = function(req, res){
+	// El path es un parámetro requerido
 	if(!req.query.path){
-		return res.status(500).send('no hay path');
+		return res.status(500).send(req.i18n.__('parametro_no_valido'));
 	}
 	else {
+		// path de la imagen a eliminar
 		var path = req.query.path;
-		
-		db.query(consultas.eliminar_imagen_denuncia, path)
+		// Ejecutamos la consulta para obtenemos la denuncia a partir del path de la imagen
+		db.one(consultas.denuncia_por_path_imagen, path)
+			.then(function(denuncia){
+				// Obtenemos la denuncia a partir del path de la imagen
+				if(denuncia.id_usuario != req.user._id)
+					// Si es un usuario distinto al propietario el que quiere 
+					// eliminar la denuncia --> error
+					throw new Error(req.i18n.__('no_tiene_permiso'));
+				// Ejecutamos la consulta para eliminar la imagen de la bdd
+				return db.query(consultas.eliminar_imagen_denuncia, path);
+			})
 			.then(function(result){
 				console.log(result);
+				// Eliminamos la imagen de la carpeta
 				exec('rm -r ' + './public' + req.query.path, function(error){
 					if (error) throw error;
-					else res.send('Imagen "' + path + '" eliminada correctamente.');
+					// Enviamos respuesta satisfactoria
+					else res.send(req.i18n.__('imagen') + '"' + path + '"' + req.i18n.__('eliminada_correctamente'));
 				});
 			})
 			.catch(function(error){
@@ -548,35 +615,45 @@ Denuncia.prototype.eliminar_imagen = function(req, res){
 
 ======================================================
 */
-var pagina_editar = function(req, res){
+var pagina_editar = function(req, res, next){
+	// id de la denuncia
 	var id = req.query.id;
+	// No se introduce id como parámetro...
 	if(!id){
-		//Mostar error
-		return res.status(500).send('No se especificó el id de la denuncia');
+		// Enviamos respuesta de error
+		var error = new Error(req.i18n.__('faltan_parametros') + ': id');
+		return next(error);
 	}
 	else{
 		console.log('editar');
-		
+		// Ejecutamos la consulta para obtener la denuncia
 		db.one(consultas.denuncia_por_id, id)
 			.then(function(denuncia){
-				if(!denuncia) throw new Error('No existe la denuncia');
-				if(denuncia.id_usuario != req.user._id) throw new Error('Permiso denegado. Usted no puede editar esta denuncia.')
+				// Si el usuario propietario de la denuncia es distinto al que intenta editarla --> error
+				if(denuncia.id_usuario != req.user._id) throw new Error(req.i18n.__('no_tiene_permiso'))
 				//console.log(denuncia[0]);
-				denuncia.tags_ = JSON.stringify(denuncia.tags_);
-				console.log(denuncia);
 
+				denuncia.tags_ = JSON.stringify(denuncia.tags_);
+				//console.log(denuncia);
+
+				// Asignamos la geometría a la denuncia
 				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
 
+				// Creamos un string random para crear carpeta temporal
 				crypto.randomBytes(25, function(ex, buf) {
+					// Obtenemos el string random
   					var token = buf.toString('hex');
+  					// Creamos el directorio
 					mkdirp(path.join(config.TEMPDIR, token), function (err){
 						if(err) throw err;
+						// Renderizamos la página con la denuncia
 						res.render('editar.jade', {denuncia: denuncia, random : token});
 					}); // Crea un directorio si no existe
 				});
 			})
 			.catch(function(error){
-				res.status(500).send(error);
+				error.status = 500;
+				next(error);
 			});
 	}
 };
@@ -591,42 +668,42 @@ var pagina_editar = function(req, res){
 ====================================================
 */
 var eliminar = function(req, res){
-	
+	// Comprobamos que se accede mediante POST
 	if(req.method.toLowerCase() != 'post')
-		return res.status(500).send('La acción requiere ser enviada a través de POST');
-
+		return res.status(500).send(req.i18n.__('accion_post'));
+	// No se le ha pasado el parámetro id --> error
 	if(!req.query.id){
-		//Mostar error
-		res.status(500).send('No se ha especificado el id de la denuncia');
+		// Enviamos respuesta de error
+		res.status(500).send(req.i18n.__('faltan_parametros') + ': id');
 	}
 	console.log('delete ' + req.query.id);
-	var id = req.query.id; // id de la denuncia
-	
-	var id_user = req.user._id; // id del usuario
-	
+	// id de la denuncia a eliminar
+	var id = req.query.id;
+	// id del usuario que pide eliminar la denuncia
+	var id_user = req.user._id;
+	// Ejecutamos consulta para obtener denuncia
 	db.oneOrNone(consultas.denuncia_por_id, id)
 		.then(function(denuncia){
+			// Si no existe denuncia --> error
 			if(!denuncia) throw new Error('No existe denuncia');
+			// Si el usuario que pide eliminarla y el propietario son distintos --> error
 			if(id_user != denuncia.id_usuario) 
-				throw new Error('Usted no tiene permisos para eliminar esta denuncia');
-			
+				throw new Error(req.i18n.__('no_tiene_permiso'));
+			// Eliminamos la carpeta de imágenes de la denuncia
 			exec('rm -r ' + config.UPLOADDIR + "/" + denuncia.gid, function ( errD, stdout, stderr ){
 				// Eliminamos las imágenes de la carpeta FINAL
 				if (errD) {
 				console.log('error_mensaje --> ' + errD);
 				}
 				else console.log('imagenes eliminadas ');
-				
 			}); 
-
-			//denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-			//var tipo = denuncia.geometria.type;
-			
+			// Ejecutamos la consulta para eliminar denuncia
 			return db.none(consultas.eliminar_denuncia, [denuncia.gid]);
 			
 		})
 		.then(function(){
-			res.status(200).send('La denuncia con id: ' + id + ' se ha eliminado correctamente');
+			// La denuncia se eliminó correctamente
+			res.status(200).send(req.i18n.__('denuncia_con_id') + ': ' + id + ' ' + req.i18n.__('eliminada_correctamente'));
 		})
 		.catch(function(error){
 			console.log(error.toString());
@@ -644,91 +721,109 @@ var eliminar = function(req, res){
 */
 var editar = function(req, res){
 
+	// Comprobamos que se accede mediante POST
 	if(req.method.toLowerCase() != 'post')
-		return res.status(500).send('La acción requiere ser enviada a través de POST');
+		return res.status(500).send(req.i18n.__('accion_post'));
 	
+	// id de la denuncia
 	var id = req.query.id;
 	
 	var response = {}; // La respuesta que se envía
 	var errormsg = ''; // mensaje de errores
 	
 	var imagenes = []; // Lista de imágenes a guardar en la base de datos
-	var titulo = req.body.titulo.replace(/["' # $ % & + ` -]/g, " ");
-	var contenido = req.body.contenido;
-	var wkt = req.body.wkt;
+	var titulo = req.body.titulo.replace(/["' # $ % & + ` -]/g, " "); // título
+	var contenido = req.body.contenido; // contenido
+	var wkt = req.body.wkt; // Geometría
 	
 	var user_id = validator.escape(req.user._id); // id_usuario
 	var tempDirID = req.body.tempDir; // nombre del directorio temporal donde se guardan las imágenes
 	
 	var tags_ = req.body.tags.length > 0 ? req.body.tags : [];  // tags introducidos por el usuarios
-	console.log(tags_);
 	
-	var denuncia_io = req.body;
+	var denuncia_io = req.body; // objeto denuncia
+	// Asignamos más valores a la denuncia--> gid, id_usuario
 	denuncia_io.id_usuario = user_id;
 	denuncia_io.gid = id;
 
 	// comprobando datos de la denuncia
-	if(tags_.length < 2) errormsg += '· La denuncia debe contener al menos dos tags. \n';
-	if(!validator.isLength(titulo, 5, 50)) errormsg += '· El título debe tener entre 5 y 50 caracteres.\n';
-	if(!validator.isLength(contenido, 50, 10000)) errormsg += '· El contenido debe tener entre 50 y 10000 caracteres.\n';
-	if(wkt == undefined) errormsg += '· Debe agregar un punto, línea o polígono\n';	
+	if(tags_.length < 2) errormsg += req.i18n.__('denuncia_tags') + '\n';
+	if(!validator.isLength(titulo, 5, 50)) errormsg += req.i18n.__('denuncia_titulo') + '\n';
+	if(!validator.isLength(contenido, 50, 10000)) errormsg += req.i18n.__('denuncia_contenido') + '\n';
+	if(wkt == undefined) errormsg += req.i18n.__('denuncia_geometria');	
 	
 	// Si hay algún error en los datos devolvemos la denuncia
 	if(errormsg.length > 0)
 		return res.send({type: 'error', msg: errormsg});
-	
+	// tipo de geometría introducida
 	var tipo = wkt.match(/LINESTRING/g) ? 'LineString' : (wkt.match(/POLYGON/g) ? 'Polygon': 'Point');
-	var denuncia;
+	//var denuncia;
 	
+	// Ejecutamos la consulta para obtener denuncia
 	db.one(consultas.denuncia_por_id, id)
 		.then(function(d){
-			denuncia = d;
-			denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+			// Asignamos la denuncia a denuncia_io
+			denuncia_io = d;
+			// Asignamos la geometría de la denuncia
+			denuncia_io.geometria = denuncia_io.geometria_pt || denuncia_io.geometria_li || denuncia_io.geometria_po;
+			// Ejecutamos la consulta para comprobar geometría
 			return dbCarto.one(consultas.comprobar_geometria(wkt), wkt);
 		})
 		.then(function(geom_check){
+			// Si la denuncia no está en torrent --> Error
 			if (geom_check.st_contains == false)
-				throw new Error('La geometría debe estar dentro de Torrent.');
-			else if(wkt.match(/LINESTRING/g) && geom_check.st_length > 500)
-				throw new Error('La geometría lineal no debe superar los 500 metros de longitud.');
-			else if(wkt.match(/POLYGON/g) && geom_check.st_area > 10000)
-				throw new Error('La geometría poligonal no debe superar un area mayor de 10.000 metros cuadrados.');
+				throw new Error(req.i18n.__('denuncia_geometria_dentro'));
+			// Si la denuncia lineal supera los 200 metros
+			else if(wkt.match(/LINESTRING/g) && geom_check.st_length > 200)
+				throw new Error(req.i18n.__('denuncia_geometria_lineal'));
+			// Si la geometría poliggonal supera los 5000 metros cuadrados
+			else if(wkt.match(/POLYGON/g) && geom_check.st_area > 5000)
+				throw new Error(req.i18n.__('denuncia_geometria_poligonal') + ' m<sup>2</sup>.');
 
-			console.log(wkt, 'wktttt');	
+			//console.log(wkt, 'wktttt');	
+
+			// Ejecutamos tarea
 			return db.task(function * (t){
 				// t = this = contexto bdd
-				var q = [];
-
+				var q = []; // Consultas
+				// Leemos el directorio temporal
 				var files = fs.readdirSync(config.TEMPDIR + "/" + tempDirID);
+				// Si hay imágenes...
 				if (files){
 					try {
-						fs.mkdirSync(path.join(config.UPLOADDIR, denuncia.gid));
+						// Intenyamos crear un directorio temporal por su no lo hubiera
+						fs.mkdirSync(path.join(config.UPLOADDIR, denuncia_io.gid));
 					}
 					catch(e){
-
+						// Si hay error es que stá creado --> Lo que debe pasar siempre
 					}
-					
+					// Recorremos las imágenes
 					files.forEach(function(ruta, index, that) {
-					    console.log('img: ' + path.basename(ruta));
-					    
-						var from = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
-						var to = path.join(config.UPLOADDIR, denuncia.gid + "/" + tempDirID + "-" + path.basename(ruta));
-						var path_ = "/files/denuncias/" + denuncia.gid + "/" + path.basename(to); 
-						// Movemos la imagen desde la carpeta temporal hasta la carpeta final
-						q.push(t.none(consultas.añadir_imagen_denuncia, [path_, denuncia.gid]));
-						fs.renameSync(from, to);
+					    //console.log('img: ' + path.basename(ruta));
+					    // Path desde --> Imagen en carpeta temporal
+						var from_ = path.join(config.TEMPDIR, tempDirID + "/" + path.basename(ruta));
+						// Path hasta --> Imagen en carpeta final
+						var to = path.join(config.UPLOADDIR, denuncia_io.gid + "/" + tempDirID + "-" + path.basename(ruta));
+						// PAth para introducir en la base de datos
+						var path_ = "/files/denuncias/" + denuncia_io.gid + "/" + path.basename(to); 
+						// Añadimos la consulta a la tarea
+						q.push(t.none(consultas.añadir_imagen_denuncia, [path_, denuncia_io.gid]));
+						// Movemos la imagen
+						fs.renameSync(from_, to);
 					});
 				}
 
-				let borrar = yield t.none(consultas.delete_all_tags, id);
+				// Consulta síncrona para borrar todos los tags de la denuncia
+				let borrar_tags = yield t.none(consultas.delete_all_tags, id);
 				//console.log('borrar ', borrar);
-				var tipo_ant = denuncia.geometria.type;
+				// tipo de geometría que tenía anteriormente
+				var tipo_ant = denuncia_io.geometria.type;
 				//var fecha = denuncia.fecha;
 				console.log(tipo);
 				// Ha cambiado la geometría de la denuncia ¿?
 				if (tipo != tipo_ant){
 					// Eliminamos la geometría de la tabla en la que esté
-					q.push(t.none(consultas.eliminar_geometria_por_id(tipo_ant), id));
+					let borrar_geom = yield t.none(consultas.eliminar_geometria_por_id(tipo_ant), id);
 					// Insertamos la geometría en la tabla que corresponda
 					q.push(t.none(consultas.añadir_geometria(wkt), [id, wkt]));
 					// Actualizamos el contenido de la denuncia
@@ -741,21 +836,24 @@ var editar = function(req, res){
 					// Actualizamos info denuncia
 					q.push(t.none(consultas.actualizar_denuncia, [titulo, contenido, id]));
 				}
-				console.log('imagenes' + imagenes);
+				//console.log('imagenes' + imagenes);
+				// Recorremos las imágenes
 				imagenes.forEach(function(path){
-					console.log('imagenes--' + path);
+					//console.log('imagenes--' + path);
+					// Añadimos consulta a la tarea para añadir imagen
 					q.push(t.none(consultas.añadir_imagen_denuncia, [path, id]));
 				});
-				
+				// Recorremos los tags
 				tags_.forEach(function(tag){
+					// Añadimos consulta a la tarea para añadir tag
 					q.push(t.none(consultas.añadir_tag_denuncia, [id, tag]));
 				});
-				return t.batch(q);
-				
+				// Ejecutamos las consultas
+				return t.batch(q);	
 			});
-			
 		})
 		.then (function(){
+			// Enviamos respuesta satisfactoria
 			res.send({
 				type: 'success', 
 				msg: 'Denuncia guardada correctamente',
@@ -779,18 +877,20 @@ var editar = function(req, res){
 ====================================================
 */
 Denuncia.prototype.pagina_visor = function(req, res){
-	
+	// Ejecutamos consulta para obtener denuncias del visor
 	db.query(consultas.denuncias_visor)
 		.then(function(denuncias){
-
+			// Recorremos las denuncias
 			denuncias.forEach(function(denuncia){
+				// Asignamos geometría a la denuncia
 				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
 			});
-
+			// Renderizamos la página con las denuncias
 			res.render('visor.jade', {denuncias: denuncias});
 		})
 		.catch(function(error){
-			res.status(500).send(error);
+			error.status = 500;
+			next(error);
 		});	
 }
 

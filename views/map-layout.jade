@@ -5,8 +5,6 @@ html
     meta(charset='utf-8')
     // Para dispositivos móviles
     meta(name='viewport', content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no')
-    // Panel Lateral
-    link(rel='stylesheet', href='/stylesheets/panel-lateral.css')
     // Bootstrap CSS
     link(rel='stylesheet', type='text/css', href='//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css')
     // Font Awesome Iconos
@@ -132,7 +130,7 @@ html
   // JQuery y Bootstrap
   script.
     //var ip = '#{ip}';
-    //var usuario_id = '#{locals.user ? locals.user._id : undefined}';
+    var id_usuario = '#{locals.user ? locals.user._id : undefined}';
   script(src='/javascripts/plugins/js-cookie/src/js.cookie.js')
   script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js')
   script(src='//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js')

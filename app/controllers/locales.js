@@ -3,60 +3,91 @@ var url = require('url');
 var cont = {
 	'/app' : function(req){
 		return {
-			titulo : req.i18n.__('titulo_app'),
-			slogan : req.i18n.__('slogan'),
-			inicio : req.i18n.__('inicio'),
-			iniciar_sesion : req.i18n.__('iniciar_sesion'),
-			registrarse : req.i18n.__('registrarse'),
-			olvidaste : req.i18n.__('olvidaste'),
-			visor_tiempo_real : req.i18n.__('visor_tiempo_real'),
-			denuncias : req.i18n.__('denuncias'),
-			notificaciones : req.i18n.__('notificaciones'),
-			mi_perfil : req.i18n.__('mi_perfil'),
-			nueva_denuncia : req.i18n.__('nueva_denuncia'),
-			cerrar_sesion : req.i18n.__('cerrar_sesion'),
-			subtitulo : req.i18n.__('subtitulo_app'),
-			inicia_sesion_info : req.i18n.__('inicia_sesion_info'),
-			inicia_sesion_rs : req.i18n.__('inicia_sesion_rs'),
-			nuevo : req.i18n.__('nuevo'),
-			usuario : req.i18n.__('usuario'),
-			crear_cuenta_usuario : req.i18n.__('crear_cuenta_usuario'),
-			recuperar : req.i18n.__('recuperar'),
-			contraseña : req.i18n.__('contraseña'),
-			nombre : req.i18n.__('nombre'),
-			apellidos : req.i18n.__('apellidos'),
-			username : req.i18n.__('username'),
-			repetir_contraseña : req.i18n.__('repetir_contraseña'),
-			email : req.i18n.__('email'),
-			usuario_o_email : req.i18n.__('usuario_o_email'),
-			enviar_email : req.i18n.__('enviar_email'),
-			recuperar_contraseña_info : req.i18n.__('recuperar_contraseña_info'),
+			// A
 			acciones : req.i18n.__('acciones'),
-			denuncias_fav : req.i18n.__('denuncias_fav'),
-			nueva : req.i18n.__('nueva'),
-			localizacion : req.i18n.__('localizacion'),
-			perfil : req.i18n.__('perfil'),
-			editar : req.i18n.__('editar'),
-			denuncia : req.i18n.__('denuncia'),
-
-			distancia : req.i18n.__('distancia'),
-			metros : req.i18n.__('metros'),
-			usuario_like_denuncia : req.i18n.__('usuario_like_denuncia'),
-			usuario_no_like_denuncia : req.i18n.__('usuario_no_like_denuncia'),
+			apellidos : req.i18n.__('apellidos'),
+			al_menos_id : req.i18n.__('al_menos_id'),
+			accion : req.i18n.__('accion'),
+			// B
+			// C
+			crear_cuenta_usuario : req.i18n.__('crear_cuenta_usuario'),
+			cerrar_sesion : req.i18n.__('cerrar_sesion'),
+			contraseña : req.i18n.__('contraseña'),
 			comento : req.i18n.__('comento'),
+			comentaste : req.i18n.__('comentaste'),
+			// D
+			denuncias_fav : req.i18n.__('denuncias_fav'),
+			denuncias : req.i18n.__('denuncias'),
+			denuncia : req.i18n.__('denuncia'),
+			distancia : req.i18n.__('distancia'),
+			// E
+			email : req.i18n.__('email'),
+			enviar_email : req.i18n.__('enviar_email'),
+			editar : req.i18n.__('editar'),
 			en_tu_denuncia : req.i18n.__('en_tu_denuncia'),
-			usuario_add_denuncia_cerca : req.i18n.__('usuario_add_denuncia_cerca'),
-
+			en_la_denuncia_de : req.i18n.__('en_la_denuncia_de'),
+			// F
+			// G
+			// H
 			has_realizado : req.i18n.__('has_realizado'),
 			has_publicado_denuncia_cerca : req.i18n.__('has_publicado_denuncia_cerca'),
-			te_han_gustado : req.i18n.__('te_han_gustado'),
-			comentaste : req.i18n.__('comentaste'),
-			en_la_denuncia_de : req.i18n.__('en_la_denuncia_de'),
-			me_gusta_denuncia : req.i18n.__('me_gusta_denuncia'),
-			no_me_gusta_denuncia : req.i18n.__('no_me_gusta_denuncia'),
-			usuario_invitado : req.i18n.__('usuario_invitado'),
+			has_publicado : req.i18n.__('has_publicado'),
+			// I
+			inicio : req.i18n.__('inicio'),
+			iniciar_sesion : req.i18n.__('iniciar_sesion'),
+			inicia_sesion_info : req.i18n.__('inicia_sesion_info'),
+			inicia_sesion_rs : req.i18n.__('inicia_sesion_rs'),
 			ir_a_denuncia : req.i18n.__('ir_a_denuncia'),
-
+			// J
+			// K
+			// L
+			localizacion : req.i18n.__('localizacion'),
+			// M
+			mi_perfil : req.i18n.__('mi_perfil'),
+			metros : req.i18n.__('metros'),
+			me_gusta_denuncia : req.i18n.__('me_gusta_denuncia'),
+			// N
+			nuevo : req.i18n.__('nuevo'),
+			notificaciones : req.i18n.__('notificaciones'),
+			nueva_denuncia : req.i18n.__('nueva_denuncia'),
+			nombre : req.i18n.__('nombre'),
+			nueva : req.i18n.__('nueva'),
+			no_me_gusta_denuncia : req.i18n.__('no_me_gusta_denuncia'),
+			noti_sin_leer : req.i18n.__('noti_sin_leer'),
+			notis_sin_leer : req.i18n.__('notis_sin_leer'),
+			// O
+			olvidaste : req.i18n.__('olvidaste'),
+			// P
+			perfil : req.i18n.__('perfil'),
+			// Q
+			// R
+			registrarse : req.i18n.__('registrarse'),
+			repetir_contraseña : req.i18n.__('repetir_contraseña'),
+			recuperar : req.i18n.__('recuperar'),
+			recuperar_contraseña_info : req.i18n.__('recuperar_contraseña_info'),
+			ruta_no_encontrada : req.i18n.__('ruta_no_encontrada'),
+			// S
+			slogan : req.i18n.__('slogan'),
+			subtitulo : req.i18n.__('subtitulo_app'),
+			// T
+			titulo : req.i18n.__('titulo_app'),
+			te_han_gustado : req.i18n.__('te_han_gustado'),
+			te_ha_gustado : req.i18n.__('te_ha_gustado'),
+			tienes : req.i18n.__('tienes'),
+			// U
+			username : req.i18n.__('username'),
+			usuario : req.i18n.__('usuario'),
+			usuario_o_email : req.i18n.__('usuario_o_email'),
+			usuario_like_denuncia : req.i18n.__('usuario_like_denuncia'),
+			usuario_no_like_denuncia : req.i18n.__('usuario_no_like_denuncia'),
+			usuario_add_denuncia_cerca : req.i18n.__('usuario_add_denuncia_cerca'),
+			usuario_invitado : req.i18n.__('usuario_invitado'),
+			// V
+			visor_tiempo_real : req.i18n.__('visor_tiempo_real'),
+			// W
+			// X
+			// Y
+			// Z
 
 		}
 	}

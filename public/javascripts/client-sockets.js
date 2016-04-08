@@ -1,4 +1,4 @@
-var num_denuncias_io = io.connect(window.location.href.toString().split(':' + window.location.port)[0] + ":3000/app/visor");
+var num_denuncias_io = io.connect(window.location.href.toString().split(':' + window.location.port)[0] + ":8000/app/visor");
 
 /*
 ==============================================================================================
