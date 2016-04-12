@@ -71,7 +71,7 @@ block script
 	script(src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.1/locales/bootstrap-datepicker.es.min.js")
 	script.
 		// al INICIAR
-		var denuncias = !{denuncias};
+		var denuncias = JSON.parse('!{JSON.stringify(denuncias)}');
 		var tipo, coords, extension;
 		denuncias.forEach(function(d){
 			d.tipo = d.geometria.type;

@@ -55,6 +55,7 @@
 	"error_comentario_params" : "The content of the comment should be between 10 and 1000 characters",
 	"error_subiendo_archivo" : "Error uploading file. ",
 	"eliminada_correctamente" : "successfuly deleted",
+	"error_servidor" : "opps! An error ocurred...",
 
 	"formato_no_permitido" : "Format not allowed",
 	"faltan_parametros" : "Missing parameters",
@@ -72,6 +73,7 @@
 	"imagen_eliminada" : "Image successfuly deleted",
 	"imagen" : "Image",
 	"imagen_perfil_actualizada" : "Profile image successfuly updated.",
+	"idioma" : "Language",
 
 	"localizacion" : "Location",
 

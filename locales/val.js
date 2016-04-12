@@ -55,6 +55,7 @@
 	"error_comentario_params" : "El contingut del comentari ha de tindre entre 10 y 1000 caràcters",
 	"error_subiendo_archivo" : "Error pujant arxiu. ",
 	"eliminada_correctamente" : "eliminada correctament",
+	"error_servidor" : "opps! Sembla que ha hagut un error...",
 
 	"faltan_parametros" : "Falten paràmetres",
 	"formato_no_permitido" : "Format no permès",
@@ -72,6 +73,7 @@
 	"imagen_eliminada" : "Imatge eliminada correctament",
 	"imagen" : "Imatge",
 	"imagen_perfil_actualizada" : "Imatge de Perfil actualitzada correctament.",
+	"idioma" : "Idioma",
 
 	"localizacion" : "Localització",
 

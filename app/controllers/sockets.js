@@ -1,10 +1,15 @@
 /**
  * SOCKET.IO
  */
+var validator = require('validator');
+var consultas = require('./queries.js');
+var database = require('../../config/database.js');
+var pgp = database.pgp;
+var db = database.db;
 
 global.clients = {}; // Un cliente puede tener varios sockets abiertos
 
-module.exports = function(io, path, mkdirp, exec, config, validator, db, consultas, pgp){
+module.exports = function(io){
 	
 	io.of('/app/visor').on('connection', function(socket){
 		/*

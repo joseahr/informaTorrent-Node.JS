@@ -11,7 +11,7 @@ block content
               p.lead.text-center !{contenido.inicia_sesion_info}
               .space
               .row
-                form(action="/app/login" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', margin: '0 auto',  width: '80%'}).form-horizontal
+                form(action="/app/usuarios/iniciar" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', margin: '0 auto',  width: '80%'}).form-horizontal
                   .col-md-12.text-center
                     i.fa.fa-user(style="font-size: 100px;color: #00bbff")
                   .col-md-6
@@ -109,7 +109,7 @@ block content
               p.lead.text-center !{contenido.recuperar_contraseña_info}
               .space
               .row
-                form(action="/app/forgot" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', margin: '0 auto',  width: '80%'}).form-horizontal
+                form(action="/app/usuarios/olvidaste" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', margin: '0 auto',  width: '80%'}).form-horizontal
                   .col-md-12.text-center
                     i.fa.fa-send(style="font-size: 100px;color: #00bbff")
                   .col-md-12

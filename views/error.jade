@@ -1,0 +1,11 @@
+extends layout_sin_cabecera
+block content
+	.col-lg-2
+	.col-lg-8(style="margin : 0 auto")
+		h1 #{txt}
+		h1 
+			i.fa.fa-exclamation-triangle(style="color : #9e1c1c")
+			|  #{error.status}
+		pre
+			code !{error.msg}
+	.col-lg-2

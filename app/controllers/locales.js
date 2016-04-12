@@ -38,6 +38,7 @@ var cont = {
 			inicia_sesion_info : req.i18n.__('inicia_sesion_info'),
 			inicia_sesion_rs : req.i18n.__('inicia_sesion_rs'),
 			ir_a_denuncia : req.i18n.__('ir_a_denuncia'),
+			idioma : req.i18n.__('idioma'),
 			// J
 			// K
 			// L

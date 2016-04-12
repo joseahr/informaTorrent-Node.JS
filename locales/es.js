@@ -16,7 +16,7 @@
 	"contraseña_actualizada" : "La contraseña se actualizó correctamente",
 	"cuenta_de" : "Cuenta de",
 	"contraseña_parametros" : "La contraseña debe tener entre 5 y 20 caracteres",
-	"cuenta_confirmada" : "Tu cuenta se ha confirmado correctamente."
+	"cuenta_confirmada" : "Tu cuenta se ha confirmado correctamente.",
 
 	"denuncias": "Denuncias",
 	"denuncias_fav": "Denuncias Favoritas",
@@ -54,6 +54,7 @@
 	"error_comentario_params" : "El contenido del comentario debe tener entre 10 y 1000 caracteres",
 	"error_subiendo_archivo" : "Error subiendo archivo. ",
 	"eliminada_correctamente" : "eliminada correctamente",
+	"error_servidor" : "opps! Parece que ha habido un error...",
 
 	"formato_no_permitido" : "Formato no permitido",
 	"faltan_parametros" : "Faltan parámetros",
@@ -71,6 +72,7 @@
 	"imagen_eliminada" : "Imagen eliminada correctamente",
 	"imagen" : "Imagen",
 	"imagen_perfil_actualizada" : "Imagen de Perfil cambiada correctamente.",
+	"idioma" : "Idioma",
 
 	"localizacion": "Localización",
 
