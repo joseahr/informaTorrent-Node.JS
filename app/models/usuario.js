@@ -387,10 +387,13 @@ Obtener las notificaciones de un usuario
 ===============================================================
 */
 Usuario.prototype.get_notificaciones = function(id_usuario, callback){
-		
-	db.query(queries.obtener_notificaciones, id_usuario)
+	console.log('get_notis');
+	db.query(consultas.obtener_notificaciones, id_usuario)
 	.then(function(notificaciones){
+		console.log(notificaciones);
 		// obtenemos notificaciones
+		if(!notificaciones)
+			notificaciones = [];
 		notificaciones.forEach(function(n){
 			n.denuncia = n.denuncia[0];
 			n.denuncia.geometria = n.denuncia.geometria_pu || n.denuncia.geometria_li || n.denuncia.geometria_po;
@@ -409,7 +412,7 @@ Obtener las acciones de un usuario
 */
 Usuario.prototype.get_acciones = function(id_usuario, callback){
 		
-	db.query(queries.obtener_acciones, id_usuario)
+	db.query(consultas.obtener_acciones, id_usuario)
 	.then(function(acciones){
 		// obtenemos notificaciones
 		notificaciones.forEach(function(n){

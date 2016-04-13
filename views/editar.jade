@@ -25,7 +25,7 @@ block script
 			likes : JSON.parse('!{JSON.stringify(denuncia.likes)}'),
 			comentarios : JSON.parse('!{JSON.stringify(denuncia.comentarios)}'),
 			imagenes : JSON.parse('!{JSON.stringify(denuncia.imagenes)}'),
-			tags : JSON.parse('!{denuncia.tags_}'),
+			tags : JSON.parse('!{JSON.stringify(denuncia.tags_)}'),
 			geometria : JSON.parse('!{JSON.stringify(denuncia.geometria)}')
 
 		};

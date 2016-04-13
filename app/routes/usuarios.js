@@ -14,6 +14,8 @@ var isLoggedIn = require('../middlewares/logged.js');
 var router = require('express').Router();
 
 router.use(require('../middlewares/datos.js'));
+router.use(require('../middlewares/usuario.js'));
+
 /*
  * Perfil visible de los usuarios
  */
@@ -64,11 +66,11 @@ router.get('/perfil', isLoggedIn, function(req, res) {
 	});
 });
 
-router.get('/perfil/update', isLoggedIn, function(req, res){
+router.route('/perfil/actualizar')
+.get(isLoggedIn, function(req, res){
 	res.render('editarPerfil.jade', {user: req.user});
-});
-
-router.post('/perfil/update', isLoggedIn, function(req, res){
+})
+.put(isLoggedIn, function(req, res){
 	
 	var user = req.user;
 	
@@ -105,7 +107,6 @@ router.post('/perfil/update', isLoggedIn, function(req, res){
 	
 	if(apellidos && !validator.isLength(apellidos, 3, 15)){
 		return res.status(500).send({error: true, msg: req.i18n.__('apellidos_params')});
-
 	}
 	else if(apellidos){
 		user.profile.apellidos = apellidos;
@@ -133,7 +134,7 @@ router.post('/perfil/update', isLoggedIn, function(req, res){
 /*
 Cambiar avatar por gravatar
 */
-router.post('/perfil/avatar/gravatar', function(req, res){
+router.put('/perfil/avatar/gravatar', function(req, res){
 	usuarioModel.cambiar_imagen_perfil_gravatar(req.user, function(error, result){
 		if(error) return res.status(500).json({type: 'error', msg: error.msg, status : 500});
 		return res.json({type: 'success', msg: req.i18n(result.msg), status : 500});
@@ -143,7 +144,7 @@ router.post('/perfil/avatar/gravatar', function(req, res){
 /*
 Cambiar imagen de perfil
 */
-router.post('/perfil/avatar/update', function(req, res) {
+router.put('/perfil/avatar/actualizar', function(req, res) {
 	
 	multer_imagen_perfil(req, res, function(error){
 		
@@ -175,9 +176,13 @@ router.post('/perfil/avatar/update', function(req, res) {
 	});
 });
 
-
-router.get('/perfil/localizacion/update', function(req,res, next){
-	
+router.route('/perfil/localizacion')
+.get(function(req,res, next){
+	usuarioModel.get_localizacion_preferida(req.user._id, function(error, result){
+		if(error)
+			return next(error);
+		res.render('editarLoc.jade', result);
+	});
 	db.one(consultas.obtener_loc_preferida, req.user._id)
 	.then(function(location){
 		res.render('editarLoc.jade', {loc_pref: location.loc_pref});
@@ -187,9 +192,8 @@ router.get('/perfil/localizacion/update', function(req,res, next){
 		next(error);
 		//res.status(500).send(error);
 	});
-});
-
-router.post('/perfil/localizacion/update', function(req, res){
+})
+.put(function(req, res){
 
 	usuarioModel.update_localizacion_preferida({
 		wkt : req.body.wkt,
@@ -207,21 +211,13 @@ router.post('/perfil/localizacion/update', function(req, res){
 });
 
 
-/*
- * Página para Cambiar contraseña 
- */
-router.get('/perfil/password/update', function(req, res, next){
+router.route('/perfil/password/actualizar')
+.get(function(req, res){
 	if(!req.user || !req.user.local.valid)
 		return res.status(500).json({type : 'error', status : 500, msg : req.i18n.__('debe_estar_logeado')});
 	res.render('cambiarPass.jade');
-});
-
-/*
-===============================================
-Método POST para cambiar contraseña
-===============================================
-*/
-router.post('/perfil/password/update', function(req, res){
+})
+.put(function(req, res){
 	if(!req.user || !req.user.local.valid)
 		return res.status(500).json({type : 'error', status : 500, msg : req.i18n.__('debe_estar_logeado')});
 
@@ -244,11 +240,20 @@ router.post('/perfil/password/update', function(req, res){
 	});
 });
 
+router.route('/reset/:token')
+.get(function(req, res, next) {
 
-/*
- * POST /app/usuarios/reset/:token
- */
-router.post('/reset/:token', function(req, res, next) {
+	usuarioModel.find_by_pass_token(req.params.token, function(error, user){
+		if(error){
+			if(error.i18n)
+				return res.status(500).json({type : 'error', status : 500, msg : req.i18n.__(error.i18n)});
+			else
+				return res.status(500).json({type : 'error', status : 500, msg : error.msg});
+		}
+		res.render('cambiarPass.jade', {token: req.params.token, usuario_cambiar: user});
+	});
+})
+.post(function(req, res, next) {
 
 	var opciones = {
 		token : req.params.token,
@@ -280,25 +285,13 @@ router.post('/reset/:token', function(req, res, next) {
 });
 
 /*
- * GET /app/usuarios/reset/:token
+ * 
  */
-router.get('/reset/:token', function(req, res, next) {
-
-	usuarioModel.find_by_pass_token(req.params.token, function(error, user){
-		if(error){
-			if(error.i18n)
-				return res.status(500).json({type : 'error', status : 500, msg : req.i18n.__(error.i18n)});
-			else
-				return res.status(500).json({type : 'error', status : 500, msg : error.msg});
-		}
-		res.render('cambiarPass.jade', {token: req.params.token, usuario_cambiar: user});
-	});
-});
-
-/*
- * POST Forgot -- Envía un mail para cambiar contraseña
- */
-router.post('/olvidaste', function(req, res, next) {
+router.route('/olvidaste')
+.get(function(req, res){
+	res.redirect('/app#olvidaste');
+})
+.post(function(req, res, next) {
 	console.log(req.body.email);
 	if(!req.body.email){
 		console.log('noemail');
@@ -399,18 +392,23 @@ router.get('/auth/facebook/callback', passport.authenticate('facebook', {
  */
 router.get('/auth/facebook', passport.authenticate('facebook', { scope : 'email' }));
 
-/*
- * Post Login
- */
-router.post('/iniciar', passport.authenticate('local-login', {
+// Rutas iniciar sesión
+router.route('/iniciar')
+.get(function(req, res) {
+	res.redirect('/app#iniciar');
+})
+.post(passport.authenticate('local-login', {
     successRedirect : '/app/usuarios/perfil', 
     failureRedirect : '/app#iniciar', 
     failureFlash : true 
 }));
-/*
- * POST SignUp
- */
-router.post('/registrarse', passport.authenticate('local-signup', {
+
+// Rutas registrarse
+router.route('/registrarse')
+.get(function(req, res) {
+	res.redirect('/app#registrarse');
+})
+.post(passport.authenticate('local-signup', {
     successRedirect : '/app', 
     failureRedirect : '/app',
     failureFlash : true
@@ -423,25 +421,6 @@ router.post('/registrarse', passport.authenticate('local-signup', {
 router.get('/logout', function(req, res) {
     req.logout();
     res.redirect('/app');
-});
-
-/*
- * GET /app/usuarios/forgot
- */
-router.get('/olvidaste', function(req, res){
-	res.redirect('/app#olvidaste');
-});
-/*
- * Renderizamos SignUp
- */
-router.get('/registrarse', function(req, res) {
-	res.redirect('/app#registrarse');
-});
-/*
- * Renderizamos LogIn
- */
-router.get('/iniciar', function(req, res) {
-	res.redirect('/app#iniciar');
 });
 
 /*

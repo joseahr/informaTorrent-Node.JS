@@ -12,6 +12,6 @@ module.exports = function (req, res, next) {
     	console.log('no');
 
     	req.flash('error', 'Debes estar loggeado');
-    	res.redirect('/app/login');
+    	res.redirect('/app#iniciar');
     }
 };

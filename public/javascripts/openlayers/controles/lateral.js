@@ -13,7 +13,8 @@ app.Lateral = function(opt_options) {
   	json = {},
   	denuncia_titulo = denuncia ? denuncia.titulo : '',
   	denuncia_contenido = denuncia ? decodeURIComponent(denuncia.descripcion) : '',
-  	post = denuncia ? '/app/denuncia?id=' + denuncia.gid + '&action=edit' : '/app/denuncias/nueva/save',
+  	url = denuncia ? '/app/denuncias/' + denuncia.gid : '/app/denuncias/nueva',
+  	metodo = denuncia ? 'PUT' : 'POST',
   	button = document.createElement('button'),
   	element = document.createElement('div'),
   	this_ = this,
@@ -73,7 +74,7 @@ app.Lateral = function(opt_options) {
 	
 			// Configuración del dropzone
 			$("#file-dropzone").dropzone({ 
-			    url: "/app/fileUpload?tempdir=" + random,
+			    url: "/app/denuncias/imagen/temporal?tempdir=" + random,
 			    maxFilesize: 4,
 			    maxFiles: 10,
 			    paramName: "file",
@@ -108,8 +109,8 @@ app.Lateral = function(opt_options) {
 			    		if(denuncia){
 			    			if(file.path)
 					    	    $.ajax({
-					 	           	url:'/app/deleteImagen?path=' + file.path,
-					 	           	type:'GET', // Método GET
+					 	           	url:'/app/denuncias/imagen?path=' + file.path,
+					 	           	type:'DELETE', // Método GET
 					 	           	data:{},
 					 	           	success:function(res){
 					 	        	   	// Aquí debería ir un mensaje :/
@@ -119,8 +120,8 @@ app.Lateral = function(opt_options) {
 					    	    });
 				    		else
 					    	    $.ajax({
-					 	           	url:'/app/deleteFile?tempdir='+ random + '&filename=' + file.name,
-					 	           	type:'GET', // Método GET
+					 	           	url:'/app/denuncias/imagen/temporal?tempdir='+ random + '&filename=' + file.name,
+					 	           	type:'DELETE', // Método GET
 					 	           	data:{},
 					 	           	success:function(res){
 					 	        		// Aquí debería ir un mensaje :/
@@ -129,8 +130,8 @@ app.Lateral = function(opt_options) {
 			    		} // if denuncia
 			    		else
 				    	    $.ajax({
-				 	           	url:'/app/deleteFile?tempdir='+ random + '&filename=' + file.name,
-				 	           	type:'GET', // Método GET
+				 	           	url:'/app/denuncias/imagen/temporal?tempdir='+ random + '&filename=' + file.name,
+				 	           	type:'DELETE', // Método GET
 				 	           	data:{},
 				 	           	success:function(res){
 				 	        	   
@@ -193,7 +194,7 @@ app.Lateral = function(opt_options) {
 				
 				var xhr = new XMLHttpRequest(); // Petición XMLHttpRequest
 				
-				xhr.open('POST', post , true); // Método POST
+				xhr.open(metodo, url , true); // Método POST
 				
 				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); // Especificamos cabecera
 
@@ -240,7 +241,7 @@ app.Lateral = function(opt_options) {
 							onshown : function(dialog){
 								setTimeout(function(){
 									dialog.close();
-									window.location.replace('/app/denuncia?id=' + res.denuncia.gid);
+									window.location.replace('/app/denuncias/' + res.denuncia.gid);
 								}, 2000);
 							},
 							// Cuando se cierre redirigimos al usuario 

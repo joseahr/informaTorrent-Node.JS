@@ -54,7 +54,7 @@ app.CQL = function(opt_options) {
 				  	if (capa == 'jahr:denuncias_poligonos') capa_aux = 'denuncias_poligonos';
 				  
 				  	var xhr = new XMLHttpRequest();
-				  	xhr.open('GET', '/app/getInfoTabla?tabla=' + capa_aux, true);
+				  	xhr.open('GET', '/info?tabla=' + capa_aux, true);
 				  	xhr.send();
 				  
 				  	xhr.onload = function(){

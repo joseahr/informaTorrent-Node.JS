@@ -8,12 +8,15 @@ function eliminar(id){
 		type: BootstrapDialog.TYPE_INFO,
 		buttons: [
 			{label: 'Aceptar', action: function(dialog){
-				$.post('/app/denuncia?id=' + id + '&action=delete',
-				function(res){
-					dialog.close();
-					$('#' + id).remove();
-					$('#has_realizado').html((parseInt($('#has_realizado').html()) -1) + ' ');
-					BootstrapDialog.alert(res);
+				$.ajax({
+					url : '/app/denuncias/' + id,
+					type : 'DELETE',
+					success : function(res){
+						dialog.close();
+						$('#' + id).remove();
+						$('#has_realizado').html((parseInt($('#has_realizado').html()) -1) + ' ');
+						BootstrapDialog.alert(res.msg);						
+					}
 				});
 			}}, 
 			{label: 'Cancelar', action: function(dialog){dialog.close();}}

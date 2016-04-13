@@ -7,6 +7,7 @@ var fs = require('fs'), // file System
 	config = require('../../config/upload.js'),
 	validator = require('validator'), // validator 
 	database = require('../../config/database.js'),
+	pgp = database.pgp,
 	db = database.db, 
 	dbCarto = database.dbCarto, 
 	consultas = require('../controllers/queries.js'),
@@ -22,6 +23,28 @@ function Denuncia(){
 	this_ = this;
 	usuarioModel = new usuarioModel();
 }
+
+Denuncia.prototype.find = function(filtro, callback){
+	// Consultas que se hagan de la api de denuncias
+
+	// formateamos la consulta
+	var query = consultas.denuncias_sin_where.query + filtro_denuncias(filtro);
+	// realizamos la consulta
+	db.query(query)
+	.then(function(denuncias){
+		// obtenemos las denuncias respecto a los criterios de búsqueda
+		denuncias.forEach(function(denuncia){
+			// Asignamos geometría
+			denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+		});
+		//console.log('denuncias api');
+		callback(null, {query: denuncias});					
+	})
+	.catch(function(error){
+		console.log(error.toString());
+		callback({type : 'error', msg : error.toString()});
+	});
+};
 
 Denuncia.prototype.find_by_id = function(id_denuncia, callback){
 	db.one(consultas.denuncia_por_id, id_denuncia)
@@ -59,8 +82,10 @@ Denuncia.prototype.comprobar_geometria = function(wkt, callback){
 		// Si la geometría poligonal supera los 5000 metros cuadrados
 		else if(wkt.match(/POLYGON/g) && geom_check.st_area > 5000)
 			callback({type : 'error', msg : 'denuncia_geometria_poligonal'});
+		else callback(null);
 	})
 	.catch(function(error){
+		console.log(error);
 		callback(error);
 	});
 };
@@ -116,7 +141,23 @@ Denuncia.prototype.subir_imagen_temporal = function(file, callback){
 			callback({type : 'error'})
 		});
 	}
-	else callback(null);
+	else callback(null, to);
+};
+
+Denuncia.prototype.sumar_visita = function(id_denuncia, id_usuario, callback){
+	this_.find_by_id(id_denuncia, function(error, denuncia){
+		if (denuncia.id_usuario == id_usuario)
+			return callback({type : 'error', msg : 'Denuncia Vista mismo usuario no incrementa'});
+		db.none(consultas.denuncia_vista, id_denuncia)
+		.then(function(){
+			console.log('incrementado veces_vista');
+			callback(null);
+		})
+		.catch(function(error){
+			console.log(error.toString());
+			callback(error);
+		});
+	});
 };
 
 Denuncia.prototype.añadir_comentario = function(opciones, callback){
@@ -131,16 +172,22 @@ Denuncia.prototype.añadir_comentario = function(opciones, callback){
 	// ejecutamos la consulta para añadir comentario
 	db.none(consultas.añadir_comentario, [id_usuario, id_denuncia, contenido])
 	.then(function(){
-		this_.find_by_id(id_denuncia, function(error, denuncia_){
-			denuncia = denuncia_;
-			var datos = JSON.stringify({contenido : contenido});
-			// Si es el propio usuario el que comenta su denuncia no enviamos la notificación
-			if(denuncia.id_usuario == user_id) 
-				callback(null, {type : 'error', msg : 'mismo_usuario'});
-			else
-				return db.one(consultas.notificar_denuncia_comentada, 
-					[id_denuncia, id_usuario_from, denuncia.id_usuario, contenido]);
-		});
+		return db.one(consultas.denuncia_por_id, id_denuncia);
+	})
+	.then(function(denuncia_){
+		denuncia = denuncia_;
+		denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+		var datos = JSON.stringify({contenido : contenido});
+		// Si es el propio usuario el que comenta su denuncia no enviamos la notificación
+		console.log(id_usuario, denuncia.id_usuario);
+		if(denuncia.id_usuario == id_usuario){
+			var error = new Error('mismo_usuario');
+			error.mismo_usuario = true;
+			throw error;
+		}
+		else
+			return db.one(consultas.notificar_denuncia_comentada, 
+				[id_denuncia, id_usuario, denuncia.id_usuario, datos]);
 	})
 	.then(function(notificacion){
 		if(clients[denuncia.id_usuario]){
@@ -157,13 +204,16 @@ Denuncia.prototype.añadir_comentario = function(opciones, callback){
 		}
 	})
 	.catch(function(error){
-		callback(error);
+		console.log(error);
+		if(error.mismo_usuario)
+			callback(null, {type : 'error', msg : 'mismo_usuario'});
+		else
+			callback(error);
 	});
 
 };
 
 Denuncia.prototype.guardar = function(opciones, callback){
-	
 	var usuarios_cerca = [];
 	var usu_from; // Usuario denuncia
 
@@ -191,6 +241,7 @@ Denuncia.prototype.guardar = function(opciones, callback){
 		let denuncia = yield this.one(consultas.insert_denuncia, [titulo, contenido, id_usuario]);
 		// Asignamos a la variable denuncia_io la denuncia 
 		denuncia_io = denuncia;
+		denuncia_io.wkt = wkt;
 
 		// Leemos el directorio temporal asignado a la denuncia
 		var files = fs.readdirSync(config.TEMPDIR + "/" + tempDirID);
@@ -222,7 +273,7 @@ Denuncia.prototype.guardar = function(opciones, callback){
 		// Ejecutamos las consultas
 		return t.batch(q);	
 	})
-	.then (function(){			
+	.then (function(){		
 		// La denuncia se ha añadido correctamente
 		//console.log(denuncia_io + ' new denuncia addedd');
 		// Emitimos a todos los usuarios y a mi que hemos añadido una denuncia
@@ -234,47 +285,54 @@ Denuncia.prototype.guardar = function(opciones, callback){
 				global.clients[id_usuario][sid].emit('new_denuncia', {denuncia: denuncia_io});
 			break;
 		}
+		return 	db.any(consultas.usuarios_cerca_de_denuncia, [wkt, id_usuario]);
 		// Ejecutamos la conulta para buscar usuarios cerca  informarles de que
 		// hemos añadido una denuncia cerca de su ubicación
-		this_.get_usuarios_cerca(wkt, id_usuario, function(error, usuarios_cerca){
-			// Si no hay usuarios cerca...
-			if(usuarios_cerca.length == 0) {
-				console.log('NO HAY USUARIOS AFECTADOS');
-				// Enviamos un mensaje de que la denuncia se ha guardado correctamente
-				callback(null, {
-					type: 'success', 
-					msg: 'Denuncia guardada correctamente',
-					denuncia: denuncia_io,
-					num_usuarios_afectados : usuarios_cerca.length
-				});
-			}
-			// Si hay usuarios cerca...
-			else {
-				console.log('HAY ' + usuarios_cerca.length + ' USUARIOS AFECTADOS');
-				// Asignamos a la variable usuarios_cerca los usuarios
-				Usuario.find_by_id(id_usuario, function(error, usuario_from){
-					usu_from = usuario_from;
-					// Denuncia que hemos añadido
-					this_.find_by_id(id_usuario, function(error, denuncia){
-						// Asignamos
-						denuncia_io = denuncia;
-						// ejecutamos tarea
-						return db.tx(function (t){
-							var q = []; // Consultas
-							// Recorremos los usuarios cerca
-							usuarios_cerca.forEach(function(user){
-								// Guardamos la distancia buffer del usuario en una variable
-								var datos = JSON.stringify({distancia : user.distancia});
-								// Añadimos la consulta para añadir notificación en la base de datos
-								q.push(db.one(consultas.notificar_denuncia_cerca, 
-									[denuncia_io.gid, id_usuario, user._id, datos]));
-							});
-							// Ejecutamos la conulta
-							return t.batch(q);
-						});
-					});
-				});
-			}
+	})
+	.then(function(usuarios_cerca_){
+		usuarios_cerca = usuarios_cerca_;
+		console.log(usuarios_cerca_);
+		if(usuarios_cerca.length == 0) {
+			console.log('NO HAY USUARIOS AFECTADOS');
+			var error = new Error('no_usuarios_afectados');
+			error.no_usuarios_afectados = true;
+			// Enviamos un mensaje de que la denuncia se ha guardado correctamente
+			callback(null, {
+				type: 'success', 
+				msg: 'Denuncia guardada correctamente',
+				denuncia: denuncia_io,
+				num_usuarios_afectados : 0
+			});
+			throw error;
+		}
+		// Si hay usuarios cerca...
+		else {
+			console.log('HAY ' + usuarios_cerca.length + ' USUARIOS AFECTADOS');
+			return db.one(consultas.usuario_por_id, id_usuario);
+		} // If - Else No hay usuarios cerca
+	})
+	.then(function(usuario_from){
+		usu_from = usuario_from;
+		return db.one(consultas.denuncia_por_id, denuncia_io.gid);
+	})
+	.then(function(denuncia){
+		// Asignamos
+		denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+		denuncia_io = denuncia;
+		// ejecutamos tarea
+		return db.tx(function (t){
+			var q = []; // Consultas
+			// Recorremos los usuarios cerca
+			console.log(usuarios_cerca);
+			usuarios_cerca.forEach(function(user){
+				// Guardamos la distancia buffer del usuario en una variable
+				var datos = JSON.stringify({distancia : user.distancia});
+				// Añadimos la consulta para añadir notificación en la base de datos
+				q.push(db.one(consultas.notificar_denuncia_cerca, 
+					[denuncia_io.gid, id_usuario, user._id, datos]));
+			});
+			// Ejecutamos la conulta
+			return t.batch(q);
 		});
 	})
 	.then(function(notificaciones){
@@ -299,7 +357,9 @@ Denuncia.prototype.guardar = function(opciones, callback){
 		});
 	})
 	.catch(function(error){
-		callback(error);
+		console.log('error denuncia', !error.no_usuarios_afectados);
+		if(!error.no_usuarios_afectados)
+			callback(error);
 	});
 }; // Fin saveDenuncia
 
@@ -404,8 +464,8 @@ Denuncia.prototype.editar = function(opciones, callback){
 	
 	var denuncia_io = {}; // objeto denuncia
 	// Asignamos más valores a la denuncia--> gid, id_usuario
-	denuncia_io.id_usuario = user_id;
-	denuncia_io.gid = id;
+	denuncia_io.id_usuario = id_usuario;
+	denuncia_io.gid = id_denuncia;
 
 	// tipo de geometría introducida
 	var tipo = wkt.match(/LINESTRING/g) ? 'LineString' : (wkt.match(/POLYGON/g) ? 'Polygon': 'Point');
@@ -441,7 +501,7 @@ Denuncia.prototype.editar = function(opciones, callback){
 		}
 
 		// Consulta síncrona para borrar todos los tags de la denuncia
-		let borrar_tags = yield t.none(consultas.delete_all_tags, id);
+		let borrar_tags = yield t.none(consultas.delete_all_tags, id_denuncia);
 		//console.log('borrar ', borrar);
 		// tipo de geometría que tenía anteriormente
 		var tipo_ant = denuncia_original.geometria.type;
@@ -483,6 +543,7 @@ Denuncia.prototype.editar = function(opciones, callback){
 		callback(null, {
 			type: 'success', 
 			msg: 'Denuncia actualizada correctamente',
+			denuncia : denuncia_io
 		});
 	})
 	.catch(function(error){
@@ -510,3 +571,62 @@ Denuncia.prototype.denuncias_visor = function(callback){
 };
 
 module.exports = Denuncia;
+
+/*
+ * Función de filtro para consultar denuncias por sus atributos
+ */
+
+function filtro_denuncias(filter){
+    var cnd = []; // Condiciones
+    
+    // Nombre like
+    if (filter.titulo){
+    	cnd.push(pgp.as.format("titulo ilike '%$1^%'", filter.titulo.replace(' ', '_').toLowerCase()));
+    }
+    // Tags like
+    if(filter.tags){
+    	var q = '';
+    	filter.tags.forEach(function(tag, index){
+    		tag = tag.toLowerCase();
+    		if(index == 0) q += "tag ilike '%" + tag + "%' ";
+    		else q += "or tag ilike '%" + tag + "%' "
+    	});
+    	cnd.push(pgp.as.format("gid in (select id_denuncia from tags where " + q + ")"));
+    }
+    // Buffer
+    if(filter.lat && filter.lon && filter.buffer_radio){
+    	cnd.push(pgp.as.format("(st_distance(st_transform(x.geom_pt, 25830), st_transform(st_geomfromtext('POINT(" + 
+    		filter.lon.replace(',', '.') + ' ' + 
+    		filter.lat.replace(',', '.') + ")', 4258), 25830)) < " + 
+    		filter.buffer_radio + " or " + 
+    		"st_distance(st_transform(x.geom_li, 25830), st_transform(st_geomfromtext('POINT(" + 
+    		filter.lon.replace(',', '.') + ' ' + 
+    		filter.lat.replace(',', '.') + ")', 4258), 25830)) < " + 
+    		filter.buffer_radio + " or " +
+    		"st_distance(st_transform(x.geom_po, 25830), st_transform(st_geomfromtext('POINT(" + 
+    		filter.lon.replace(',', '.') + ' ' + 
+    		filter.lat.replace(',', '.') + ")', 4258), 25830)) < " + 
+    		filter.buffer_radio + ")")
+    	);
+    }
+    // BBOX
+    if(filter.bbox){
+    	cnd.push('(x.geom_pt && st_makeEnvelope(' + filter.bbox + ') or ' + 
+    		'x.geom_li && st_makeEnvelope(' + filter.bbox + ') or ' + 
+    		'x.geom_po && st_makeEnvelope(' + filter.bbox + '))');
+    }
+    // Nombre Usuario
+    if(filter.usuario_nombre){
+    	cnd.push("id_usuario = (select _id from usuarios where profile ->> 'username' ilike '%" + filter.usuario_nombre.toLowerCase() + "%')");
+    }
+    // Fecha desde
+    if(filter.fecha_desde){
+    	cnd.push("fecha > date '" + filter.fecha_desde[2] + "-" + filter.fecha_desde[1] + "-" + filter.fecha_desde[0] + "'");
+    }
+    // Fecha hasta
+    if(filter.fecha_hasta){
+    	cnd.push("fecha < date '" + filter.fecha_hasta[2] + "-" + filter.fecha_hasta[1] + "-" + filter.fecha_hasta[0] + "'");
+    }
+    //console.log(cnd.join(' and '));
+    return cnd.join(" and ");
+};

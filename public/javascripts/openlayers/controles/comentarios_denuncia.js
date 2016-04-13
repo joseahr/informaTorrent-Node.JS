@@ -10,7 +10,7 @@ app.ComentariosDenuncia = function(opt_options, denuncia, user) {
   	button = document.createElement('button'),
   	this_ = this,
   	num_coments = denuncia.comentarios ? (denuncia.comentarios.length > 10 ? '10+' : denuncia.comentarios.length) : '0',
-  	form = user ? '<h4>Añade un comentario</h4><form id="form_add_comentario" action="/app/denuncia/' + denuncia.gid + '/addComentario" method="post">' + 
+  	form = user ? '<h4>Añade un comentario</h4><form id="form_add_comentario" action="/app/denuncias/' + denuncia.gid + '/comentar" method="post">' + 
 		'<textarea id="comentar" name="contenido" rows="3" style="height:200px" class="form-control"></textarea>' + 
 	  	'<div style="margin-top:5px;margin-bottom:15px" class="col-lg-12 input-group space"><span class="input-group-addon"><i class="fa fa-comment fa-fw"></i></span>' +
 	    	'<input type="submit" value="Comentar" class="form-control btn-success"/>' +
@@ -46,7 +46,7 @@ app.ComentariosDenuncia = function(opt_options, denuncia, user) {
 				//alert(contenido);
 				var xhr = new XMLHttpRequest();
 
-				xhr.open('POST','/app/denuncia?id=' + denuncia.gid + '&action=add_coment' , true);
+				xhr.open('POST','/app/denuncias/' + denuncia.gid + '/comentar' , true);
 				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); // Especificamos cabecera
 				xhr.send(JSON.stringify({contenido: encodeURIComponent(contenido)})); // Enviamos petición
 				
