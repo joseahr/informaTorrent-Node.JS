@@ -17,9 +17,11 @@ var mis_consultas = {
 			por_id : sql('select', 'denuncias/por_id.sql'),
 			por_pagina : sql('select', 'denuncias/por_pagina.sql'),
 			sin_where : sql('select', 'denuncias/sin_where.sql'),
+			sin_where_gml : sql('select', 'denuncias/sin_where_gml.sql'),
 			me_gusta : sql('select', 'denuncias/me_gusta.sql'),
 			visor : sql('select', 'denuncias/visor.sql'),
-			por_path_imagen : sql('select', 'denuncias/por_path_imagen.sql')
+			por_path_imagen : sql('select', 'denuncias/por_path_imagen.sql'),
+			is_equal : sql('select', 'denuncias/is_equal.sql')
 		},
 		geoportal : {
 			info_tabla : sql('select', 'geoportal/info_tabla.sql')
@@ -68,9 +70,11 @@ var mis_consultas = {
 			poligono :sql('update', 'denuncias/poligono.sql'),
 			denuncia : sql('update', 'denuncias/denuncia.sql'),
 			vista : sql('update', 'denuncias/vista.sql'),
+			titulo : sql('update', 'denuncias/set_titulo.sql'),
+			contenido : sql('update', 'denuncias/set_contenido.sql')
 		},
 		usuarios : {
-			contraseña_perfil : sql('update', 'usuarios/contraseña_perfil.sql'),
+			contraseña : sql('update', 'usuarios/contraseña.sql'),
 			deslincar_facebook : sql('update', 'usuarios/deslincar_facebook.sql'),
 			deslincar_twitter : sql('update', 'usuarios/deslincar_twitter.sql'),
 			facebook : sql('update', 'usuarios/facebook.sql'),
@@ -92,6 +96,7 @@ var mis_consultas = {
 			linea : sql('delete', 'denuncias/linea.sql'),
 			poligono : sql('delete', 'denuncias/poligono.sql'),
 			denuncia : sql('delete', 'denuncias/denuncia.sql'),
+			tag : sql('delete', 'denuncias/tag.sql'),
 			all : {
 				tags : sql('delete', 'denuncias/all/tags.sql'),
 				likes : sql('delete', 'denuncias/all/likes.sql'),

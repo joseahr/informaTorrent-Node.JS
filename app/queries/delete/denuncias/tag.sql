@@ -1,0 +1,1 @@
+DELETE FROM tags WHERE tag = $1 AND id_denuncia = $2

@@ -52,9 +52,18 @@ app.ComentariosDenuncia = function(opt_options, denuncia, user) {
 				
 				$(this).find('.input-group').parent().append('<div style="text-align: center"><i class="fa fa-spinner fa-spin fa-5x" style="color: #339BEB"></i><p>Enviando Comentario...</p></div>');
 				$(this).find('.input-group').hide();
-
-				xhr.onload = function(){
-					window.location.replace('/app/denuncia/' + denuncia.gid);
+				
+				xhr.onreadystatechange = function(){
+					if(xhr.status === 200 && xhr.readyState === 4)
+						window.location.replace('/app/denuncias/' + denuncia.gid);
+					else if(xhr.status === 500 && xhr.readyState === 4)
+						BootstrapDialog.show({
+							title : 'ERROR',
+							message : JSON.parse(xhr.responseText).msg,
+							onshown : function(dialog){
+								$(dialog.getModalHeader()).css('background', '#800000');
+							}
+						});
 				}
 				return false;
 			});

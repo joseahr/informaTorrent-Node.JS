@@ -44,6 +44,8 @@ module.exports = {
 		
 		delete_all_imagenes : helper.delete.denuncias.all.imagenes,
 
+		eliminar_tag : helper.delete.denuncias.tag,
+
 		eliminar_imagen_denuncia : helper.delete.denuncias.imagen,
 
 		eliminar_like : helper.delete.denuncias.like,
@@ -65,6 +67,8 @@ module.exports = {
 		
 		denuncias_sin_where : helper.select.denuncias.sin_where, 
 
+		denuncias_sin_where_gml : helper.select.denuncias.sin_where_gml,
+
 		comprobar_geometria : function(wkt){
 			if (wkt.match(/POINT/g))
 				return helper.select.denuncias.comprobar_geometria_puntual;
@@ -73,6 +77,8 @@ module.exports = {
 			else if(wkt.match(/POLYGON/g))
 				return helper.select.denuncias.comprobar_geometria_poligonal;
 		},
+
+		is_equal : helper.select.denuncias.is_equal,
 
 		numero_denuncias : helper.select.denuncias.num_total,
 	  	
@@ -123,6 +129,10 @@ module.exports = {
 		obtener_datos_app : helper.select.app.datos,
 
 	  	//Update
+	  	set_titulo : helper.update.denuncias.titulo,
+
+	  	set_contenido : helper.update.denuncias.contenido,
+
 	  	denuncia_vista : helper.update.denuncias.vista,
 	  	
 	  	actualizar_geometria : function(tipo){
@@ -137,8 +147,6 @@ module.exports = {
 		actualizar_denuncia : helper.update.denuncias.denuncia,
 
 
-
-	  	actualizar_info_usuario : helper.update.usuarios.contraseña_perfil,
 	  		
 	  	actualizar_perfil : helper.update.usuarios.perfil,
 		
@@ -160,6 +168,8 @@ module.exports = {
 	  	
 	  	set_facebook_usuario : helper.update.usuarios.facebook, 
 
-	  	set_twitter_usuario : helper.update.usuarios.twitter, 	  	
+	  	set_twitter_usuario : helper.update.usuarios.twitter,
+
+	  	actualizar_contraseña : helper.update.usuarios.contraseña 	  	
 	  	
 }

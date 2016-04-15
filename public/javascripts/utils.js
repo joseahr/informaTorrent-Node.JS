@@ -79,7 +79,7 @@ function getFechaFormatted(fecha){
 
 function getIconoNotificacion(noti, traduc){
 	var tipo = noti.tipo;
-	var html= traduc.ir_a_denuncia + ' <a target="_blank" href="/app/denuncia/' + noti.denuncia.gid + '"><span class="fa-stack fa-lg">' +
+	var html= traduc.ir_a_denuncia + ' <a target="_blank" href="/app/denuncias/' + noti.denuncia.gid + '"><span class="fa-stack fa-lg">' +
 			   		'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB"></i>' +
 			   		'<i class="fa fa-angle-right fa-stack-1x fa-inverse"></i>' +
 			   '</span></a>';
@@ -140,21 +140,21 @@ function getInfoAccion(noti, traduc){
 	var id_usuario_to = noti.id_usuario_to;
 	var username = noti.profile_to.username;
 	if(noti.tipo == 'DENUNCIA_CERCA'){
-		return '<p>' + traduc.has_publicado_denuncia_cerca + ' <a href="/app/usuarios?id=' + id_usuario_to + '">' + username + '</a></p>' +
+		return '<p>' + traduc.has_publicado_denuncia_cerca + ' <a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a></p>' +
 				'<p>' + traduc.distancia + ' : ' + noti.datos.distancia.toFixed(3) + ' ' + traduc.metros + '</p>' +
 				'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';
 	}
 	else if(noti.tipo == 'COMENTARIO_DENUNCIA'){
 		return '<p>' + traduc.comentaste + ': <i>"' + $(decodeURIComponent(noti.datos.contenido)).text().substring(0,20)  + '..."</i> ' + traduc.en_la_denuncia_de + ' ' +
-			'<a href="/app/usuarios?id=' + id_usuario_to + '">' + username + '</a></p>' + 
+			'<a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a></p>' + 
 			'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';
 	}
 	else if(noti.tipo == 'LIKE_DENUNCIA'){
-		return '<p>' + traduc.me_gusta_denuncia + ' <a href="/app/usuarios?id=' + id_usuario_to + '">' + username + '</a></p>' +
+		return '<p>' + traduc.me_gusta_denuncia + ' <a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a></p>' +
 			'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';		
 	}
 	else if(noti.tipo === 'NO_LIKE_DENUNCIA'){
-		return '<p>' + traduc.no_me_gusta_denuncia + ' <a href="/app/usuarios?id=' + id_usuario_to + '">' + username + '</a></p>' +
+		return '<p>' + traduc.no_me_gusta_denuncia + ' <a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a></p>' +
 			'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';			
 	}		
 }
@@ -181,13 +181,13 @@ function getDenunciaRow(denuncia, tabla){
 
 	if (!tabla) {
 		clas = 'thumbnail';
-		menu = '<a target="_blank" href="/app/denuncia?id=' + id + '" style="margin: 0px auto;">' + icono('fa-eye', '#55acee') + '</a>' +
-				'<a target="_blank" href="/app/denuncia?id=' + id + '&action=get_edit_page" style="margin: 0px auto;">' + icono('fa-edit', '#ec971f') + '</a>' +
+		menu = '<a target="_blank" href="/app/denuncias/' + id + '" style="margin: 0px auto;">' + icono('fa-eye', '#55acee') + '</a>' +
+				'<a target="_blank" href="/app/denuncias/' + id + '/actualizar" style="margin: 0px auto;">' + icono('fa-edit', '#ec971f') + '</a>' +
 				'<a id="' + id + '" onclick="eliminar(this.id)" href="#" style="margin: 0px auto;">' + icono('fa-trash', '#d9534f') + '</a>';
 	}
 	else {
-		menu = '<a target="_blank" href="/app/denuncia?id=' + id + '" style="margin: 0px auto;">' + icono('fa-eye', '#55acee') + '</a>' +
-				'<a target="_blank" href="/app/usuarios?id=' + denuncia.usuario[0]._id + '" style="margin: 0px auto;">' + 
+		menu = '<a target="_blank" href="/app/denuncias/' + id + '" style="margin: 0px auto;">' + icono('fa-eye', '#55acee') + '</a>' +
+				'<a target="_blank" href="/app/usuarios/' + denuncia.usuario[0]._id + '" style="margin: 0px auto;">' + 
 					'<span class="fa-stack fa-lg" style="color: #ec971f">' +
   						'<img src="' + denuncia.usuario[0].profile.picture + '" style="padding: 2px; object-fit: cover; width: 40px; height: 40px;" class="fa fa-circle fa-stack-2x img-circle"></img>' +
 					'</span>' +
@@ -253,8 +253,8 @@ function getNotificacionRow(notificacion, trad){
 			'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getFechaFormatted(fecha) + ' <i class="fa fa-clock-o"></i> </p>' + 																
 			'<div class="media" style="margin : 0 20 0 20px;">' + 
 				'<a class="media-left" style="width:100px; float:left;">' + 
-					'<img onclick="window.open(&#39;/app/usuarios?id=' + notificacion.id_usuario_from + '&#39;)" src="' + notificacion.profile_from.picture + '" style="width: 100px; height: 100px;" class=" media-object img-circle img-thumbnail">' +
-					'<img onclick="window.open(&#39;/app/denuncia?id=' + notificacion.denuncia.gid + '&#39;)" src="' + getGeoserverMiniatura(notificacion.denuncia, 100) + '" style="width: 100px; height: 100px;" class=" media-object img-thumbnail">' +
+					'<img onclick="window.open(&#39;/app/usuarios/' + notificacion.id_usuario_from + '&#39;)" src="' + notificacion.profile_from.picture + '" style="width: 100px; height: 100px;" class=" media-object img-circle img-thumbnail">' +
+					'<img onclick="window.open(&#39;/app/denuncias/' + notificacion.denuncia.gid + '&#39;)" src="' + getGeoserverMiniatura(notificacion.denuncia, 100) + '" style="width: 100px; height: 100px;" class=" media-object img-thumbnail">' +
 				'</a>' + 
 				'<div class="media-body" style="padding: 30 20 30 20px; text-align: left; overflow-x: hidden; ">' + getInfoNotificacion(notificacion, trad) + '</div>'+ 
 			'</div>' + 
@@ -283,8 +283,8 @@ function getAccionRow(notificacion, trad){
 		'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getFechaFormatted(fecha) + ' <i class="fa fa-clock-o"></i> </p>' + 																
 		'<div class="media" style="margin : 0 20 0 20px;">' + 
 			'<a class="media-left" style="width:100px;">' + 
-				'<img onclick="window.open(&#39;/app/usuarios?id=' + notificacion.id_usuario_to + '&#39;)" src="' + notificacion.profile_to.picture + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-circle img-thumbnail">' +
-				'<img onclick="window.open(&#39;/app/denuncia?id=' + notificacion.denuncia.gid + '&#39;)" src="' + getGeoserverMiniatura(notificacion.denuncia, 100) + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-thumbnail">' +
+				'<img onclick="window.open(&#39;/app/usuarios/' + notificacion.id_usuario_to + '&#39;)" src="' + notificacion.profile_to.picture + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-circle img-thumbnail">' +
+				'<img onclick="window.open(&#39;/app/denuncias/' + notificacion.denuncia.gid + '&#39;)" src="' + getGeoserverMiniatura(notificacion.denuncia, 100) + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-thumbnail">' +
 			'</a>' +  
 			'<div class="media-body" style="padding: 30 20 30 20px; text-align: left;overflow-x: hidden; ">' + getInfoAccion(notificacion, trad) + '</div>'+ 								
 		'</div>' + 

@@ -1,4 +1,4 @@
-extends map-layout
+extends ../base/map_layout
 
 // block script
 block script
@@ -7,9 +7,9 @@ block script
 		
 		map.addControl(new app.Draw(false, true));
 		
-		if('!{loc_pref}' != ''){
+		if('!{location_pref}' != ''){
 			feature = new ol.Feature({
-				geometry: new ol.geom.Point(JSON.parse('!{JSON.stringify(loc_pref)}').coordinates),
+				geometry: new ol.geom.Point(JSON.parse('!{JSON.stringify(location_pref)}').coordinates),
 				name: 'Ubicación Preferida'
 			});
 			

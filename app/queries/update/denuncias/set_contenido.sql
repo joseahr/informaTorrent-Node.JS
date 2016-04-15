@@ -1,0 +1,1 @@
+UPDATE denuncias SET descripcion = $1 WHERE gid = $2

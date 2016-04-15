@@ -11,12 +11,13 @@ var formatsAllowed = 'png|jpg|jpeg|gif'; // Podríamos poner más
 var bcrypt   = require('bcrypt-nodejs');
 var this_;
 var db = require('../../config/database.js').db;
+var path = require('path');
 /*
  * Constructor
  */
 function Usuario(){
 	this_ = this;
-};
+}
 /*
 =================================================================
 Buscar a un usuario por id
@@ -28,6 +29,7 @@ Usuario.prototype.find_by_id = function(id, callback){
 		callback(null, user);
 	})
 	.catch(function(error){
+		console.log(error);
 		callback({type : 'error', msg : error.toString()});
 	});
 };
@@ -81,7 +83,7 @@ Buscar por username
 =================================
 */
 Usuario.prototype.find_by_username = function(username, callback){
-	db.one(consultas.usuario_username, username)
+	db.one(consultas.usuario_por_username, username)
 	.then(function(user){
 		callback(null, user);		
 	})
@@ -199,35 +201,14 @@ Función que permite al usuario cambiar la contraseña
 }
 =================================
 */
-Usuario.prototype.cambiar_pass = function(opciones, callback){
-
-	if (opciones.password_nueva != opciones.password_nueva_repeat)
-		return callback({type : 'error', i18n : 'contraseña_coincidir'});
-	// Contraseña original que escribe el Usuario_ en el formulario
-	var password_original = opciones.password_original;
-	// Contraseña nueva que escribe el Usuario_ en el formulario
-	var password_nueva = opciones.password_nueva;
-	// Contraseña nueva repeat que escribe el Usuario_ en el formulario
-	var password_nueva_repeat = opciones.password_nueva_repeat;
-	
-	// Hacemos la consulta
-	this.find_by_email(opciones.email, function(error, user){
-		// Ha habido un error obtenido el usuario
-		if (error) return callback(error);
-		// Contraseña original y pasada no coinciden
-		if(!this_.validPassword(password_original, user.password))
-			return callback({type : 'error', i18n : 'contraseña_coincide_original'});
-		// Actualizamos contraseña
-		user.local.password = this_.generateHash(password_nueva);
-		// Ejecutamos consulta
-		db.none(consultas.actualizar_local_usuario, [JSON.stringify(user.local), user._id])
-		.then(function(){
-			callback(null, {type : 'success', i18n : 'contraseña_actualizada'});
-		})
-		.catch(function(error){
-			callback({type : 'error', msg : error.toString()});
-		});
-
+Usuario.prototype.cambiar_pass = function(password, id_usuario, callback){
+	// Ejecutamos consulta
+	db.none(consultas.actualizar_contraseña, [this_.generateHash(password), id_usuario])
+	.then(function(){
+		callback(null);
+	})
+	.catch(function(error){
+		callback({type : 'error', msg : error.toString()});
 	});
 };
 /*
@@ -240,29 +221,14 @@ Usuario.prototype.cambiar_pass = function(opciones, callback){
  }
  ======================================
  */
-Usuario.prototype.cambiar_pass_token = function(opciones, callback) {
-	
-	var user;	
-    if (opciones.password != opciones.passwordRepeat)
-		return callback({type : 'error', i18n : 'contraseña_coincidir'});
-
-    this.find_by_pass_token(opciones.token, function(error, user_){
-
-    	if(error) return callback(error);
-
-		if(!user_)
-			return callback({type : 'error', i18n : 'url_no_valida_expirada'});
-
-		user = user_;
-
-		db.none(consultas.actualizar_password_reset_token, [this_.generateHash(opciones.password), user._id])
-		.then(function(){
-			callback(null, user);
-		})
-		.catch(function(error){
-			callback({type : 'error', msg : error.toString()});
-		});
-    });
+Usuario.prototype.cambiar_pass_token = function(password, id_usuario, callback) {
+	db.none(consultas.actualizar_password_reset_token, [this_.generateHash(password), id_usuario])
+	.then(function(){
+		callback(null);
+	})
+	.catch(function(error){
+		callback({type : 'error', msg : error.toString()});
+	});
 };
 /*
 ===========================================================================
@@ -304,22 +270,11 @@ Confirmar usuario que aún no es válido
 }
 ==============================================================================
 */
-Usuario.prototype.confirmar = function(id_usuario, callback){
-	
-	var user_;
-
-	db.oneOrNone(consultas.usuario_por_id , id_usuario)
-	.then(function(user){
-		if(user.local.valid) 
-			callback({type : 'error', i18n : 'usuario_valido'});
-		else {
-			user.local.valid = true;
-			user_ = user;
-			return db.none(consultas.actualizar_local_usuario, [JSON.stringify(user.local) , user._id]);
-		}
-	})
+Usuario.prototype.confirmar = function(user, callback){
+	user.local.valid = true;
+	db.none(consultas.actualizar_local_usuario, [JSON.stringify(user.local) , user._id])
 	.then(function(){
-		callback(null, user_);
+		callback(null);
 	})
 	.catch(function(error){
 		callback({type : 'error', msg : error.toString()});
@@ -335,12 +290,9 @@ Perfil visible para los demás usuarios
 ================================================================
 */
 Usuario.prototype.perfil_visible = function(id_usuario, callback){
-	db.oneOrNone(consultas.perfil_otro_usuario, id_usuario)
+	db.one(consultas.perfil_otro_usuario, id_usuario)
 	.then(function(usuario){
-		if(!usuario) callback({type : 'error', i18n : 'parametro_no_valido'})
-		//console.log('usuario :' + JSON.stringify(usuario));
-		else
-			callback(null, usuario);
+		callback(null, usuario);
 	})
 	.catch(function(error){
 		callback({type : 'error', msg : error.toString()});
@@ -435,19 +387,11 @@ Editar perfil
 }
 ===============================================================
 */
-Usuario.prototype.update = function(opciones, callback){
-	var aux = opciones.new_username || '1';
-	var user = opciones.user;
-	db.query(consultas.usuario_por_username, opciones.new_username)
-	.then(function(usuario){
-		if(usuario[0]) callback({type : 'error', i18n : 'nombre_usuario_existe'})
-		else {
-			user.profile.username = opciones.new_username || user.profile.username;
-			return db.none(consultas.actualizar_info_usuario, [user.password, JSON.stringify(user.profile), user._id]);
-		}
-	})
+Usuario.prototype.update = function(user, callback){
+
+	db.none(consultas.actualizar_perfil, [JSON.stringify(user.profile), user._id])
 	.then(function(){
-		callback(null, {type : 'success', i18n : 'perfil_actualizado'});
+		callback(null);
 	})
 	.catch(function(error){
 		callback({type : 'error', msg : error.toString()});
@@ -462,66 +406,16 @@ Cambiar imagen de perfil
 }
 =================================================================
 */
-Usuario.prototype.cambiar_imagen_perfil = function(opciones, callback) {
-
-	var file = opciones.file;
-	var extension = path.extname(file.path);
-    var user = opciones.user;
-    var sub = '/files/usuarios';
-
-    if(user.profile.picture.indexOf(sub) > -1){
-    	console.log('eliminando imagen anterior');
-    	// Tenía una imagen subida
-    	fs.unlink(path.join('./public', user.profile.picture), function(err){
-    		if(err) console.log(err); // No debería ocurrir
-    	});
-    }
-    
-	user.profile.picture = path.join('/files/usuarios', path.basename(file.path));
-    
+Usuario.prototype.cambiar_imagen_perfil = function(user, callback){ 
     db.none(consultas.actualizar_perfil, [JSON.stringify(user.profile), user._id])
 	.then(function(){
-		for (var socketId in global.clients[req.user._id])
-			global.clients[req.user._id][socketId].emit('imagen cambiá', {path : user.profile.picture});
-		callback(null, {
-			type: 'success', 
-			i18n: 'imagen_perfil_actualizada',
-			path: user.profile.picture
-		});
+		for (var socketId in global.clients[user._id])
+			global.clients[user._id][socketId].emit('imagen cambiá', {path : user.profile.picture});
+		callback(null, user.profile.picture);
 	})
 	.catch(function(error){
 		callback({type : 'error', msg : error.toString()});
 	});
-};
-/*
-===============================================================================
-Cambiar imagen de perfil con gravatar
-@user
-===============================================================================
-*/
-Usuario.prototype.cambiar_imagen_perfil_gravatar = function(user, callback){
-
-	var user = opciones.user;
-	var sub = '/files/usuarios';
-
-	if(user.profile.picture.indexOf(sub) > -1){
-    	fs.unlink(path.join('./public', user.profile.picture), function(err){
-    		console.log('imagen anterior eliminada');
-    		if(err) console.log(err); // No debería ocurrir
-    	});
-	}
-	
-	user.profile.picture = this_.gravatar(user.local.email);
-	
-	db.none(consultas.actualizar_perfil, [JSON.stringify(user.profile), user._id])
-	.then(function(){
-		for (var socketId in global.clients[req.user._id])
-			global.clients[req.user._id][socketId].emit('imagen cambiá', {path : user.profile.picture});
-		callback(null, {type : 'success', i18n : 'imagen_perfil_actualizada', path: user.profile.picture});
-	})
-	.catch(function(error){
-		callback({type : 'error', msg : error.toString()});
-	});	
 };
 /*
 ================================================================
@@ -530,9 +424,9 @@ Obtener localización preferida del usuario
 ================================================================
 */
 Usuario.prototype.get_localizacion_preferida = function(id_usuario, callback){
-	db.one(consultas.obtener_loc_preferida, opciones.user._id)
+	db.one(consultas.obtener_loc_preferida, id_usuario)
 	.then(function(location){
-		callback(null, {type : 'success', loc_pref: location.loc_pref});
+		callback(null, location.loc_pref);;
 	})
 	.catch(function(error){
 		callback({type : 'error', msg : error.toString()});
@@ -554,16 +448,9 @@ Usuario.prototype.update_localizacion_preferida = function(opciones, callback){
 	var distancia = opciones.distancia;
 	var id_usuario = opciones.id_usuario;
 
-	dbCarto.one(consultas.comprobar_geometria(wkt), wkt)
-	.then(function(check_geom){
-		if(!check_geom.st_contains) 
-			callback({type : 'error', i18n : 'denuncia_geometria_dentro'});
-		else
-			return db.none(consultas.actualizar_loc_pref, [wkt, distancia, id_usuario]);
-		
-	})
+	db.none(consultas.actualizar_loc_pref, [wkt, distancia, id_usuario])
 	.then(function(){
-		callback(null, {type : 'success', i18n: 'ubicacion_preferida_actualizada'});
+		callback(null);
 	})
 	.catch(function(error){
 		callback({type : 'error', msg : error.toString()});
@@ -619,7 +506,7 @@ Usuario.prototype.validPassword = function(input_password, password) {
 };
 /*
 =============================================================
-GEnera una url para el gravatar a partir del email del usuario
+Genera una url para el gravatar a partir del email del usuario
 =============================================================
 */
 Usuario.prototype.gravatar = function(email) {

@@ -33,7 +33,7 @@ mixin pagination(start, numPages, curr, base)
 				li
 					a(href='#{base}#{next}' aria-label="Siguiente")
 						span(aria-hidden="true" style={color:'#000'}) &raquo;				
-extends layout_sin_cabecera.jade
+extends ../base/layout_sin_cabecera
 block content
 	.section.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
 		// Header Inicio Perfil +  Nombre Usuario
@@ -129,8 +129,8 @@ block script
 			$('#denuncias').empty();
 			var html_ = '';
 			data.query.forEach(function(denuncia){
-				denuncia.tipo = JSON.parse(denuncia.geometria).type;
-				denuncia.coordenadas = JSON.parse(denuncia.geometria).coordinates;
+				denuncia.tipo = denuncia.geometria.type;
+				denuncia.coordenadas = denuncia.geometria.coordinates;
 				//alert(denuncia.geometria + '' +  JSON.parse(denuncia.geometria).coordinates);
 				html_ += '<div style="padding:10 20 10 20px; text-align: center;" class="col-md-4">' + 
 							getDenunciaRow(denuncia, true) +

@@ -188,66 +188,46 @@ app.Lateral = function(opt_options) {
 				
 				/*******/
 				
-				var formData = new FormData(); // FormData
-
-				formData.append('uploadDenuncia', json);
-				
 				var xhr = new XMLHttpRequest(); // Petición XMLHttpRequest
-				
-				xhr.open(metodo, url , true); // Método POST
-				
-				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); // Especificamos cabecera
-
+				xhr.open(metodo, url , true);
+				xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); // Especificamos Content-Type en la cabecera
 				xhr.send(JSON.stringify(json)); // Enviamos petición
 
 				var self = this;
-				var m = denuncia ? 'Guardando cambios' : 'Enviando Denuncia';
 				$(self).parent().parent().append('<div id="spinner" style="text-align: center"><i class="fa fa-spinner fa-spin fa-5x" style="color: #339BEB"></i>'
 					+ '<p>' + m + '...</p></div>');
 				$(self).parent().hide();
 				
 				// Recibimos respuesta del servidor
-				xhr.onload = function(){
-					//alert('recibidoWS');
-					// El Response que nos envía el servidor
-					var res = JSON.parse(xhr.responseText);
-					
-					// Mostramos si ha habido error subiendo la denuncia
-					if(res.type == 'error'){
-						// Mostramos un Bootstrap Dialog
-						$(self).parent().parent().find('#spinner').remove();
-						$(self).parent().css('display', '');
+				xhr.onreadystatechange = function(){
+					if(xhr.status === 200 && xhr.readyState === 4)
 						BootstrapDialog.show({
-							type: BootstrapDialog.TYPE_DANGER,
-							title: 'Error añadiendo denuncia',
-							message: res.msg,
-							buttons: [{
-								label: 'Cerrar',
-								action: function(dialog){dialog.close()}
-							}]
-						});
-					}
-					else
-					{
-						//console.log(res.denuncia);
-						// Ha habido éxito subiendo la denuncia
-						var str = res.num_usuarios_afectados == false ? '' : 
-							'¡Hay ' + res.num_usuarios_afectados + ' usuarios cerca de la ubicación de la denuncia!';
-						BootstrapDialog.show({
-							type: BootstrapDialog.TYPE_SUCCESS,
-							title: 'Denuncia añadida correctamente',
-							message: res.msg + '\n ' + str,
-							closable: false,
+							title : 'OK',
+							message : JSON.parse(xhr.responseText).msg,
+							onshow : function(dialog){
+								console.log('dialog cambia color ');
+								$(dialog.getModalHeader()).css('background', '#4dac26');
+							},
 							onshown : function(dialog){
 								setTimeout(function(){
 									dialog.close();
-									window.location.replace('/app/denuncias/' + res.denuncia.gid);
-								}, 2000);
+									window.location.replace('/app/denuncias/' + JSON.parse(xhr.responseText).denuncia.gid);
+								}, 3000);
+							}
+						});
+					else if(xhr.status === 500 && xhr.readyState === 4){
+						BootstrapDialog.show({
+							title : 'ERROR',
+							message : JSON.parse(xhr.responseText).msg,
+							onshow : function(dialog){
+								$(dialog.getModalHeader()).css('background', '#800000');
 							},
-							// Cuando se cierre redirigimos al usuario 
+							onshown : function(dialog){
+								setTimeout(function(){dialog.close()}, 3000);
+							}
 						});
 					}
-				};
+				}
 				event.preventDefault();  // preventDefault
 			});	//Submit denuncia
   		}

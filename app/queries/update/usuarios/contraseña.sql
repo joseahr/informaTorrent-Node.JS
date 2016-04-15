@@ -1,0 +1,1 @@
+update usuarios set password = $1 where _id = $2

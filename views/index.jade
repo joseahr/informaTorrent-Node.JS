@@ -1,4 +1,4 @@
-extends layout.jade
+extends base/layout
 block content
     // Iniciar Sesión
     if (!user)
@@ -37,13 +37,13 @@ block content
                     .input-group
                       span.input-group-addon
                         i.fa.fa-facebook.fa-fw(style={color: '#3b5998'})
-                      a(href="/app/auth/facebook")
+                      a(href="/app/usuarios/auth/facebook")
                         input.form-control.btn-default.facebook-button(type="button" value="#{contenido.iniciar_sesion}")
                   .col-md-6
                     .input-group
                       span.input-group-addon
                         i.fa.fa-twitter.fa-fw(style={color: '#1dcaff'})
-                      a(href="/app/auth/twitter")
+                      a(href="/app/usuarios/auth/twitter")
                         input.form-control.btn-default.twitter-button.text-center(type="button" value="#{contenido.iniciar_sesion}")
       // Registrarse
       .section.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
@@ -55,7 +55,7 @@ block content
               p.lead.text-center !{contenido.crear_cuenta_usuario}
               .space
               .row
-                form.form-horizontal.container-fluid(action="/app/signup" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', float: 'none', width: '80%'})
+                form.form-horizontal.container-fluid(action="/app/usuarios/registrarse" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', float: 'none', width: '80%'})
                   // Correo Electrónico
                   .col-md-12.text-center
                     i.fa.fa-sign-in(style="font-size: 100px;color: #00bbff")
@@ -109,16 +109,46 @@ block content
               p.lead.text-center !{contenido.recuperar_contraseña_info}
               .space
               .row
-                form(action="/app/usuarios/olvidaste" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', margin: '0 auto',  width: '80%'}).form-horizontal
+                form#form_olvidaste(action="/app/usuarios/olvidaste" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', margin: '0 auto',  width: '80%'}).form-horizontal
                   .col-md-12.text-center
                     i.fa.fa-send(style="font-size: 100px;color: #00bbff")
                   .col-md-12
                     .input-group(style={'margin-top':'5px'})
                       span.input-group-addon
                         i.fa.fa-envelope-o.fa-fw
-                      input.form-control.btn-default(type='text', name="email", placeholder='#{contenido.usuario_o_email}')
+                      input#form_olvidaste_email.form-control.btn-default(requires = '', type='text', name="email", placeholder='#{contenido.usuario_o_email}')
                   .col-lg-12(style={float:'none', margin: '0 auto'})
                     .input-group(style={'padding-top':'5px'})
                       span.input-group-addon
                         i.fa.fa-send.fa-fw
                       input.form-control.btn-success(type="submit", value="#{contenido.enviar_email}")
+block script
+  script.
+    $('#form_olvidaste').submit(function(e){
+      e.preventDefault();
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/app/usuarios/olvidaste', true);
+      xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+      //alert(JSON.stringify({email : $('#form_olvidaste_email').val()}));
+      xhr.send(JSON.stringify({email : $('#form_olvidaste_email').val()}));
+
+      xhr.onreadystatechange = function(){
+        if(xhr.status === 200 && xhr.readyState === 4)
+          BootstrapDialog.show({
+            title : 'OK',
+            message : JSON.parse(xhr.responseText).msg,
+            onshow : function(dialog){
+              console.log('dialog cambia color ');
+              $(dialog.getModalHeader()).css('background', '#4dac26');
+            }
+          });
+        else if(xhr.status === 500 && xhr.readyState === 4)
+          BootstrapDialog.show({
+            title : 'ERROR',
+            message : JSON.parse(xhr.responseText).msg,
+            onshown : function(dialog){
+              $(dialog.getModalHeader()).css('background', '#800000');
+            }
+          });
+      }
+    });

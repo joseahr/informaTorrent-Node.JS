@@ -1,0 +1,78 @@
+extends ../base/layout_sin_cabecera
+block content
+	.section.clearfix.object-non-visible(data-animation-effect='fadeInRightBig')
+		// Header Inicio Perfil +  Nombre Usuario
+		.container
+			.row
+				.col-md-12
+					h1.title
+						i.fa.fa-user(style={'margin-left':'5px', 'margin-right': '5px'})
+						span Cambiar contraseña
+		// Contenedor del contenido del perfil
+		.container
+			.row
+				.col-lg-12(style="padding: 25px; margin: 10 0 10 0px; border-radius: 5px; background: rgba(0,50,187.0.1)")
+					p Actualiza tu contraseña.
+					p email: #{usuario_cambiar.local.email}
+				.col-lg-12(style="margin: 0 auto")
+					form.text-center#form_update(action="/app/usuarios/perfil/password" method="PUT" style="background:rgba(0,50,187, 0.1) ; border-radius: 5px; padding: 50px;")
+						fieldset.text-center(style="margin : 0 auto")
+							.form-group.col-lg-4(style="margin : 0 auto; margin-top : 10px;")
+								.input-group
+									span.input-group-addon
+										i.fa.fa-key.fa-fw
+									input#original.form-control(required='', name='password_original', type='password', placeholder='Contraseña original', value='')
+							.form-group.col-lg-4(style="margin : 0 auto; margin-top : 10px;")
+								.input-group
+									span.input-group-addon
+										i.fa.fa-key.fa-fw
+									input#nueva.form-control(required='', name='password_nueva', type='password', placeholder='Nueva contaseña')
+							.form-group.col-lg-4(style="margin : 0 auto; margin-top : 10px;")
+								.input-group
+									span.input-group-addon
+										i.fa.fa-key.fa-fw
+									input#nueva_repeat.form-control(required='', name='password_nueva_repeat', type='password', placeholder='Repita la nueva contaseña')
+							br
+							.form-group.col-lg-12(style={'margin':'0 auto'})
+								label.control-label(for='passChange')
+								.controls.input-group
+									span.input-group-addon(style={color:'#38B44A !important'})
+										i.fa.fa-send.fa-fw
+									button#signin.btn.btn-success(name='resetToken' style={width:'100%','border-top-left-radius':'0px','border-bottom-left-radius':'0px'})
+										|  Actualizar
+block script
+	script.
+		$('#form_update').submit(function(e){
+			//alert('eeeeee');
+			var data = {
+				password_original : $('#original').val(),
+				password_nueva : $('#nueva').val(),
+				password_nueva_repeat : $('#nueva_repeat').val()
+			};
+			// Petición XMLHttpRequest
+			var xhr = new XMLHttpRequest();
+			xhr.open('PUT', '/app/usuarios/perfil/password' , true);
+			xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); // Especificamos cabecera
+			xhr.send(JSON.stringify(data)); // Enviamos petición
+			
+			xhr.onreadystatechange = function(){
+				if(xhr.status === 200 && xhr.readyState === 4)
+					BootstrapDialog.show({
+						title : 'OK',
+						message : JSON.parse(xhr.responseText).msg,
+						onshow : function(dialog){
+							console.log('dialog cambia color ');
+							$(dialog.getModalHeader()).css('background', '#4dac26');
+						}
+					});
+				else if(xhr.status === 500 && xhr.readyState === 4)
+					BootstrapDialog.show({
+						title : 'ERROR',
+						message : JSON.parse(xhr.responseText).msg,
+						onshown : function(dialog){
+							$(dialog.getModalHeader()).css('background', '#800000');
+						}
+					});
+			}
+			e.preventDefault();
+		});

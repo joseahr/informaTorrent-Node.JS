@@ -7,6 +7,7 @@ var app = window.app;
 app.Draw = function(opt_options, aux) {
 
 	var options = opt_options || {},
+	geometria_modificada = false,
 	grs80 = new ol.Sphere(6378137),
 	lastTooltip,
   	sketch, // Feature que se está dibujando
@@ -140,6 +141,8 @@ app.Draw = function(opt_options, aux) {
   	};
 
   	this.toWKT = function(){
+  		if(!geometria_modificada)
+  			return null;
   		var wkt;
 		vectorLayer.getSource().forEachFeature(function(feature){
 			wkt = wktFormat.writeFeature(feature.clone());
@@ -238,6 +241,7 @@ app.Draw = function(opt_options, aux) {
 	    
 	var draw_end = function(evt){
 		this_.activar(false);
+		geometria_modificada = true;
 		if (!aux){
 	    	measureTooltipElement.className = 'tooltip tooltip-static';
 		    measureTooltip.setOffset([0, -7]);
@@ -284,38 +288,41 @@ app.Draw = function(opt_options, aux) {
 				{label:'Aceptar', action: function(dialog){
 					dialog.close();
 					var xhr = new XMLHttpRequest();
-					xhr.open('POST', '/app/perfil/editar_loc' , true); // Método POST
+					xhr.open('PUT', '/app/usuarios/perfil/localizacion' , true); // Método POST
 					xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); // Especificamos cabecera
 					xhr.send(JSON.stringify({wkt: wkt, distancia: val})); // Enviamos petición
-						
-					xhr.onload = function(){
-					  	var res = JSON.parse(xhr.responseText);
-						BootstrapDialog.show({
-							title: 'Actualizar localización',
-							message: res.msg,
-							buttons: [{label: 'Cerrar', action: function(dialog){dialog.close();}}],
-							onshown: function(dialog){setTimeout(function(){
-								dialog.close();
-								if(res.error) {
-					 				vectorSource.clear();
-					 				console.log(loc_anterior);
-					 				vectorSource.addFeature(loc_anterior);
-					 				vectorSource.dispatchChangeEvent(); 
-					 				console.log('ERROR JODER: QUITAMOS TO Y PONEMOS LO DE ANTES');
-					 			}
-
-							}, 3000);}
-						}); // bootstrap dialog
-				
-						if(res.error){
+					
+					// Recibimos respuesta del servidor
+					xhr.onreadystatechange = function(){
+						if(xhr.status === 200 && xhr.readyState === 4)
+							BootstrapDialog.show({
+								title : 'OK',
+								message : JSON.parse(xhr.responseText).msg,
+								onshow : function(dialog){
+									console.log('dialog cambia color ');
+									$(dialog.getModalHeader()).css('background', '#4dac26');
+								}
+							});
+						else if(xhr.status === 500 && xhr.readyState === 4){
+							BootstrapDialog.show({
+								title : 'ERROR',
+								message : JSON.parse(xhr.responseText).msg,
+								onshown : function(dialog){
+									$(dialog.getModalHeader()).css('background', '#800000');
+									setTimeout(function(){dialog.close()}, 3000);
+								}
+							});
+			 				vectorSource.clear();
+			 				console.log(loc_anterior);
+			 				vectorSource.addFeature(loc_anterior);
+			 				//vectorSource.dispatchChangeEvent(); 
 							if (lastTooltip)
 								map.removeOverlay(lastTooltip);
-							vectorSource.clear();	
 							wkt = undefined;	
 							sketch = evt.feature;
+			 				console.log('ERROR JODER: QUITAMOS TO Y PONEMOS LO DE ANTES');
 						}
-					} // xhr onload
-
+					}
 				}}], // buttons
 
 				onshown: function(dialog){

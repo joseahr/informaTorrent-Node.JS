@@ -70,26 +70,29 @@ app.use('/app/denuncias', require('./app/routes/denuncias.js'));
 
 /* Ruta no encontrada 404 */
 app.use(function(req, res, next){
-	if(req.url.match(/./g)){
+	if(req.url.match(/\.[0-9a-z]+$/i)){
 		console.log('es un icono o algún archivo');
 		//return; // no hacer esto
 		return next();
 	}
-	var error = new Error(req.i18n.__('ruta_no_encontrada') + ': ' + req.url);
-	error.status = 404;
-	next(error);
+	res.status(404).render('errores/error', {
+			txt : req.i18n.__('error_servidor'),
+			error:{
+				status : 404, 
+				msg : req.i18n.__('ruta_no_encontrada') + ': ' + req.url
+		}
+	});
 });
 
 /* Ruta para manejar errores */
 app.use(function(err, req, res, next){
-	if(!err) return next();
-	var status = err.status || 500;
-	console.log('error status', err);
-	res.status(status).render('error', {
+	//if(!err) return next();
+	console.log(err);
+	res.status(500).render('errores/error', {
 			txt : req.i18n.__('error_servidor'),
 			error:{
-				status : status, 
-				msg : err.toString()
+				status : 500, 
+				msg : err.msg
 		}
 	});
 	//res.status(err.status).send(err.toString());

@@ -78,7 +78,7 @@ module.exports = function(passport) {
         if(!validator.isLength(surname, 5, 25))	
             return done(null, false, req.flash('error', 'El campo de apellidos debe tener entre 5 y 25 caracteres'));
         if(!validator.isLength(username, 5, 15))	
-            return done(null, false, req.flash('error', 'El nombre de usuario debe tener entre 5 y 25 caracteres')); 
+            return done(null, false, req.flash('error', 'El nombre de usuario debe tener entre 5 y 15 caracteres')); 
         if(password != repass)
             return done(null, false, req.flash('error', 'Deben de coincidir las contraseñas.'));
         // Validamos los campos        

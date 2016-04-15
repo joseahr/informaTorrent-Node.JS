@@ -16,6 +16,13 @@ router.get('/api', function(req, res){
 	var filtro = {};
 	filtro.titulo = req.query.titulo;
 	console.log(filtro.titulo);
+	filtro.id = req.query.id;
+
+	var formato = req.query.outputFormat && (req.query.outputFormat.toLowerCase() == 'gml' || req.query.outputFormat.toLowerCase() == 'geojson') ?
+		req.query.outputFormat.toLowerCase() : 'geojson';
+
+	filtro.consulta = formato == 'gml' ? 'denuncias_sin_where_gml' : 'denuncias_sin_where'; 
+
 	filtro.tags = req.query.tags ? req.query.tags.split(',') : undefined;
 	filtro.usuario_nombre = req.query.username;
 	filtro.fecha_desde = req.query.fecha_desde ? req.query.fecha_desde.split('/') : undefined;
@@ -26,7 +33,7 @@ router.get('/api', function(req, res){
 	filtro.bbox = (filtro.lat && filtro.lon && filtro.buffer_radio) ? undefined : (req.query.bbox ? req.query.bbox : undefined);
 	// Comprobamos que haya metido algún parámetro de búsqueda
 	for(var key in filtro) {
-		if (filtro[key] != undefined) {
+		if (filtro[key] != undefined && key != 'consulta') {
 			aux = true;
 			console.log('keeeeey' + key);
 		}				
@@ -50,6 +57,7 @@ router.get('/api', function(req, res){
 		return res.status(500).json({type : 'error', msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros'});
 	else if(!(req.query.lat || req.query.lon) && req.query.buffer_radio) 
 		return res.status(500).json({type : 'error', msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros'});
+
 	denunciaModel.find(filtro, function(error, denuncias){
 		res.json({type : 'success', count : denuncias.query.length || 0, denuncias : denuncias.query});
 	});
@@ -65,29 +73,23 @@ router.get('/', function(req, res, next){
 	// Página a la que queremos acceder
 	var page = req.query.page;
 	// Comprobamos que la página es numérica
-	if (!page){
-		var error = new Error(req.i18n.__('faltan_parametros') + ': page');
-		error.status = 500;
-		return next(error);
-	}
-	if (!validator.isNumeric(page.toString())){
-		// Si no es numérica error
-		var error = new Error(req.i18n.__('parametro_no_valido'));
-		error.status = 500;
-		return next(error);
-	}
-	// Si la página es menor o igual a 0 error
-	if(page <= 0){
-		var error = new Error(req.i18n.__('parametro_no_valido'));
-		error.status = 500;
-		return next(error);
-	}
-	denunciaModel.find_by_pagina(page, function(error, result){
-		if(error) 
+	if (!page || !validator.isNumeric(page.toString()) || page <= 0)
+		return res.redirect('/app/denuncias?page=1');
+	denunciaModel.get_size(function(error, total_denuncias){
+		if(error)
 			return next(error);
-		res.render('denuncias', result);
+		var max_pages = Math.ceil(total_denuncias/10);
+		// Si la página solicitada es mayor que el número de páginas que puede haber
+		// Asignamos la máxima página
+		if (page > max_pages)
+			return res.redirect('/app/denuncias?page=' + max_pages);
+		denunciaModel.find_by_pagina(page, function(error, result){
+			if(error) 
+				return next(error);
+			result.maxPages = max_pages;
+			res.render('denuncias/lista', result);
+		});
 	});
-
 });
 
 // Visor -- OK
@@ -95,7 +97,7 @@ router.get('/visor', function(req, res, next){
 	denunciaModel.denuncias_visor(function(error, result){
 		if(error)
 			return next(error);
-		res.render('visor', result);
+		res.render('denuncias/visor', result);
 	});
 });
 
@@ -109,7 +111,7 @@ router.route('/nueva')
 	denunciaModel.crear_temp_dir(function(error, token){
 		if(error)
 			return next(error);
-		res.render('nueva', {random : token});
+		res.render('denuncias/nueva', {random : token});
 	});
 })
 // Petición añadir denuncia -- OK
@@ -124,15 +126,24 @@ router.route('/nueva')
 	// Si hay algún error en los datos devolvemos los errores
 	if(errormsg.length > 0)
 		return res.status(500).send({type: 'error', msg: errormsg});
-	denunciaModel.comprobar_geometria(req.body.wkt, function(error){
+	var wkt = req.body.wkt;
+	denunciaModel.comprobar_geometria(req.body.wkt, function(error, geom_check){
 		if(error)
-			return res.status(500).json({type : 'error', msg : req.i18n.__(error.msg)});
+			return res.status(500).json(error);
+		if (geom_check.st_contains == false)
+			return res.status(500).json({type : 'error', msg : req.i18n.__('denuncia_geometria_dentro')});
+		// Si la geometría lineal supera los 200 metros
+		else if(wkt.match(/LINESTRING/g) && geom_check.st_length > 200)
+			return res.status(500).json({type : 'error', msg : req.i18n.__('denuncia_geometria_lineal')});
+		// Si la geometría poligonal supera los 5000 metros cuadrados
+		else if(wkt.match(/POLYGON/g) && geom_check.st_area > 5000)
+			return res.status(500).json({type : 'error', msg : req.i18n.__('denuncia_geometria_poligonal')});
 		// Asignamos id usuario al body
 		req.body.id_usuario = req.user._id;
 		// Guardamos la denuncia
 		denunciaModel.guardar(req.body, function(error, result){
 			if(error)
-				return res.status(500).json({type : 'error', msg : error.toString()})
+				return res.status(500).json(error);
 			res.json(result);
 		});
 	});
@@ -144,11 +155,11 @@ router.route('/imagen/temporal')
 	multer_temp_denuncia(req, res, function(error){
 		// Enviamos un mensaje de error
 		if(error)
-			return res.status(500).json({type : 'error', msg : error.toString()});
+			return res.status(500).json(error);
 		// obetenemos la imagen subida
 		denunciaModel.subir_imagen_temporal(req.file, function(error, to){
 			if(error)
-				return res.status(500).json({type : 'error', msg : error});
+				return res.status(413).json({type : 'error', msg : req.i18n.__('formato_no_permitido')});
 					// La imagen se ha subido correctamente y es de un formato soportado
 			return res.json({
 				type: 'success', 
@@ -186,7 +197,7 @@ router.delete('/imagen', function(req, res, next){
 				return res.status(500).json({type : 'error', msg : req.i18n.__('no_tiene_permiso')});
 			denunciaModel.eliminar_imagen(path, function(error){
 				if(error)
-					return res.status(500).json({type : 'error', msg : error.toString()});
+					return res.status(500).json(error);
 				res.json({type : 'success', msg : req.i18n.__('imagen') + '"' + path + '"' + req.i18n.__('eliminada_correctamente')});
 			});
 		});
@@ -198,8 +209,10 @@ router.delete('/imagen', function(req, res, next){
 router.param('id_denuncia', function(req, res, next, id_denuncia){
 	console.log('param id_denuncia');
 	denunciaModel.find_by_id(id_denuncia, function(error, denuncia){
-		if(error)
+		if(error && req.method.toLowerCase() == 'get')
 			return next(error);
+		else if(error)
+			return res.status(500).json(error);
 		req.denuncia = denuncia;
 		next();
 	});
@@ -220,26 +233,46 @@ router.route('/:id_denuncia')
 	if(!req.body.tags || req.body.tags.length < 2) errormsg += req.i18n.__('denuncia_tags') + '\n';
 	if(!validator.isLength(req.body.titulo, 5, 50)) errormsg += req.i18n.__('denuncia_titulo') + '\n';
 	if(!validator.isLength(req.body.contenido, 50, 10000)) errormsg += req.i18n.__('denuncia_contenido') + '\n';
-	if(req.body.wkt == undefined) errormsg += req.i18n.__('denuncia_geometria') + '\n';	
+	//if(req.body.wkt == undefined) errormsg += req.i18n.__('denuncia_geometria') + '\n';	
 	// Si hay algún error en los datos devolvemos los errores
 	if(errormsg.length > 0)
 		return res.status(500).send({type: 'error', msg: errormsg});
 	// Comprobamos geometría
-	console.log(req.body.wkt);
-	denunciaModel.comprobar_geometria(req.body.wkt, function(error){
-		if(error)
-			return res.status(500).json({type : 'error', msg : req.i18n.__(error.msg)});
-		// Asignamos al body la id del usuario
-		req.body.id_denuncia = req.params.id_denuncia;
-		// Asignamos al body la denuncia original
-		req.body.denuncia_original = req.denuncia;
+	console.log(req.body);
+	var wkt = req.body.wkt;
+	// Asignamos al body la id del usuario
+	req.body.id_denuncia = req.params.id_denuncia;
+	// Asignamos al body la denuncia original
+	req.body.denuncia_original = req.denuncia;
+
+	if(wkt)
+		denunciaModel.comprobar_geometria(req.body.wkt, function(error, geom_check){
+			if(error)
+				return res.status(500).json(error);
+			// Si la geometría no está en torrent 
+			if (geom_check.st_contains == false)
+				return res.status(500).json({type : 'error', msg : req.i18n.__('denuncia_geometria_dentro')});
+			// Si la geometría lineal supera los 200 metros
+			else if(wkt.match(/LINESTRING/g) && geom_check.st_length > 200)
+				return res.status(500).json({type : 'error', msg : req.i18n.__('denuncia_geometria_lineal')});
+			// Si la geometría poligonal supera los 5000 metros cuadrados
+			else if(wkt.match(/POLYGON/g) && geom_check.st_area > 5000)
+				return res.status(500).json({type : 'error', msg : req.i18n.__('denuncia_geometria_poligonal')});
+			// Guardamos los cambios
+			denunciaModel.editar(req.body, function(error, result){
+				if(error)
+					return res.status(500).json(error);
+				res.json(result);
+			});
+		});
+	else
 		// Guardamos los cambios
 		denunciaModel.editar(req.body, function(error, result){
 			if(error)
-				return res.status(500).json({type : 'error', msg : error.toString()})
+				return res.status(500).json(error);
 			res.json(result);
 		});
-	});
+
 })
 // Eliminar denuncia -- OK
 .delete(function(req, res){
@@ -247,7 +280,7 @@ router.route('/:id_denuncia')
 		return res.status(500).json({type : 'error', msg : req.i18n.__('no_tiene_permiso')});
 	denunciaModel.eliminar(req.denuncia.gid, function(error){
 		if(error)
-			return res.status(500).json({type : 'error', msg : error.toString()});
+			return res.status(500).json(error);
 
 		res.json({
 			type : 'success', 
@@ -263,7 +296,7 @@ router.get('/:id_denuncia/actualizar', function(req, res, next){
 	denunciaModel.crear_temp_dir(function(error, token){
 		if(error)
 			return next(error);
-		res.render('editar', {denuncia: req.denuncia, random : token});
+		res.render('denuncias/editar', {denuncia: req.denuncia, random : token});
 	});
 });
 
@@ -281,7 +314,7 @@ router.post('/:id_denuncia/comentar', function(req, res, next){
 		usuario_from : req.user
 	}, function(error){
 		if(error)
-			return res.status(500).json({type : 'error', msg : error.toString()});
+			return res.status(500).json(error);
 		res.json({type : 'success', contenido : req.body.contenido })
 	});
 });
@@ -292,9 +325,12 @@ router.get('/:id_denuncia/:titulo', function(req, res){
 	if(req.params.titulo != req.denuncia.titulo.replace(/ /g, '-'))
 		return res.redirect('/app/denuncias/' + req.denuncia.gid + '/' + req.denuncia.titulo.replace(' ', '-'));
 	var id_usuario = req.user ? req.user._id : undefined;
-	denunciaModel.sumar_visita(req.denuncia.gid, id_usuario, function(error){
-		res.render('denuncia', {denuncia: req.denuncia});
-	});
+	if(req.denuncia.id_usuario != id_usuario)
+		denunciaModel.sumar_visita(req.denuncia.gid, function(error){
+			res.render('denuncias/denuncia', {denuncia: req.denuncia});
+		});
+	else
+		res.render('denuncias/denuncia', {denuncia: req.denuncia});
 });
 
 module.exports = router;
