@@ -182,6 +182,15 @@ html
 
     var traducciones = JSON.parse('!{JSON.stringify(contenido)}');
 
+    var format = new ol.format.GeoJSON();
+
+    var vector = new ol.layer.Vector({
+      source: new ol.source.Vector({
+          format: format
+      }),
+      style: styleFunction
+    });
+
     var id_usuario = '#{id_usuario}';
     if(id_usuario != 'undefined')
       var notificaciones = JSON.parse('!{JSON.stringify(mis_notificaciones)}');

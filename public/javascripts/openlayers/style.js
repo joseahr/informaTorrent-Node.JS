@@ -73,13 +73,31 @@ styles = {
     })
   })]
 },
+styles_markers = {
+  'selected' :
+    new ol.style.Style({
+        image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+            anchor: [0.5, 1],
+            anchorXUnits: 'fraction',
+            anchorYUnits: 'fraction',
+            src: '/files/images/pin_amarillo.svg',
+        }))
+    })
+  ,
+  'visor' : [
+    new ol.style.Style({
+        image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+            anchor: [0.5, 1],
+            anchorXUnits: 'fraction',
+            anchorYUnits: 'fraction',
+            src: '/files/images/pin.svg',
+        }))
+    })
+  ]
+},
 styleFunction = function(feature, resolution) {
   return styles[feature.getGeometry().getType()];
 },
-format = new ol.format.GeoJSON(),
-vector = new ol.layer.Vector({
-    source: new ol.source.Vector({
-        format: format
-    }),
-    style: styleFunction
-});
+styleMarkers = function(feature, resolution) {
+  return styles_markers[feature.attributes.marker_type];
+};

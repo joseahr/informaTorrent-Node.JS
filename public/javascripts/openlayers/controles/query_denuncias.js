@@ -144,6 +144,7 @@ app.QueryDenuncias = function(opt_options) {
   	});
 
 	num_denuncias_io.on('error_query', function(data){
+		q_dialog.getButton('buscar_btn').enable().stopSpin();
 		$(q_dialog.getModalBody()).find('#lon_centro').val('').parent().show();
 		$(q_dialog.getModalBody()).find('#lat_centro').val('').parent().show();
 		$(q_dialog.getModalBody()).find('#radio').val('').parent().show();

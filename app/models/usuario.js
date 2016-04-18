@@ -456,6 +456,72 @@ Usuario.prototype.update_localizacion_preferida = function(opciones, callback){
 		callback({type : 'error', msg : error.toString()});
 	});
 };
+
+Usuario.prototype.noti_vista = function(id_notificacion, callback){
+	db.none(consultas.notificacion_vista, id_notificacion)
+	.then(function(){
+		callback(null);
+	})
+	.catch(function(error){
+		console.log('error noti_vista ' + error.toString());
+		callback({type : 'error', msg : error.toString()});
+	});
+};
+
+Usuario.prototype.me_gusta_la_denuncia = function(id_usuario, id_denuncia, callback){
+	db.oneOrNone(consultas.check_like_denuncia, [id_usuario, id_denuncia])
+	.then(function(like){
+		callback(null, like != null);
+	})
+	.catch(function(error){
+		callback({type : 'error', msg : error.toString()});
+		console.log(error.toString());
+	});
+};
+
+Usuario.prototype.likear_denuncia = function(id_usuario, denuncia, like, callback){
+	// No le gusta aún, entonces le ha dado a me gusta
+	db.tx(function(t){
+		q = [];
+		// Insertamos el like
+		if(!like)
+			q.push(t.none(consultas.insertar_like, [id_usuario, denuncia.gid]));
+		else
+			q.push(t.none(consultas.eliminar_like, [id_usuario, denuncia.gid]));
+		//console.log('from',data.usuario_id, 'to', data.denuncia.id_usuario);
+
+		// Si el usuario es el propietario de la denuncia no enviamos notificacion
+		if(id_usuario != denuncia.id_usuario) {
+			// Insertamos la notificación para que el propietario de la denuncia 
+			// sepa que le hemos dado al like
+			if(!like)
+				q.push(t.one(consultas.insertar_notificacion, 
+					[denuncia.gid, id_usuario, denuncia.id_usuario,'LIKE_DENUNCIA', JSON.stringify({})]));
+			else
+				q.push(t.one(consultas.insertar_notificacion, 
+					[denuncia.gid, id_usuario, denuncia.id_usuario,'NO_LIKE_DENUNCIA', JSON.stringify({})]));					
+		}
+		// ejecutamos las consultas
+		return t.batch(q);
+	})
+	.then(function(notificacion){
+		console.log('noti length', notificacion);
+		if(notificacion[1]){
+			// No hay notificación --> El usuario es el propietario de la denuncia
+			callback(null, notificacion[1]);
+		}
+		else {
+			// Si hay noti es decir el usuario que da al like y el usuario prop de la 
+			// denuncia son distintos
+			callback(null, null);
+		}
+	})
+	.catch(function(error){
+		callback({type : 'error', msg : error.toString()})
+	});
+};
+
+
 /*
 ================================================================
 Enviar email a un usuario

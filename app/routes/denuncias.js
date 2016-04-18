@@ -41,7 +41,6 @@ router.get('/api', function(req, res){
 	// Si no ha añadido ningún parámetro de búsqueda emitimos un evento de error
 	if(!aux) 
 		return res.status(500).json({type : 'error', msg: 'Debe introducir algún parámetro de búsqueda'});
-	//console.log(buffer_centro_ + ' buffer centroooo ');
 	// Validamos los parámetros que envía el usuario
 	if(req.query.lat && req.query.lon && req.query.buffer_radio){
 		if(!validator.isDecimal(req.query.lon.replace(',', '.')) && !validator.isNumeric(req.query.lon))

@@ -30,8 +30,19 @@ block content
 						h4 Cambiar Imagen
 						p Selecciona una imagen...
 						input#cambiarImagen.btn.btn-default(type="file" style="max-width:80%; margin: 0 auto;" name="file")
-						p o utiliza un 
-							a#gravatar(onclick="gravatar()") gravatar aleatorio
+						p o 
+						select.selectpicker
+							option
+								a Seleciona una opción
+							option
+								a gravatar aleatorio
+							if user
+								if user.facebook
+									option
+										a Avatar Facebook
+								if user.twitter
+									option
+										a Avatar Twitter
 				.col-lg-8
 					h4 Datos Generales del Usuario
 					p Edita tus datos personales. Recuerda que tu nombre no es visible por ningún usuario de la aplicación.
@@ -92,6 +103,15 @@ block content
 block script
 	script(src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/md5.js")
 	script.
+		$('.selectpicker').selectpicker({width : '80%'});
+		$('.selectpicker').change(function(event){
+			console.log($('.selectpicker').val());
+			switch($('.selectpicker').val()){
+				case 'gravatar aleatorio' : gravatar();break;
+				case 'Avatar Facebook' : facebook_avatar();break;
+				case 'Avatar Twitter' : twitter_avatar(); break; 
+			}
+		});
 		$('#actualizar').click(function(event){
 			// Objeto que pasamos al body
 			var json = {};
@@ -136,6 +156,7 @@ block script
 			}
 		});
 		
+		$('#imagen_change').css('width', '100%');
 		$('#imagen_change').submit(function(event){
 		
 			event.preventDefault();
@@ -205,4 +226,65 @@ block script
 			}
 			
 		};
-		
+
+		function facebook_avatar(){
+
+			var xhr = new XMLHttpRequest();
+			xhr.open('PUT', '/app/usuarios/perfil/avatar/facebook', true);			
+			xhr.send();
+			// Recibimos respuesta del servidor
+			xhr.onreadystatechange = function(){
+				if(xhr.status === 200 && xhr.readyState === 4)
+					BootstrapDialog.show({
+						title : 'OK',
+						message : JSON.parse(xhr.responseText).msg,
+						onshow : function(dialog){
+							console.log('dialog cambia color ');
+							$(dialog.getModalHeader()).css('background', '#4dac26');
+						}
+					});
+				else if((xhr.status === 500 || xhr.status === 413) && xhr.readyState === 4){
+					BootstrapDialog.show({
+						title : 'ERROR',
+						message : JSON.parse(xhr.responseText).msg,
+						onshown : function(dialog){
+							$(dialog.getModalHeader()).css('background', '#800000');
+						}
+					});
+					$('#imagen').empty();
+					$('#imagen').append('<img class="img img-responsive img-thumbnail img-circle" id="imagenperfil" src="' + res.path + '" style="width: 200px; height: 200px;">');
+				}
+			}
+			
+		};
+
+		function twitter_avatar(){
+
+			var xhr = new XMLHttpRequest();
+			xhr.open('PUT', '/app/usuarios/perfil/avatar/twitter', true);			
+			xhr.send();
+			// Recibimos respuesta del servidor
+			xhr.onreadystatechange = function(){
+				if(xhr.status === 200 && xhr.readyState === 4)
+					BootstrapDialog.show({
+						title : 'OK',
+						message : JSON.parse(xhr.responseText).msg,
+						onshow : function(dialog){
+							console.log('dialog cambia color ');
+							$(dialog.getModalHeader()).css('background', '#4dac26');
+						}
+					});
+				else if((xhr.status === 500 || xhr.status === 413) && xhr.readyState === 4){
+					BootstrapDialog.show({
+						title : 'ERROR',
+						message : JSON.parse(xhr.responseText).msg,
+						onshown : function(dialog){
+							$(dialog.getModalHeader()).css('background', '#800000');
+						}
+					});
+					$('#imagen').empty();
+					$('#imagen').append('<img class="img img-responsive img-thumbnail img-circle" id="imagenperfil" src="' + res.path + '" style="width: 200px; height: 200px;">');
+				}
+			}
+			
+		};

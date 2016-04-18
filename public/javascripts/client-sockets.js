@@ -74,6 +74,7 @@ num_denuncias_io.on('noti_vista_cb', function(data){
 	var nuevas = parseInt($('.noti_up:eq(1)').text()) - 1;
 	$('.noti_up').empty();
 	$('.noti_up').append(nuevas);
+	$('#nuevas').replaceWith(' ' + nuevas + ' ');
 
 	// POnemos como vista la notificación en la lista
 	if(notificaciones)
@@ -102,7 +103,7 @@ num_denuncias_io.on('denuncia_no_likeada', function(data){
 
 	// Notificamos al usuario de la denuncia de ello
 	// Alertamos de una notificación
-	data.noti = data.noti[1];
+	//data.noti = data.noti[1];
 	data.noti.profile_from = data.from.profile;
 	data.noti.denuncia = data.denuncia;
 
@@ -139,7 +140,7 @@ num_denuncias_io.on('denuncia_no_likeada', function(data){
 // recibimos este evento
 num_denuncias_io.on('denuncia_likeada', function(data){
 
-	data.noti = data.noti[1];
+	//data.noti = data.noti[1];
 	data.noti.profile_from = data.from.profile;
 	data.noti.denuncia = data.denuncia;
 

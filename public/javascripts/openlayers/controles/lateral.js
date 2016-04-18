@@ -194,6 +194,7 @@ app.Lateral = function(opt_options) {
 				xhr.send(JSON.stringify(json)); // Enviamos petición
 
 				var self = this;
+				var m = denuncia ? 'Actualizando denuncia' : 'Enviando denuncia';
 				$(self).parent().parent().append('<div id="spinner" style="text-align: center"><i class="fa fa-spinner fa-spin fa-5x" style="color: #339BEB"></i>'
 					+ '<p>' + m + '...</p></div>');
 				$(self).parent().hide();

@@ -133,21 +133,22 @@ module.exports = function(passport) {
     	
     	if(!req.user) {
             usuarioModel.find_by_facebook_id(profile.id, function(error, user){
-                if(error)
-                    return done(null, false, req.flash('error', 'Debes crear una cuenta local y lincar tu cuenta de facebook para poder acceder desde facebook.'));
-                return done(null, user); // Usuario encontrado, devuelve el usuario
+                if(error){
+                    return done(null, false, req.flash('error', 'Debes crear una cuenta local y lincar tu cuenta de facebook para poder acceder desde facebook.' ));
+                }
+                user = set_facebook(user, token, profile);
+                usuarioModel.set_facebook(user._id, JSON.stringify(user.facebook), function(error){
+                    if(error)
+                        return done(error);
+                    req.user = user;
+                    return done(null, user);// Usuario encontrado, devuelve el usuario
+                });
             });
     	}
     	else {
             // Usuario existente y loggeado. Lincamos sus cuentas.
-            var user = req.user; 
-
-            user.facebook = {};
-            user.facebook.id    = profile.id;
-            user.facebook.token = token;
-            user.facebook.name  = profile.displayName;
-            user.facebook.email = (profile.emails[0].value || '').toLowerCase();
-            user.facebook.photo = profile.photos[0].value;
+            var user = req.user;
+            user = set_facebook(user, token, profile);
             
             usuarioModel.find_by_facebook_id(profile.id, function(error, user_){
                 if(!error)
@@ -177,18 +178,19 @@ module.exports = function(passport) {
             usuarioModel.find_by_twitter_id(profile.id, function(error, user){
                 if(error)
                     return done(null, false, req.flash('error', 'Debes crear una cuenta local y lincar tu cuenta de twitter para poder acceder desde twitter.'));
-                return done(null, user); // Usuario encontrado, devuelve el usuario
+                user = set_twitter(user, token, profile);
+                usuarioModel.set_twitter(user._id, JSON.stringify(user.twitter), function(error){
+                    if(error)
+                        return done(error);
+                    req.user = user;
+                    return done(null, user);// Usuario encontrado, devuelve el usuario
+                });
             });
     	}
     	else {
             // Usuario existente y loggeado. Lincamos sus cuentas.
-            var user = req.user; 
-            user.twitter = {};
-            user.twitter.id = profile.id;
-            user.twitter.token = token;
-            user.twitter.username = profile.username;
-            user.twitter.displayName = profile.displayName;
-            user.twitter.photo = profile.photos[0].value;
+            var user = req.user;
+            user = set_twitter(user, token, profile);
             
             usuarioModel.find_by_twitter_id(profile.id, function(error, user_){
                 if(!error)
@@ -203,4 +205,24 @@ module.exports = function(passport) {
     	}
 
     }));
+};
+
+function set_twitter(user, token, profile){
+    user.twitter = {};
+    user.twitter.id = profile.id;
+    user.twitter.token = token;
+    user.twitter.username = profile.username;
+    user.twitter.displayName = profile.displayName;
+    user.twitter.photo = profile.photos[0].value;
+    return user;
+};
+
+function set_facebook(user, token, profile){
+    user.facebook = {};
+    user.facebook.id    = profile.id;
+    user.facebook.token = token;
+    user.facebook.name  = profile.displayName;
+    user.facebook.email = (profile.emails[0].value || '').toLowerCase();
+    user.facebook.photo = profile.photos[0].value;
+    return user;
 };

@@ -6,7 +6,6 @@ var request = require('request'),
 	router = require('express').Router();
 
 router.get('/', function(req, res, next){
-	console.log('ddddddddd');
 	var lan = get_locale_from_cookie(req, res);
 	console.log(lan);
 	// Escribimos cabecera
@@ -101,7 +100,7 @@ function get_locale_from_cookie (req, res){
 	// Comprobamos si ha cambiado la cookie en esta petición
 	if(res.get('set-cookie') != undefined)
 		res.get('set-cookie').split(';').forEach(function(cookie){
-			if(cookie.match(/locale/g)) lan = cookie.split('=')[1];
+			if(cookie.match(/locale/g)) lan = cookie.split('=')[1].toLowerCase();
 		});
 	// Si no ha cambiado, obtenemos la cookie del request
 	if(!lan)

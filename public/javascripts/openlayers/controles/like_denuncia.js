@@ -17,7 +17,7 @@ app.LikeDenuncia = function(opt_options) {
   num_denuncias_io.on('yo_socket_io_consultando_a_postgresql_te_contesto_si_te_gusta_o_no_esa_puta_mierda_de_denuncia_vale?', 
   function(data){
 	  if (data.error == false){
-		  //alert(data.like + 'like')
+		  alert(data.like + 'like')
 		  if(data.like)
 			  button.innerHTML = '<i class="fa fa-thumbs-up" style="color: #00bbff"></i>';
 		  else

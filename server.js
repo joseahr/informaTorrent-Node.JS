@@ -6,7 +6,6 @@ var port     = process.env.PORT || 3000; // Puerto usado por nuestra aplicación
 var passport = require('passport'); // Passport - Sistema de Logins
 var flash    = require('connect-flash'); // Flash - Emitir mensajes al request
 
-var fs = require('fs'); // Módulo fs
 var path = require('path'); // Módulo path
 var cookieParser = require('cookie-parser'); // Módulo cookieParser - Se encarga de manejar las cookies
 var session      = require('express-session'); // Módulo de sesiones de express

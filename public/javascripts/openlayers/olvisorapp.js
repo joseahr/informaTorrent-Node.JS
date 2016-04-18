@@ -2,7 +2,22 @@
  * Elements that make up the popup.
  */
 var seleccionada = '',
-select = new ol.interaction.Select(),
+vector_denuncias = new ol.layer.Vector({
+    source: new ol.source.Vector({
+        format: new ol.format.GeoJSON()
+    }),
+    style: styleFunction
+}),// Vector donde añadiremos las denuncias
+vector_markers = new ol.layer.Vector({
+    source: new ol.source.Vector({
+        format: new ol.format.GeoJSON()
+    }),
+    style: styleMarkers
+}),// Vector donde añadiremos las denuncias
+features_cache = {},
+select = new ol.interaction.Select({
+	layers : [vector_denuncias, vector_markers]
+}),
 duration = 6000,
 flash = function(feature) {
 	var start = new Date().getTime();
@@ -40,7 +55,6 @@ flash = function(feature) {
 	}
 	listenerKey = map.on('postcompose', animate);
 },
-cache = {},
 spinner,
 cambiar_imagen = function(denuncia, boton, d_body){
 	//console.log(denuncia);
@@ -86,13 +100,16 @@ sel_dialog = new BootstrapDialog({
 });
 
 /****************  INIT  ********/
-map.addInteraction(select); // Seleccionar feature
+map.addInteraction(select);
 
 denuncias.forEach(function(denuncia){
 	//console.log('denuncia añadida bdd' + JSON.parse(denuncia.geometria).type);
-	var feature, 
+	var feature,
+	feature_marker, 
 	type = denuncia.geometria.type, 
 	coordinates = denuncia.geometria.coordinates;
+
+	denuncia.marker = 'visor';
 	
 	if(type == 'Point'){
     	feature = new ol.Feature({
@@ -114,97 +131,130 @@ denuncias.forEach(function(denuncia){
     	});
     }
 
+    feature_marker = new ol.Feature({
+    	geometry : new ol.geom.Point(ol.extent.getCenter(feature.getGeometry().getExtent())),
+    	name : 'Denuncia Marker'
+    });
+
 	denuncia.tipo = type;
 	denuncia.coordenadas = coordinates;
 
 	feature.attributes = {
+		type : 'denuncia',
 		denuncia: denuncia
 	};
+	feature_marker.attributes = {
+		type : 'marker',
+		marker_type : 'visor',
+		denuncia: denuncia
+	};
+
+	features_cache[denuncia.gid] = feature;
+
 	console.log(feature.attributes);
-	vector.getSource().addFeature(feature);
+	vector_markers.getSource().addFeature(feature_marker);
 });
 
+map.addLayer(vector_markers);
+map.addLayer(vector_denuncias);
 map.addLayer(vector);
 //map.addOverlay(overlay);
 
 /*******************    EVENTOS   *************/
-vector.getSource().on('addfeature', function(e) {
+vector_denuncias.getSource().on('addfeature', function(e) {
 	//alert(e.feature.getGeometry().getType());
 	flash(e.feature);
 });
 
 select.on('select', function(e){
-	if(! e.selected[0]) return;
-	e.target.getFeatures().forEach(function(f){
-		var denuncia = f.attributes.denuncia,
-		num_likes = denuncia.likes ? denuncia.likes.length : 0,
-		imagenes = denuncia.imagenes ? denuncia.imagenes.length : 0,
-		comentarios = denuncia.comentarios ? denuncia.comentarios.length : 0,
-  		fecha = getFechaFormatted(new Date(denuncia.fecha)),
-  		tags = [];
-  		console.log(denuncia.tags_, denuncia)
-  		if (denuncia.tags_)
-	  		denuncia.tags_.forEach(function(tag){
-	  		tags.push('#' + tag.tag);
-	  	});
+	if(e.selected[0]){
+		console.log();
+		if(e.selected[0].attributes.type == 'marker'){
+			console.log(e.selected[0].attributes.denuncia.gid);
+			var feature_denuncia = features_cache[e.selected[0].attributes.denuncia.gid];
+			console.log(feature_denuncia);
+			if(!feature_denuncia.attributes.added)
+				vector_denuncias.getSource().addFeature(feature_denuncia);
+			//select.getFeatures().push(feature_denuncia);
+			//console.log(styles_markers['selected']);
+			e.selected[0].setStyle(styles_markers['selected']);
+			feature_denuncia.attributes.added = true;
+		}
+		else if(e.selected[0].attributes.type == 'denuncia'){
+			var f = e.selected[0];
+			var denuncia = f.attributes.denuncia,
+			num_likes = denuncia.likes ? denuncia.likes.length : 0,
+			imagenes = denuncia.imagenes ? denuncia.imagenes.length : 0,
+			comentarios = denuncia.comentarios ? denuncia.comentarios.length : 0,
+	  		fecha = getFechaFormatted(new Date(denuncia.fecha)),
+	  		tags = [];
+	  		console.log(denuncia.tags_, denuncia)
+	  		if (denuncia.tags_)
+		  		denuncia.tags_.forEach(function(tag){
+		  		tags.push('#' + tag.tag);
+		  	});
 
-		console.log('denuncia seleccionada : ' + f.attributes.denuncia.gid, tags);
-		sel_dialog = new BootstrapDialog({
-			buttons: [{
-				label: 'IR',
-				action : function(){ window.location.replace('/app/denuncia/' + denuncia.gid) }
-			}, {
-				label : 'Cerrar',
-				action : function(dialog){dialog.close()}
-			}]
-		});
-
-		sel_dialog.onShow(function(dialog){
-			$(dialog.getModalHeader()).replaceWith($('<div class="row" style="margin: 0px; padding-bottom: 15px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
-  				'<div class="col-xs-4" style="text-align: center;">' +
-  					'<img class="img img-thumbnail" src="' + denuncia.usuario[0].profile.picture + '" style="margin-top: 15px; width: 90px; height: 90px; object-fit: cover;" />' +
-  				'</div>' +
-  				'<div class="col-xs-8" style="text-align: center; color: #fff">' +
-  					'<div class="col-lg-12" style="margin-top: 15px;height: 30px;"><i class="fa fa-user"></i> ' + denuncia.usuario[0].profile.username + '</div>' +
-  					'<div class="col-lg-12" style="height: 30px;">' + 
-  						'<i class="fa fa-eye"></i> ' + denuncia.veces_vista + 
-  						' <i class="fa fa-thumbs-up"></i> ' + num_likes + 
-  						' <i class="fa fa-image"></i> ' + imagenes +
-  						' <i class="fa fa-comments"></i> ' + comentarios + 
-  						' <i class="fa fa-tags"></i> ' + tags.length +  
-  					' </div>' +
-  					'<div class="col-lg-12" style="height: 30px;"><i class="fa fa-calendar"></i> ' + fecha + '</div>' +
-  				'</div>' + 
-  			'</div>'));
-
-	  		dialog.getModalBody().parent().css('border-radius', '15px');
-	  		dialog.getModalBody().css('padding-top', '0px');
-		});
-
-		sel_dialog.onShown(function(dialog){
-			dialog.setMessage('<h4 style="width: 100%; color: #fff; background-color: rgba(0,0,0,0.4); margin-top: -10px;text-align:center; border-radius: 5px">' + denuncia.titulo + '</h4>' +
-			'<div class="row" style="margin-top: 15px; overflow-x: hidden; background-color: #fff">' + 
-				'<i class="fa fa-tags"> ' + tags + '</i>' +
-				'<div class="col-lg-12 text-center"><img class="img img-thumbnail" id="imagenes_denuncia" src="' + getGeoserverMiniatura(denuncia, 500) + '" style="width: 300px; height: 300px; object-fit: cover; margin: 10 0 10 0px;"></img></div>' +
-				'<h4>Descripción</h4>' + 
-				'<div id="desc" style="margin: 5px;"></div>' + 
-			'</div>');
-			$(dialog.getModalBody()).find('#desc').append(decodeURIComponent(denuncia.descripcion));
-
-			$(dialog.getModalBody()).find('#imagenes_denuncia').click(function(e){
-				cambiar_imagen(f.attributes.denuncia, this, dialog.getModalBody());
+			console.log('denuncia seleccionada : ' + f.attributes.denuncia.gid, tags);
+			sel_dialog = new BootstrapDialog({
+				buttons: [{
+					label: 'IR',
+					action : function(){ window.location.replace('/app/denuncia/' + denuncia.gid) }
+				}, {
+					label : 'Cerrar',
+					action : function(dialog){dialog.close()}
+				}]
 			});
 
-		});
+			sel_dialog.onShow(function(dialog){
+				$(dialog.getModalHeader()).replaceWith($('<div class="row" style="margin: 0px; padding-bottom: 15px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
+	  				'<div class="col-xs-4" style="text-align: center;">' +
+	  					'<img class="img img-thumbnail" src="' + denuncia.usuario[0].profile.picture + '" style="margin-top: 15px; width: 90px; height: 90px; object-fit: cover;" />' +
+	  				'</div>' +
+	  				'<div class="col-xs-8" style="text-align: center; color: #fff">' +
+	  					'<div class="col-lg-12" style="margin-top: 15px;height: 30px;"><i class="fa fa-user"></i> ' + denuncia.usuario[0].profile.username + '</div>' +
+	  					'<div class="col-lg-12" style="height: 30px;">' + 
+	  						'<i class="fa fa-eye"></i> ' + denuncia.veces_vista + 
+	  						' <i class="fa fa-thumbs-up"></i> ' + num_likes + 
+	  						' <i class="fa fa-image"></i> ' + imagenes +
+	  						' <i class="fa fa-comments"></i> ' + comentarios + 
+	  						' <i class="fa fa-tags"></i> ' + tags.length +  
+	  					' </div>' +
+	  					'<div class="col-lg-12" style="height: 30px;"><i class="fa fa-calendar"></i> ' + fecha + '</div>' +
+	  				'</div>' + 
+	  			'</div>'));
 
-		sel_dialog.open();
-		/*$(content).empty();
-		$(content).append($(getDenunciaRow(f.attributes.denuncia, true)));
-		$('.container-fluid').css('text-align', 'center');
-		$('.container-fluid').css('padding-top', '0px');
-		$('.container-fluid').css('margin', '0px');
-		overlay.setPosition(ol.extent.getCenter(f.getGeometry().getExtent()));*/
+		  		dialog.getModalBody().parent().css('border-radius', '15px');
+		  		dialog.getModalBody().css('padding-top', '0px');
+			});
 
-	});
-	//$(container).removeClass('hidden');
+			sel_dialog.onShown(function(dialog){
+				dialog.setMessage('<h4 style="width: 100%; color: #fff; background-color: rgba(0,0,0,0.4); margin-top: -10px;text-align:center; border-radius: 5px">' + denuncia.titulo + '</h4>' +
+				'<div class="row" style="margin-top: 15px; overflow-x: hidden; background-color: #fff">' + 
+					'<i class="fa fa-tags"> ' + tags + '</i>' +
+					'<div class="col-lg-12 text-center"><img class="img img-thumbnail" id="imagenes_denuncia" src="' + getGeoserverMiniatura(denuncia, 500) + '" style="width: 300px; height: 300px; object-fit: cover; margin: 10 0 10 0px;"></img></div>' +
+					'<h4>Descripción</h4>' + 
+					'<div id="desc" style="margin: 5px;"></div>' + 
+				'</div>');
+				$(dialog.getModalBody()).find('#desc').append(decodeURIComponent(denuncia.descripcion));
+
+				$(dialog.getModalBody()).find('#imagenes_denuncia').click(function(e){
+					cambiar_imagen(f.attributes.denuncia, this, dialog.getModalBody());
+				});
+
+			});
+
+			sel_dialog.open();
+		}
+	} // if selected[0]
+
+	if(e.deselected[0]){
+		if(e.deselected[0].attributes.type == 'denuncia'){
+			vector_denuncias.getSource().removeFeature(e.deselected[0]);
+			e.deselected[0].attributes.added = false;
+			select.getFeatures().clear();
+		}
+		else if(e.deselected[0].attributes.type == 'marker'){
+			e.deselected[0].setStyle(styles_markers[e.deselected[0].attributes.marker_type]);
+		}
+	}
 });

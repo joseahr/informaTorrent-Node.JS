@@ -579,6 +579,12 @@ Denuncia.prototype.denuncias_visor = function(callback){
 		denuncias.forEach(function(denuncia){
 			// Asignamos geometría a la denuncia
 			denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+			denuncia.geometria_pt = undefined;
+			denuncia.geometria_li = undefined;
+			denuncia.geometria_po = undefined;
+			denuncia.geom_pt = undefined;
+			denuncia.geom_li = undefined;
+			denuncia.geom_po = undefined;
 		});
 		// Renderizamos la página con las denuncias
 		callback(null, {denuncias: denuncias});
@@ -586,6 +592,39 @@ Denuncia.prototype.denuncias_visor = function(callback){
 	.catch(function(error){
 		callback({type : 'error', msg : error.toString()});
 	});	
+};
+
+Denuncia.prototype.denuncias_cerca = function(posicion, callback){
+	// Formateamos la consulta --> Usamos un buffer de 100 metros para saber si tengo denuncias cerca
+	var query = consultas.denuncias_sin_where.query + 
+		" (st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(x.geom_pt,25830)) < 100 or " +
+		"st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(x.geom_li,25830)) < 100 or " +
+		"st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(x.geom_po,25830)) < 100)" +
+		"order by fecha desc";
+	// Ejecutamos la consulta
+	db.any(query, posicion)
+	.then(function(denuncias){
+		if(denuncias){
+			// Obtenemos las denuncias cercanas
+			denuncias.forEach(function(denuncia){
+				// Asignamos geometría a la denuncia
+				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+				denuncia.geometria_pt = undefined;
+				denuncia.geometria_li = undefined;
+				denuncia.geometria_po = undefined;
+				denuncia.geom_pt = undefined;
+				denuncia.geom_li = undefined;
+				denuncia.geom_po = undefined;
+			});
+			// Emitimos el evento con las denuncias cerca
+			callback(null, denuncias);
+		}
+		else
+			callback(null, []);
+	})
+	.catch(function(error){
+		callback({type : 'error', msg : error.toString()})
+	});
 };
 
 module.exports = Denuncia;

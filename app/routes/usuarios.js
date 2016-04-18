@@ -84,6 +84,44 @@ router.get('/perfil/actualizar', isLoggedIn, function(req, res){
 	res.render('usuarios/editar_perfil', {user: req.user});
 });
 
+// Método put cambiar imagen perfil Facebook
+router.put('/perfil/avatar/facebook', function(req, res){
+	var sub = '/files/usuarios';
+	if(!req.user.facebook)
+		return res.status(500).json({type : 'error', msg : 'No facebook'});
+	if(req.user.profile.picture.indexOf(sub) > -1){
+    	fs.unlink(path.join('./public', req.user.profile.picture), function(err){
+    		//console.log('imagen anterior eliminada');
+    		if(err) console.log(err); // No debería ocurrir
+    	});
+	}
+	req.user.profile.picture = req.user.facebook.photo;
+	usuarioModel.cambiar_imagen_perfil(req.user, function(error, path){
+		if(error) 
+			return res.status(500).json(error);
+		return res.json({type: 'success', msg: req.i18n.__('imagen_perfil_actualizada'), path : path});
+	});
+});
+
+// Método put cambiar imagen perfil Facebook
+router.put('/perfil/avatar/twitter', function(req, res){
+	var sub = '/files/usuarios';
+	if(!req.user.twitter)
+		return res.status(500).json({type : 'error', msg : 'No twitter'});
+	if(req.user.profile.picture.indexOf(sub) > -1){
+    	fs.unlink(path.join('./public', req.user.profile.picture), function(err){
+    		//console.log('imagen anterior eliminada');
+    		if(err) console.log(err); // No debería ocurrir
+    	});
+	}
+	req.user.profile.picture = req.user.twitter.photo;
+	usuarioModel.cambiar_imagen_perfil(req.user, function(error, path){
+		if(error) 
+			return res.status(500).json(error);
+		return res.json({type: 'success', msg: req.i18n.__('imagen_perfil_actualizada'), path : path});
+	});
+});
+
 // Método put cambiar imagen perfil gravatar -- OK
 router.put('/perfil/avatar/gravatar', function(req, res){
 	var sub = '/files/usuarios';
