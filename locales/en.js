@@ -18,6 +18,7 @@
 	"contraseña_parametros" : "The password should have between 5 and 20 characters",
 	"cuenta_confirmada" : "Your account has been confirmed successfuly.",
 
+	"denuncia_añadida_ok" : "Report successfuly saved",
 	"denuncia": "Report",
 	"denuncias": "Reports",
 	"denuncias_fav": "Fav Reports",
@@ -125,6 +126,7 @@
 	"usuario_email_no_existe" : "There's no account with the username or email ",
 	"usuario_valido" : "User is valid.",
 	"ubicacion_preferida_actualizada" : "Favourite location successfuly updated",
+	"usuarios_afectados" : "users involved",
 
 	"visor_tiempo_real": "Real Time Map"
 

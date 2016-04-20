@@ -254,7 +254,7 @@ function getNotificacionRow(notificacion, trad){
 			'<div class="media" style="margin : 0 20 0 20px;">' + 
 				'<a class="media-left" style="width:100px; float:left;">' + 
 					'<img onclick="window.open(&#39;/app/usuarios/' + notificacion.id_usuario_from + '&#39;)" src="' + notificacion.profile_from.picture + '" style="width: 100px; height: 100px;" class=" media-object img-circle img-thumbnail">' +
-					'<img onclick="window.open(&#39;/app/denuncias/' + notificacion.denuncia.gid + '&#39;)" src="' + getGeoserverMiniatura(notificacion.denuncia, 100) + '" style="width: 100px; height: 100px;" class=" media-object img-thumbnail">' +
+					'<img onclick="window.open(&#39;/app/denuncias/' + notificacion.id_denuncia + '?id_noti=' + notificacion.id_noti + '&#39;)" src="' + getGeoserverMiniatura(notificacion.denuncia, 100) + '" style="width: 100px; height: 100px;" class=" media-object img-thumbnail">' +
 				'</a>' + 
 				'<div class="media-body" style="padding: 30 20 30 20px; text-align: left; overflow-x: hidden; ">' + getInfoNotificacion(notificacion, trad) + '</div>'+ 
 			'</div>' + 
@@ -283,8 +283,8 @@ function getAccionRow(notificacion, trad){
 		'<p style="text-align:right; width: 100%; font-size: 0.85em; padding-right: 20px;">' + getFechaFormatted(fecha) + ' <i class="fa fa-clock-o"></i> </p>' + 																
 		'<div class="media" style="margin : 0 20 0 20px;">' + 
 			'<a class="media-left" style="width:100px;">' + 
-				'<img onclick="window.open(&#39;/app/usuarios/' + notificacion.id_usuario_to + '&#39;)" src="' + notificacion.profile_to.picture + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-circle img-thumbnail">' +
-				'<img onclick="window.open(&#39;/app/denuncias/' + notificacion.denuncia.gid + '&#39;)" src="' + getGeoserverMiniatura(notificacion.denuncia, 100) + '" style="width: 100px; height: 100px;" class=" media-object img img-responsive img-thumbnail">' +
+					'<img onclick="window.open(&#39;/app/usuarios/' + notificacion.id_usuario_to + '&#39;)" src="' + notificacion.profile_to.picture + '" style="width: 100px; height: 100px;" class=" media-object img-circle img-thumbnail">' +
+					'<img onclick="window.open(&#39;/app/denuncias/' + notificacion.id_denuncia + '?id_noti=' + notificacion.id_noti + '&#39;)" src="' + getGeoserverMiniatura(notificacion.denuncia, 100) + '" style="width: 100px; height: 100px;" class=" media-object img-thumbnail">' +
 			'</a>' +  
 			'<div class="media-body" style="padding: 30 20 30 20px; text-align: left;overflow-x: hidden; ">' + getInfoAccion(notificacion, trad) + '</div>'+ 								
 		'</div>' + 

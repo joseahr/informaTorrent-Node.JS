@@ -184,7 +184,10 @@ app.QueryDenuncias = function(opt_options) {
 		vector.getSource().clear();
 
 		data.query.forEach(function(denuncia){		
-			var feature, type = denuncia.geometria.type, coordinates = denuncia.geometria.coordinates;
+			var feature, 
+			feature_marker,
+			type = denuncia.geometria.type, 
+			coordinates = denuncia.geometria.coordinates;
 			
 			if(type == 'Point'){
 		    	feature = new ol.Feature({
@@ -206,15 +209,28 @@ app.QueryDenuncias = function(opt_options) {
 		    	});
 		    }
 
+		    feature_marker = new ol.Feature({
+		    	geometry : new ol.geom.Point(ol.extent.getCenter(feature.getGeometry().getExtent())),
+		    	name : 'Denuncia Marker'
+		    });
+
 			denuncia.tipo = type;
 			denuncia.coordenadas = coordinates;
 
 			feature.attributes = {
+				type : 'denuncia',
+				from : 'query',
 				denuncia: denuncia
 			};
-			
-			console.log(feature.attributes);
-			vector.getSource().addFeature(feature);
+			feature_marker.attributes = {
+				type : 'marker',
+				marker_type : 'buscar',
+				denuncia: denuncia
+			};
+			if(!features_cache[denuncia.gid]){
+				features_cache[denuncia.gid] = feature;
+				clusterSource.getSource().addFeature(feature_marker);
+			}
 		});
 		
 	});

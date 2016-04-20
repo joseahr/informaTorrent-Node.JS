@@ -90,7 +90,9 @@ module.exports = {
 
   		denuncia_por_path_imagen : helper.select.denuncias.por_path_imagen,
 
+  		get_accion_por_id : helper.select.usuarios.accion_por_id,
 
+		get_noti_por_id : helper.select.usuarios.noti_por_id,
 		
 		obtener_denuncias_usuario : helper.select.usuarios.denuncias,
 

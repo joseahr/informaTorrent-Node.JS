@@ -80,8 +80,10 @@ app.ComentariosDenuncia = function(opt_options, denuncia, user) {
 
   	if (denuncia.comentarios)
 	  	denuncia.comentarios.forEach(function(coment){
-	  		var fecha = getFechaFormatted(new Date(coment.fecha));
-	  	  	comentarios_html += '<div class="row thumbnail" style="margin: 10 0 10 0px">' +
+	  		var date = new Date(coment.fecha),
+	  		fecha = getFechaFormatted(date),
+	  		fecha_id = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate() + '-' + date.getHours() + '-' + date.getMinutes();
+	  	  	comentarios_html += '<div class="row thumbnail" style="margin: 10 0 10 0px" id="' + coment.id_usuario + fecha_id + '">' +
 				'<div class="col-xs-4" style="text-align: center">' +
 					'<a target="_blank" href="/app/usuarios/' + coment.id_usuario + '">' +
 						'<img class="img img-thumbnail img-circle" src="' + coment.profile.picture + '" style="width: 70px; height: 70px; object-fit: cover;"/>' + 

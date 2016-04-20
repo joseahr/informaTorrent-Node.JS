@@ -40,7 +40,9 @@ var mis_consultas = {
 			por_id : sql('select', 'usuarios/por_id.sql'),
 			por_reset_token : sql('select', 'usuarios/por_reset_token.sql'),
 			por_username : sql('select', 'usuarios/por_username.sql'),
-			denuncias_favoritas : sql('select', 'usuarios/denuncias_favoritas.sql')
+			denuncias_favoritas : sql('select', 'usuarios/denuncias_favoritas.sql'),
+			noti_por_id : sql('select', 'usuarios/notificacion.sql'),
+			accion_por_id : sql('select', 'usuarios/accion.sql'),
 		}
 	},
 	insert : {

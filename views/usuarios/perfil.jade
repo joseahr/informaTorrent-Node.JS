@@ -19,9 +19,9 @@ block content
 								img.img-circle.img-responsive.img-thumbnail(src="#{user.profile.picture}" style={'margin': '0 auto', 'width':'200px','height':'200px'})
 							.col-lg-12.text-center(style={'margin-bottom' : '40px'})
 								a.btn.btn-default.col-lg-12(href="/app/denuncias/nueva" style={width : '100%'}) #{contenido.nueva + " " + contenido.denuncia}
-								a.btn.btn-default.col-lg-12(href="/app/perfil/editar" style = {'margin-top':'5px', width : '100%'}) #{contenido.editar + " " + contenido.perfil}
-								a.btn.btn-default.col-lg-12( href="/app/perfil/editar_loc" style = {'margin-top':'5px', width : '100%'}) #{contenido.editar + " " + contenido.localizacion}
-								a.btn.btn-danger.col-lg-12(href="/app/logout" style = {'margin-top':'5px', width : '100%'}) #{contenido.cerrar_sesion}
+								a.btn.btn-default.col-lg-12(href="/app/usuarios/perfil/actualizar" style = {'margin-top':'5px', width : '100%'}) #{contenido.editar + " " + contenido.perfil}
+								a.btn.btn-default.col-lg-12( href="/app/usuarios/perfil/localizacion" style = {'margin-top':'5px', width : '100%'}) #{contenido.editar + " " + contenido.localizacion}
+								a.btn.btn-danger.col-lg-12(href="/app/usuarios/logout" style = {'margin-top':'5px', width : '100%'}) #{contenido.cerrar_sesion}
 				// Columna Central
 				.col-md-8
 					.row(style="margin:0 5 0 5px;")
@@ -101,7 +101,7 @@ block content
 												|  #{denuncias_fav.length == 1 ? contenido.denuncia.toLowerCase() : contenido.denuncias.toLowerCase()}!
 block script
 	// OpenLayers.js
-	script(src='/javascripts/plugins/ol3/ol.js')
+	script(src='/javascripts/plugins/ol3/build/ol.js')
 	script.
 		fillAcciones(JSON.parse('!{JSON.stringify(mis_acciones)}'), traducciones);
 		fillNotificaciones(JSON.parse('!{JSON.stringify(mis_notificaciones)}'), traducciones);

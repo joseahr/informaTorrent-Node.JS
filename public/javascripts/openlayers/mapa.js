@@ -7,7 +7,20 @@ map = new ol.Map({
     attribution: false // No atribución
   }).extend([mousePositionControl, // MousePosition
     //new ol.control.FullScreen(), // FullScreen
-    new ol.control.LayerSwitcher({tipLabel: 'Leyenda'}), // LayerSwitcher
+    new ol.control.LayerSwitcher({
+      target:$(".layer_switcher").get(0), 
+      show_progress:true,
+      extent: true,
+      trash: true,
+      oninfo: function (l) {
+        var imagen = '<div style"position : absolute; bottom : 0px; width : 100%"><img src="' + l.get('legend') + '"></img></div>';
+        BootstrapDialog.show({
+          title : 'Leyenda de la capa "' + l.get('name') + '"',
+          message : l.get('legend') ? imagen : 'No hay leyenda disponible',
+          draggable : true
+        });
+      }
+    }), // LayerSwitcher
     new ol.control.ScaleLine(), // ScaleLine
     //new ol.control.ZoomSlider(), // ZoomSlider
   ]),

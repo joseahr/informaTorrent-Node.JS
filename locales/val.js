@@ -18,7 +18,7 @@
 	"contraseña_parametros" : "La contrasenya ha de tindre entre 5 i 20 caràcters",
 	"cuenta_confirmada" : "El teu compte s&#39;ha confirmat correctament.",
 
-
+	"denuncia_añadida_ok" : "La denúnica s&#39;ha guardat correctament",
 	"denuncia" : "Denúncia",
 	"denuncias": "Denúncies",
 	"denuncias_fav" : "Denúncies Preferides",
@@ -126,6 +126,7 @@
 	"usuario_email_no_existe" : "No existeix ningún compte amb el nom d&#39;usuari o correu electrònic ",
 	"usuario_valido" : "L&#39;usuari ja es vàlid",
 	"ubicacion_preferida_actualizada" : "Unicació preferida actualitzada correctament",
+	"usuarios_afectados" : "usuaris afectats",
 
 	"visor_tiempo_real": "Visor Temps Real"
 

@@ -7,6 +7,8 @@ var app = window.app;
 app.BBOX = function(opt_options) {
 
   var options = opt_options || {},
+  url = window.location.href.split(':')[1],
+  puerto_geoserver = '8001',
   hasbbox = false,
   button = document.createElement('button'),
   element = document.createElement('div'),
@@ -69,6 +71,7 @@ app.BBOX = function(opt_options) {
     console.log('HASBBOX', hasbbox);
   };
   /*****************   INIT         */
+  console.log(url);
   $('#capas_mapa').selectpicker('hide');
 
   map.on('pointermove', pointerMoveHandler);
@@ -90,19 +93,19 @@ app.BBOX = function(opt_options) {
   		{label: 'SHP',
   		action: function(dialog){
   			dialog.close();
-  			window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
+  			window.open(url + ':' + puerto_geoserver + '/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
   			'&request=GetFeature&typeName=' + $('#capas_mapa').val() + '&outputFormat=shape-zip&bbox=' + boundingBox.getGeometry().getExtent());
   		}},
   		{label: 'GeoJSON',
   		 action: function(dialog){
   			 dialog.close();
-  			 window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
+  			 window.open(url + ':' + puerto_geoserver + '/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
   			 '&request=GetFeature&typeName=' + $('#capas_mapa').val() + '&outputFormat=application/json&bbox=' + boundingBox.getGeometry().getExtent());
   		 }},
   		 {label: 'GML 3.2',
   		  action: function(dialog){
   			  dialog.close();
-  			  window.open('http://localhost:8080/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
+  			  window.open(url + ':' + puerto_geoserver + '/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
   			  '&request=GetFeature&typeName=' + $('#capas_mapa').val() + '&outputFormat=application%2Fgml%2Bxml%3B+version%3D3.2&bbox=' + boundingBox.getGeometry().getExtent());
   		  }}],
   	});

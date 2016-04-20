@@ -19,11 +19,11 @@ html
     // Highlight CSS
     link(rel='stylesheet', href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/styles/default.min.css')
     // LayerSwitcher CSS
-    link(rel='stylesheet', href='/javascripts/plugins/ol3-layerswitcher/src/ol3-layerswitcher.css')
+    link(rel='stylesheet', href='/javascripts/plugins/ol3-ext/control/layerswitchercontrol.css')
     // Context-Menu CSS
     link(rel='stylesheet', href='/javascripts/plugins/ol3-contextmenu/build/ol3-contextmenu.min.css')
     // OpenLayers CSS
-    link(rel='stylesheet', href='/javascripts/plugins/ol3/ol.css', type='text/css')
+    link(rel='stylesheet', href='/javascripts/plugins/ol3/css/ol.css', type='text/css')
     // CSS OpenLayers Popup
     link(rel='stylesheet', href='http://openlayers.org/en/v3.11.0/examples/popup.css')
     // Prefix free
@@ -52,8 +52,11 @@ html
     if locals.user && mis_notificaciones
       each noti in mis_notificaciones
         if noti.vista == false
-          - nuevas ++;  
-    div.col-xs-7.col-sm-3.col-md-2.sidebar.sidebar-left.sidebar-animate(style="background: rgba(255,255,255, 1); top: 0px !important; box-shadow: 5px 0px 15px 1px rgba(50, 50, 50, 0.5);")
+          - nuevas ++;
+    div.col-xs-7.col-sm-3.col-md-2.sidebar.sidebar-right.sidebar-animate(style="background: rgba(255,255,255, 1); top: 0px !important; box-shadow: 5px 0px 15px 1px rgba(50, 50, 50, 0.5); padding : 0px; bottom : 1.5em; min-height : 0px;")
+      //content
+      .col-lg-12.layer_switcher(style="padding : 0px;")
+    div.col-xs-7.col-sm-3.col-md-2.sidebar.sidebar-left.sidebar-animate(style="background: rgba(255,255,255, 1); top: 0px !important; box-shadow: -5px 0px 15px 1px rgba(50, 50, 50, 0.5); bottom : 1.5em; min-height : 0px;")
       //content
       .media(style="padding: 10 0 10 0px; border-bottom: 1px solid rgba(0,0,0,0.6)")
         a.media-left
@@ -99,12 +102,16 @@ html
                 |  #{contenido.cerrar_sesion}
     ul
       li(style="position: absolute; top: 8.5em; left: 0.5em;z-index: 1; border-radius: 5px;")
-        a(class="navbar-toggle" data-toggle="sidebar" data-target=".sidebar" href="#" style="padding: 0px; margin: 0px;")
+        a(class="navbar-toggle" data-toggle="sidebar" data-target=".sidebar-left" href="#" style="padding: 0px; margin: 0px;")
           if(user)
             img.img-responsive.img-circle.pull-left(src="#{locals.user.profile.picture}" style="height: 40px; width: 40px;")
             span(style="margin-left: -15px; margin-top: 25px;").badge.noti_up #{nuevas}
           else
-            img.img-responsive.img-circle.pull-left(src="http://appstudio.windows.com/Content/img/temp/icon-user.png" style="height: 40px; width: 40px; margin: 0 5 0 0px;")          
+            img.img-responsive.img-circle.pull-left(src="http://appstudio.windows.com/Content/img/temp/icon-user.png" style="height: 40px; width: 40px; margin: 0 5 0 0px;")
+
+    div(style="position : absolute; right : 0.5em; top : 2.5em; z-index : 1; background: #00bbff; border-radius : 2px;")
+        a(class="navbar-toggle" data-toggle="sidebar" data-target=".sidebar-right" href="#" style="padding: 0px; margin: 0px;")
+          img(src="/files/images/layers.svg") 
     // header-right end
     // header end
     // section start
@@ -153,12 +160,19 @@ html
   // Proj4.js
   script(src='https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.12/proj4.js')
   // OpenLayers.js
-  script(src='/javascripts/plugins/ol3/ol.js')
+  script(src='/javascripts/plugins/ol3/build/ol.js')
+  // OL3 FontStyle Viglino Github https://github.com/Viglino/ol3-ext.git
+  script(src='/javascripts/plugins/ol3-ext/style/fontsymbol.js')
+  script(src='/javascripts/plugins/ol3-ext/style/shadowstyle.js')
+
+  script(src="/javascripts/plugins/ol3-ext/style/fontmaki.def.js")
+  script(src="/javascripts/plugins/ol3-ext/style/fontawesome.def.js")
+  
   // Cesium
   //script(src="/javascripts/plugins/ol3-cesium/cesium/Build/Cesium/Cesium.js")
   //script(src="/javascripts/plugins/ol3-cesium/dist/ol3cesium.js")
   // LayerSwitcher JS
-  script(src='/javascripts/plugins/ol3-layerswitcher/src/ol3-layerswitcher.js')
+  script(src="/javascripts/plugins/ol3-ext/control/layerswitchercontrol.js")
   // ContextMenu JS
   script(src='/javascripts/plugins/ol3-contextmenu/build/ol3-contextmenu.js')
   // Geocoder
@@ -185,6 +199,7 @@ html
     var format = new ol.format.GeoJSON();
 
     var vector = new ol.layer.Vector({
+      displayInLayerSwitcher: false,
       source: new ol.source.Vector({
           format: format
       }),

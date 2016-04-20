@@ -123,9 +123,6 @@ app.ExternalWMS = function(opt_options) {
             }
           };
           xhr.send();
-
-
-
         });
       }
     });

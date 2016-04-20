@@ -13,7 +13,8 @@ layerVectorVacia = new ol.layer.Vector({
 }),
 Tile = function(opciones){
 	return new ol.layer.Tile({
-		title: opciones.titulo,
+		legend : opciones.legend,
+		name: opciones.titulo,
 		visible: true,
 		source: new ol.source.TileWMS({
 			crossOrigin: 'anonymous', // So important maniguiiiiii
@@ -30,7 +31,8 @@ Tile = function(opciones){
 },
 TileWMST = function(opciones){
 	return new ol.layer.Tile({
-		title: opciones.titulo,
+		legend : opciones.legend,
+		name: opciones.titulo,
 		visible: false,
 		source: new ol.source.WMTS({
 			crossOrigin: 'anonymous',
@@ -56,12 +58,16 @@ for (var i=0; i < 22; i++){
 /*
  *  Capa de nuestro servidor WMS
  */
+function leyenda_servidor(capa){
+	return 'http://84.126.219.128:8001/geoserver/jahr/ows?service=WMS&request=GetLegendGraphic&format=image%2Fpng&width=20&height=20&layer=' + capa;
+};
 
 // Ortofoto
 var orto = Tile({
 	titulo : 'Ortofoto',
 	capa : 'jahr:ortofoto',
 	url : ip + '/geoserver/jahr/wms',
+	legend : leyenda_servidor('ortofoto'),
 });
 
 //Municipio
@@ -69,6 +75,7 @@ var municipio = Tile({
 	titulo : 'Municipio',
 	capa : 'jahr:muni_torrent',
 	url : ip + '/geoserver/jahr/wms',
+	legend : leyenda_servidor('muni_torrent'),
 });
 
 // Manzanas
@@ -76,6 +83,7 @@ var manzanas = Tile({
 	titulo : 'Manzanas',
 	capa : 'jahr:manzanas',
 	url : ip + '/geoserver/jahr/wms',
+	legend : leyenda_servidor('manzanas'),
 });
 
 // Viales
@@ -83,6 +91,7 @@ var viales = Tile({
 	titulo : 'Viales',
 	capa : 'jahr:viales',
 	url : ip + '/geoserver/jahr/wms',
+	legend : leyenda_servidor('viales'),
 });
 
 // Caminos
@@ -90,6 +99,7 @@ var caminos = Tile({
 	titulo : 'Caminos',
 	capa : 'jahr:caminos',
 	url : ip + '/geoserver/jahr/wms',
+	legend : leyenda_servidor('caminos'),
 });
 
 // Etiquetas Viales
@@ -97,6 +107,7 @@ var nom_viales = Tile({
 	titulo : 'Etiquetado Calles',
 	capa : 'jahr:nombres_viales',
 	url : ip + '/geoserver/jahr/wms',
+	legend : leyenda_servidor('nombres_viales'),
 });
 
 // Portales
@@ -104,6 +115,7 @@ var portales = Tile({
 	titulo : 'Portales',
 	capa : 'jahr:portales',
 	url : ip + '/geoserver/jahr/wms',
+	legend : leyenda_servidor('portales'),
 });
 
 // Denuncias
@@ -111,17 +123,20 @@ var denuncias_puntos = Tile({
 	titulo : 'Denuncias Puntual',
 	capa : 'jahr:denuncias_puntos',
 	url : ip + '/geoserver/jahr/wms',
+	legend : leyenda_servidor('denuncias_puntos'),
 });
 
 var denuncias_lineas = Tile({
 	titulo : 'Denuncias Lineal',
 	capa : 'jahr:denuncias_lineas',
 	url : ip + '/geoserver/jahr/wms',
+	legend : leyenda_servidor('denuncias_lineas'),
 });
 var denuncias_poligonos = Tile({
 	titulo : 'Denuncias Poligonal',
 	capa : 'jahr:denuncias_poligonos',
 	url : ip + '/geoserver/jahr/wms',
+	legend : leyenda_servidor('denuncias_poligonos'),
 });
 
 //Denuncias Heat Map
@@ -316,6 +331,7 @@ var ortoWMST = TileWMST({
 	titulo : 'WMST - Ortofoto',
 	capa : 'jahr:ortofoto',
 	url : ip + '/geoserver/gwc/service/wmts',
+	legend : leyenda_servidor('ortofoto'),
 });
 
 //Municipio
@@ -323,6 +339,7 @@ var municipioWMST = TileWMST({
 	titulo : 'WMST - Municipio',
 	capa : 'jahr:muni_torrent',
 	url : ip + '/geoserver/gwc/service/wmts',
+	legend : leyenda_servidor('muni_torrent'),
 });
 
 // Manzanas
@@ -330,6 +347,7 @@ var manzanasWMST = TileWMST({
 	titulo : 'WMST - Manzanas',
 	capa : 'jahr:manzanas',
 	url : ip + '/geoserver/gwc/service/wmts',
+	legend : leyenda_servidor('manzanas'),
 });
 
 // Viales
@@ -337,6 +355,7 @@ var vialesWMST = TileWMST({
 	titulo : 'WMST - Viales',
 	capa : 'jahr:viales',
 	url : ip + '/geoserver/gwc/service/wmts',
+	legend : leyenda_servidor('viales'),
 });
 
 // Caminos
@@ -344,6 +363,7 @@ var caminosWMST = TileWMST({
 	titulo : 'WMST - Caminos',
 	capa : 'jahr:caminos',
 	url : ip + '/geoserver/gwc/service/wmts',
+	legend : leyenda_servidor('caminos'),
 });
 
 // Etiquetas Viales
@@ -351,6 +371,7 @@ var nom_vialesWMST = TileWMST({
 	titulo : 'WMST - Etiquetado Calles',
 	capa : 'jahr:nombres_viales',
 	url : ip + '/geoserver/gwc/service/wmts',
+	legend : leyenda_servidor('nombres_viales'),
 });
 
 // Portales
@@ -358,6 +379,7 @@ var portalesWMST = TileWMST({
 	titulo : 'WMST - Portales',
 	capa : 'jahr:portales',
 	url : ip + '/geoserver/gwc/service/wmts',
+	legend : leyenda_servidor('portales'),
 });
 
 // Denuncias
@@ -365,18 +387,21 @@ var denuncias_puntos_WMST = TileWMST({
 	titulo : 'WMST - Denuncias Puntual',
 	capa : 'jahr:denuncias_puntos',
 	url : ip + '/geoserver/gwc/service/wmts',
+	legend : leyenda_servidor('denuncias_puntos'),
 });
 
 var denuncias_lineas_WMST = TileWMST({
 	titulo : 'WMST - Denuncias Lineal',
 	capa : 'jahr:denuncias_lineas',
 	url : ip + '/geoserver/gwc/service/wmts',
+	legend : leyenda_servidor('denuncias_lineas'),
 });
 
 var denuncias_poligonos_WMST = TileWMST({
 	titulo : 'WMST - Denuncias Poligonal',
 	capa : 'jahr:denuncias_poligonos',
 	url : ip + '/geoserver/gwc/service/wmts',
+	legend : leyenda_servidor('denuncias_poligonos'),
 });
 
 /*
@@ -385,7 +410,7 @@ var denuncias_poligonos_WMST = TileWMST({
 
 //Mapa base del IGN
 var ignBase = new ol.layer.Tile({
-	title: 'IGN Base',
+	name: 'IGN Base',
 	visible: true,
 	source: new ol.source.TileWMS({
 		url: 'http://www.ign.es/wms-inspire/ign-base',
@@ -401,7 +426,7 @@ var ignBase = new ol.layer.Tile({
 
 //Ortofoto PNOA
 var ortoPNOA = new ol.layer.Tile({
-	title: 'Ortofoto PNOA',
+	name: 'Ortofoto PNOA',
 	visible: false,
 	source: new ol.source.TileWMS({
 		url: 'http://www.ign.es/wms-inspire/pnoa-ma',
@@ -418,19 +443,19 @@ var ortoPNOA = new ol.layer.Tile({
 // Grupo de Capas 1.--> Mapas base
 // Capa vacía, mapa base ign, ortofoto PNOA
 var groupCapasBase = new ol.layer.Group({
-	title: 'Capas Base',
+	name: 'Capas Base',
 	layers: [layerVectorVacia, ignBase, ortoPNOA]
 });
 
 var groupCartoTorrentWMS = new ol.layer.Group({
-	title: 'Cartografía de Torrent WMS',
+	name : 'Cartografía de Torrent WMS',
 	layers: [orto, municipio, manzanas, viales, caminos, /*nom_viales,*/ portales, 
 	    denuncias_puntos, denuncias_lineas, denuncias_poligonos, denunciasHeatMap,
 	    ]
 });
 
 var torrent_cascada = new ol.layer.Group({
-	title : 'WMS de Torrent en cascada',
+	name : 'WMS de Torrent en cascada',
 	layers : [	    // Carto Oficial
 	    arboles, areas_recreativas, nom_ejes, nom_ejes_valenciano, carpas,
 	    centros_educativos, centros_municipales, centros_de_culto, centros_de_salud,
@@ -442,7 +467,7 @@ var torrent_cascada = new ol.layer.Group({
 });
 
 var groupCartoTorrentWMST = new ol.layer.Group({
-	title: 'Cartografía de Torrent WMS Teselado',
+	name: 'Cartografía de Torrent WMS Teselado',
 	layers: [ortoWMST, municipioWMST, manzanasWMST, vialesWMST, 
 	    caminosWMST, /*nom_vialesWMST,*/ portalesWMST, 
 	    denuncias_puntos_WMST, denuncias_lineas_WMST, denuncias_poligonos_WMST]

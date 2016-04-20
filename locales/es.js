@@ -20,6 +20,7 @@
 	"denuncias_fav": "Denuncias Favoritas",
 	"denuncia": "Denuncia",
 	"distancia": "Distancia",
+	"denuncia_añadida_ok" : "Denuncia añadida correctamente",
 	"denuncia_no_encontrada": "Denuncia no encontrada",
 	"denuncia_no_existe": "La denuncia solicitada no existe",
 	"denuncia_con_id": "Denuncia con id",
@@ -109,6 +110,7 @@
 	"usuario_email_no_existe": "No existe ninguna cuenta con el nombre de usuario o correo electrónico ",
 	"usuario_valido": "El usuario ya es válido.",
 	"ubicacion_preferida_actualizada": "Ubicación preferida cambiada correctamente",
-	"visor_tiempo_real": "Visor Tiempo Real",
-	"denuncia_geometria_poligonal": "denuncia_geometria_poligonal"
+	"usuarios_afectados" : "usuarios afectados",
+	"visor_tiempo_real": "Visor Tiempo Real"
+
 }

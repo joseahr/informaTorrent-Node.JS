@@ -2,6 +2,8 @@ extends ../base/map_layout
 block script
 	script(src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.1/js/bootstrap-datepicker.js")
 	script(src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.1/locales/bootstrap-datepicker.es.min.js")
+	script(src="/javascripts/plugins/OL3-AnimatedCluster/layer/animatedclusterlayer.js")
+	script(src="/javascripts/plugins/OL3-AnimatedCluster/interaction/selectclusterinteraction.js")
 	//script(src="https://cdn.socket.io/socket.io-1.3.7.js")
 	script.
 		var dialog_;
@@ -15,8 +17,30 @@ block script
 		num_denuncias_io.on('new_denuncia', function(data){
 			var denuncia = data.denuncia;
 			console.log('denuncia añadida socket.io');
-		
-			vector.getSource().addFeature(wktFormat.readFeature(denuncia.wkt));
+			
+			var feature = wktFormat.readFeature(denuncia.wkt);
+		    var centro = ol.extent.getCenter(feature.getGeometry().getExtent());
+		    centro[1] += 0.00001;
+		    feature_marker = new ol.Feature({
+		    	geometry : new ol.geom.Point(centro),
+		    	name : 'Denuncia Marker'
+		    });
+
+			denuncia.tipo = denuncia.wkt.match(/POLYGON/g) ? 'Polygon' : (denuncia.wkt.match('/LINESTRING/g') ? 'LineString' : 'Point');
+			denuncia.coordenadas = feature.getGeometry().getCoordinates();
+
+			feature.attributes = {
+				type : 'denuncia',
+				denuncia: denuncia
+			};
+			feature_marker.attributes = {
+				type : 'marker',
+				marker_type : 'nueva',
+				denuncia: denuncia
+			};
+
+			features_cache[denuncia.gid] = feature;
+			clusterSource.getSource().addFeature(feature_marker);
 			
 		});
 		

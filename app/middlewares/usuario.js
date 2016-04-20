@@ -4,7 +4,6 @@ var usuarioModel = require('../models/usuario.js');
 module.exports = function(req, res, next){
 	if(!req.user)
 		return next();
-	console.log('middle_usuario');
 	// Obtenemos las notificaciones
 	usuarioModel.get_notificaciones(req.user._id, function(error, notificaciones){
 		console.log('middle_usuario');
@@ -18,7 +17,8 @@ module.exports = function(req, res, next){
 				res.locals['mis_acciones'] = [];
 			else
 				res.locals['mis_acciones'] = acciones;
-			console.log('middle_usuario');
+			console.log(acciones);
+			console.log(acciones.length, 'ACCIONEEEES');
 			return next();
 		});
 	});

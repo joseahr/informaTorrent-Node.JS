@@ -7,7 +7,9 @@ var validator = require('validator');
 var path = require('path');
 
 var denunciaModel = require('../models/denuncia.js');
+var usuarioModel = require('../models/usuario.js');
 	denunciaModel = new denunciaModel();
+	usuarioModel = new usuarioModel();
 
 // api json para consultas
 router.get('/api', function(req, res){
@@ -143,6 +145,9 @@ router.route('/nueva')
 		denunciaModel.guardar(req.body, function(error, result){
 			if(error)
 				return res.status(500).json(error);
+			result.type = 'success';
+			result.msg = req.i18n.__('denuncia_añadida_ok') + '.\n' + 
+				result.num_usuarios_afectados + ' ' + req.i18n.__('usuarios_afectados');
 			res.json(result);
 		});
 	});
@@ -220,7 +225,8 @@ router.param('id_denuncia', function(req, res, next, id_denuncia){
 router.route('/:id_denuncia')
 // Pagina denuncia -- Redirecciona a app/denuncias/{id_denuncia}/{titulo} -- OK
 .get(function(req, res){
-	res.redirect('/app/denuncias/' + req.denuncia.gid + '/' + req.denuncia.titulo.replace(/ /g, '-'));
+	var id_noti = req.query.id_noti ? '?id_noti=' + req.query.id_noti : '';
+	res.redirect('/app/denuncias/' + req.denuncia.gid + '/' + req.denuncia.titulo.replace(/ /g, '-').replace(/\?/g,'') + id_noti);
 })
 // Actualizar denuncia -- OK
 .put(function(req, res){
@@ -321,15 +327,31 @@ router.post('/:id_denuncia/comentar', function(req, res, next){
 // Página denuncia final --> Todas redireccionan aquí -- OK
 router.get('/:id_denuncia/:titulo', function(req, res){
 	console.log(req.params.titulo, req.denuncia.titulo);
-	if(req.params.titulo != req.denuncia.titulo.replace(/ /g, '-'))
-		return res.redirect('/app/denuncias/' + req.denuncia.gid + '/' + req.denuncia.titulo.replace(' ', '-'));
+	if(req.params.titulo.replace(/\?/g, '') != req.denuncia.titulo.replace(/ /g, '-').replace(/\?/g, ''))
+		return res.redirect('/app/denuncias/' + req.denuncia.gid + '/' + req.denuncia.titulo.replace(/ /g, '-').replace(/\?/g));
+
 	var id_usuario = req.user ? req.user._id : undefined;
+
 	if(req.denuncia.id_usuario != id_usuario)
 		denunciaModel.sumar_visita(req.denuncia.gid, function(error){
-			res.render('denuncias/denuncia', {denuncia: req.denuncia});
+			console.log('noti', req.query.noti);
 		});
-	else
-		res.render('denuncias/denuncia', {denuncia: req.denuncia});
+	if(req.query.id_noti){
+		usuarioModel.get_accion_by_id(req.query.id_noti, function(error, noti){
+			console.log(error, noti);
+			if(noti.id_usuario_to != req.user._id && noti.id_usuario_from != req.user._id)
+				return res.render('denuncias/denuncia', {denuncia: req.denuncia});
+			else if(noti.id_denuncia != req.denuncia.gid)
+				return res.render('denuncias/denuncia', {denuncia: req.denuncia});
+			else if(noti.tipo == 'DENUNCIA_CERCA' || noti.tipo == 'COMENTARIO_DENUNCIA')
+				return res.render('denuncias/denuncia', {
+					denuncia: req.denuncia,
+					notificacion : noti
+				});
+			else return res.render('denuncias/denuncia', {denuncia: req.denuncia});
+		});
+	}
+	else return res.render('denuncias/denuncia', {denuncia: req.denuncia});
 });
 
 module.exports = router;

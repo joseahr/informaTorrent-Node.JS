@@ -367,7 +367,7 @@ Usuario.prototype.get_acciones = function(id_usuario, callback){
 	db.query(consultas.obtener_acciones, id_usuario)
 	.then(function(acciones){
 		// obtenemos notificaciones
-		notificaciones.forEach(function(n){
+		acciones.forEach(function(n){
 			n.denuncia = n.denuncia[0];
 			n.denuncia.geometria = n.denuncia.geometria_pu || n.denuncia.geometria_li || n.denuncia.geometria_po;
 			//console.log(n.denuncia, 'tipossss');
@@ -375,6 +375,7 @@ Usuario.prototype.get_acciones = function(id_usuario, callback){
 		callback(null, acciones);
 	})
 	.catch(function(error){
+		console.log(error);
 		callback({type : 'error', msg : error.toString()});
 	});
 };
@@ -554,6 +555,28 @@ Usuario.prototype.enviar_email = function(opciones, callback){
 		return callback(null);
 	});
 };
+
+Usuario.prototype.get_noti_by_id = function(id_noti, callback){
+	db.one(consultas.get_noti_por_id, id_noti)
+	.then(function(notificacion){
+		callback(null, notificacion);
+	})
+	.catch(function(error){
+		callback({type : 'error', msg : error.toString()});
+	});
+};
+
+Usuario.prototype.get_accion_by_id = function(id_noti, callback){
+	db.one(consultas.get_accion_por_id, id_noti)
+	.then(function(notificacion){
+		callback(null, notificacion);
+	})
+	.catch(function(error){
+		console.log(error);
+		callback({type : 'error', msg : error.toString()});
+	});
+};
+
 /*
 =============================================================
 Generar Hash a partir de la contraseña para almacenar en bdd

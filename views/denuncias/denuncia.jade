@@ -43,6 +43,7 @@ block panel-lateral
 block script
 	// TinyMCE Editor
 	script(src="//cdn.tinymce.com/4/tinymce.min.js")
+	script(src='/javascripts/plugins/ol3-ext/style/photostyle.js')
 	script.
 		//alert('!{denuncia.descripcion}');
 		var denuncia = {
@@ -59,8 +60,10 @@ block script
 			tags : JSON.parse('!{JSON.stringify(denuncia.tags_)}')
 		};
 
-		var user;
+		var notificacion = JSON.parse('!{JSON.stringify(notificacion) || null}');
+		console.log('notificacion', notificacion);
 
+		var user;
 		if('#{user}' == ''){
 			user = undefined;
 		} else {
@@ -100,9 +103,82 @@ block script
 		var geom = feature.getGeometry().getExtent();
 		var size = map.getSize();
 
+		parseNoti(notificacion);
+
 		map.getView().fit(geom,size);
 		// solo podemos acceder a ella desde este tipo de scripts que tienen un punto al final
 		map.addControl(new app.InfoDenuncia({},denuncia));
 		map.addControl(new app.ImagenesDenuncia({},denuncia));
 		map.addControl(new app.ComentariosDenuncia({}, denuncia, user));
 		map.addControl(new app.LikeDenuncia());
+
+		function parseNoti(noti){
+			if(noti.tipo == 'DENUNCIA_CERCA'){
+				var posicion = noti.datos.location;
+				var vector_ = new ol.layer.Vector({
+					displayInLayerSwitcher: false,
+					source: new ol.source.Vector({
+						format: new ol.format.GeoJSON()
+				    }),
+				    style : styleMarkers
+				});
+				var feature_pos = new ol.Feature({
+					geometry: new ol.geom.Point(posicion.coordinates),
+					name: 'Ubicación',
+				});
+				feature_pos.attributes = {};
+				feature_pos.attributes.marker_type = 'posicion';
+
+				vector_.getSource().addFeature(feature_pos);
+
+				var denuncia_centro = ol.extent.getCenter(feature.getGeometry().getExtent());
+
+				var coo = []; coo.push(denuncia_centro); coo.push(posicion.coordinates);
+				var feature_lin = new ol.Feature({
+					geometry: new ol.geom.LineString(coo),
+					name: 'Linea',
+					attributes : {marker_type : 'posicion_linea'}
+				});
+				feature_lin.attributes = {};
+				feature_lin.attributes.marker_type = 'posicion_linea';
+
+				vector_.getSource().addFeature(feature_lin);
+
+				map.addLayer(vector_);
+
+				feature_pos.setStyle(
+					new ol.style.Style({
+						image: new ol.style.Photo ({
+							src: noti.profile_to.picture,
+							radius: 12,
+							crop: true,
+							kind: 'anchored',
+							shadow: 5,
+							onload: function() { vector_.changed(); },
+							stroke: new ol.style.Stroke(
+							{	width: 2,
+								color: '#fff'
+							})
+						})
+					})
+				);
+
+			}
+			else if(noti.tipo == 'COMENTARIO_DENUNCIA'){
+				console.log('comentario', noti);
+				$(function(){
+					$('.comentarios_denuncia').find('button').click();
+					var date = new Date(noti.fecha),
+					fecha_id = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate() + '-' + date.getHours() + '-' + date.getMinutes();
+					console.log('#' + noti.id_usuario_from + fecha_id);
+					var selector = '#' + noti.id_usuario_from + fecha_id;
+					setTimeout(function(){
+						$(selector).get(0).scrollIntoView();
+						$(selector).css('background-color', '#ffbb00');
+						setTimeout(function(){
+							$(selector).css('background-color', '#fff');
+						},1000);
+					}, 1000);
+				});
+			}
+		};

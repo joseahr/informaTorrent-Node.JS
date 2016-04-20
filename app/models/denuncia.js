@@ -263,8 +263,6 @@ Denuncia.prototype.guardar = function(opciones, callback){
 		let denuncia = yield this.one(consultas.insert_denuncia, [titulo, contenido, id_usuario]);
 		// Asignamos a la variable denuncia_io la denuncia 
 		denuncia_io = denuncia;
-		denuncia_io.wkt = wkt;
-
 		// Leemos el directorio temporal asignado a la denuncia
 		var files = fs.readdirSync(config.TEMPDIR + "/" + tempDirID);
 		// Si hay imágenes
@@ -298,6 +296,20 @@ Denuncia.prototype.guardar = function(opciones, callback){
 	.then (function(){		
 		// La denuncia se ha añadido correctamente
 		//console.log(denuncia_io + ' new denuncia addedd');
+		return db.one(consultas.usuario_por_id, id_usuario);
+		// Ejecutamos la conulta para buscar usuarios cerca  informarles de que
+		// hemos añadido una denuncia cerca de su ubicación
+	})
+	.then(function(usuario_from){
+		usu_from = usuario_from;
+		return db.one(consultas.denuncia_por_id, denuncia_io.gid);
+	})
+	.then(function(denuncia){
+		// Asignamos
+		denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+		denuncia_io = denuncia;
+		denuncia_io.wkt = wkt;
+		denuncia_io.usuario = [usu_from];
 		// Emitimos a todos los usuarios y a mi que hemos añadido una denuncia
 		for(var socketId in global.clients[id_usuario]){
 			// A todos menos a mi 
@@ -308,12 +320,10 @@ Denuncia.prototype.guardar = function(opciones, callback){
 			break;
 		}
 		return 	db.any(consultas.usuarios_cerca_de_denuncia, [wkt, id_usuario]);
-		// Ejecutamos la conulta para buscar usuarios cerca  informarles de que
-		// hemos añadido una denuncia cerca de su ubicación
 	})
 	.then(function(usuarios_cerca_){
 		usuarios_cerca = usuarios_cerca_;
-		console.log(usuarios_cerca_);
+		//console.log(usuarios_cerca_);
 		if(usuarios_cerca.length == 0) {
 			console.log('NO HAY USUARIOS AFECTADOS');
 			var error = new Error('no_usuarios_afectados');
@@ -323,32 +333,25 @@ Denuncia.prototype.guardar = function(opciones, callback){
 		// Si hay usuarios cerca...
 		else {
 			console.log('HAY ' + usuarios_cerca.length + ' USUARIOS AFECTADOS');
-			return db.one(consultas.usuario_por_id, id_usuario);
-		} // If - Else No hay usuarios cerca
-	})
-	.then(function(usuario_from){
-		usu_from = usuario_from;
-		return db.one(consultas.denuncia_por_id, denuncia_io.gid);
-	})
-	.then(function(denuncia){
-		// Asignamos
-		denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-		denuncia_io = denuncia;
-		// ejecutamos tarea
-		return db.tx(function (t){
-			var q = []; // Consultas
-			// Recorremos los usuarios cerca
-			console.log(usuarios_cerca);
-			usuarios_cerca.forEach(function(user){
-				// Guardamos la distancia buffer del usuario en una variable
-				var datos = JSON.stringify({distancia : user.distancia});
-				// Añadimos la consulta para añadir notificación en la base de datos
-				q.push(db.one(consultas.notificar_denuncia_cerca, 
-					[denuncia_io.gid, id_usuario, user._id, datos]));
+			// ejecutamos tarea
+			return db.tx(function (t){
+				var q = []; // Consultas
+				// Recorremos los usuarios cerca
+				console.log(usuarios_cerca);
+				usuarios_cerca.forEach(function(user){
+					// Guardamos la distancia buffer del usuario en una variable
+					var datos = JSON.stringify({
+						distancia : user.distancia,
+						location : user.location
+					});
+					// Añadimos la consulta para añadir notificación en la base de datos
+					q.push(db.one(consultas.notificar_denuncia_cerca, 
+						[denuncia_io.gid, id_usuario, user._id, datos]));
+				});
+				// Ejecutamos la conulta
+				return t.batch(q);
 			});
-			// Ejecutamos la conulta
-			return t.batch(q);
-		});
+		} // If - Else No hay usuarios cerca
 	})
 	.then(function(notificaciones){
 		//console.log('notificaciones');

@@ -72,7 +72,7 @@ router.get('/info', function(req, res){
 });
 
 function get_denuncias_tabla_info (tabla, callback){
-	db.query(queries.obtener_info_tabla_geoportal, nombre_tabla)
+	db.query(queries.obtener_info_tabla_geoportal, tabla)
 	.then(function(info){
 		callback(info);
 	})
