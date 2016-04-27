@@ -823,3 +823,25 @@ textarea {
 	-webkit-transform: scale(1);
 	transform: scale(1);
 }
+
+.datepicker-dropdown {
+	background-color: #fff !important;
+	border : 1px solid rgba(0,0,0,0.2) !important;
+}
+
+.tt-menu {
+	background-color: #fff;
+	border : 1px solid rgba(0,0,0,0.2);
+	padding: 8px;
+	border-radius: 5px;
+}
+
+.tt-suggestion:hover {
+	background-color: #f7f7f7;
+}
+
+.bootstrap-tagsinput{
+	border-top-left-radius: 0px !important;
+	border-bottom-left-radius: 0px !important;
+	width : 100%;
+}

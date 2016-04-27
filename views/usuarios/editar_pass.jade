@@ -42,6 +42,7 @@ block content
 										|  Actualizar
 block script
 	script.
+		window.document.title += ' - Cambiar contraseña - #{usuario_cambiar.profile.username}';
 		$('#form_update').submit(function(e){
 			//alert('eeeeee');
 			var data = {

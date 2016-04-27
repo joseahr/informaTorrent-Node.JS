@@ -48,6 +48,7 @@ var mis_consultas = {
 	insert : {
 		denuncias : {
 			comentario : sql('insert', 'denuncias/comentario.sql'),
+			replica : sql('insert', 'denuncias/replica.sql'),
 			imagen : sql('insert', 'denuncias/imagen.sql'),
 			like : sql('insert', 'denuncias/like.sql'),
 			tag : sql('insert', 'denuncias/tag.sql'), 

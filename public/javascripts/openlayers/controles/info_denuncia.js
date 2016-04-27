@@ -22,6 +22,16 @@ app.InfoDenuncia = function(opt_options, denuncia) {
       title: 'Esta denuncia le gusta a...',
       message: likes_html,
       buttons: [{label: 'Cerrar', action: function(d){d.close();}}],
+      onshow : function(dialog){
+        dialog.getModalHeader().replaceWith($('<div class="row" style="margin: 0px; padding-top: 5px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
+          '<div class="col-xs-4" style="text-align: center; color: #fff; font-weight : bold;">' +
+          '<i class="fa fa-thumbs-up" style="font-size : 60px; color : #00bbff; text-shadow: 2px 2px #fff;"></i>' + 
+            '<h4 style="padding : 2px; color : #00bbff; background : rgba(0,0,0,0.7); border-radius : 15px;"> Apoyos</h4>' +
+          '</div>' +
+        '</div>'));
+        dialog.getModalBody().parent().css('border-radius', '15px');
+        dialog.getModalBody().css('padding-top', '10px');
+      },
       onshown: function(){
         $('[data-toggle="bottom"]').popover({
           trigger: 'hover',
@@ -38,8 +48,9 @@ app.InfoDenuncia = function(opt_options, denuncia) {
 
   likes_html += '</div></div>';
 
-  if (denuncia.tags)
-	  denuncia.tags.forEach(function(tag){
+  console.log(denuncia.tags_, 'tagsssssssssss');
+  if (denuncia.tags_)
+	  denuncia.tags_.forEach(function(tag){
 	  	tags.push('#' + tag.tag);
 	  });
 
@@ -51,7 +62,7 @@ app.InfoDenuncia = function(opt_options, denuncia) {
 	  	title: denuncia.titulo,
 	  	message: '<h4 style="width: 100%; color: #fff; background-color: rgba(0,0,0,0.4); margin-top: -10px;text-align:center; border-radius: 5px">' + denuncia.titulo + '</h4>' +
 		  '<div id="desc" class="row" style="margin-top: 15px; overflow-x: hidden; background-color: #fff">' + 
-			 '<i class="fa fa-tags"> ' + tags + '</i>' +
+			 '<i class="fa fa-tags"> ' + tags.join(', ') + '</i>' +
 			 '<h4>Descripción</h4>' + 
 		  '</div>',
       buttons : [{
@@ -61,10 +72,10 @@ app.InfoDenuncia = function(opt_options, denuncia) {
 	  	onshow : function(dialog){
 	  		dialog.getModalHeader().replaceWith($('<div class="row" style="margin: 0px; padding-bottom: 15px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
   				'<div class="col-xs-4" style="text-align: center;">' +
-  					'<img class="img img-thumbnail" src="' + denuncia.usuario.profile.picture + '" style="margin-top: 15px; width: 90px; height: 90px; object-fit: cover;" />' +
+  					'<img class="img img-thumbnail" src="' + denuncia.usuario[0].profile.picture + '" style="margin-top: 15px; width: 90px; height: 90px; object-fit: cover;" />' +
   				'</div>' +
   				'<div class="col-xs-8" style="text-align: center; color: #fff">' +
-  					'<div class="col-lg-12" style="margin-top: 15px;height: 30px;"><i class="fa fa-user"></i> ' + denuncia.usuario.profile.username + '</div>' +
+  					'<div class="col-lg-12" style="margin-top: 15px;height: 30px;"><i class="fa fa-user"></i> ' + denuncia.usuario[0].profile.username + '</div>' +
   					'<div class="col-lg-12" style="height: 30px;"><i class="fa fa-eye"></i> ' + denuncia.veces_vista + ' <a onclick="quienLike()"><i class="fa fa-thumbs-up"></i></a> ' + num_likes + ' </div>' +
   					'<div class="col-lg-12" style="height: 30px;"><i class="fa fa-calendar"></i> ' + fecha + '</div>' +
   				'</div>' + 

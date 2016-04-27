@@ -282,7 +282,7 @@ app.Draw = function(opt_options, aux) {
 				buttons: [{label:'Cerrar', action: function(dialog){
 					vectorSource.clear();
 					vectorSource.addFeature(loc_anterior);
-					vectorSource.dispatchChangeEvent(); 
+					//vectorSource.dispatchChangeEvent(); 
 					dialog.close();
 				}},
 				{label:'Aceptar', action: function(dialog){
@@ -324,7 +324,16 @@ app.Draw = function(opt_options, aux) {
 						}
 					}
 				}}], // buttons
-
+			    onshow : function(dialog){
+			        dialog.getModalHeader().replaceWith($('<div class="row" style="margin: 0px; padding-top: 5px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
+			          '<div class="col-xs-4" style="text-align: center; color: #fff; font-weight : bold;">' +
+			          '<i class="fa fa-pencil" style="font-size : 60px; color : #00bbff; text-shadow: 2px 2px #fff;"></i>' + 
+			            '<h4 style="padding : 2px; color : #00bbff; background : rgba(0,0,0,0.7); border-radius : 15px;"> Distancia de aviso</h4>' +
+			          '</div>' +
+			        '</div>'));
+			        dialog.getModalBody().parent().css('border-radius', '15px');
+			        dialog.getModalBody().css('padding-top', '10px');
+			    },
 				onshown: function(dialog){
 					$('#distancia').selectpicker({
 					  	width: '100%'
@@ -385,6 +394,16 @@ app.Draw = function(opt_options, aux) {
 			  	title: 'Dibujar ' + a,
 			  	message: message,
 			  	buttons: [{label: 'Cerrar', action: function(dialog){dialog.close();}}],
+				onshow : function(dialog){
+					dialog.getModalHeader().replaceWith($('<div class="row" style="margin: 0px; padding-top: 5px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
+					  '<div class="col-xs-4" style="text-align: center; color: #fff; font-weight : bold;">' +
+					  '<i class="fa fa-pencil" style="font-size : 60px; color : #00bbff; text-shadow: 2px 2px #fff;"></i>' + 
+					    '<h4 style="padding : 2px; color : #00bbff; background : rgba(0,0,0,0.7); border-radius : 15px;"> Dibujar ' + a + '</h4>' +
+					  '</div>' +
+					'</div>'));
+					dialog.getModalBody().parent().css('border-radius', '15px');
+					dialog.getModalBody().css('padding-top', '10px');
+				},
 			  	onshown: function(dialog){
 				  	$('#dibujar').selectpicker({
 					  	width: '100%'

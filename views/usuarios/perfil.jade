@@ -33,7 +33,7 @@ block content
 										h4.panel-title
 											a(data-toggle='collapse' data-parent='#accordion' href='#notificaciones' aria-expanded='true' aria-controls='notificaciones')
 												.col-lg-12.text-center
-													i.fa.fa-inbox
+													i.fa.fa-bell
 													|  #{contenido.notificaciones}
 												div(style="position: absolute;top: 30%;left:1%;")
 													span.badge(style="background:#5BC0DE;float:left").noti_tot 
@@ -56,7 +56,7 @@ block content
 									#headingTwo.panel-heading(role='tab')
 										h4.panel-title
 											a(data-toggle='collapse', data-parent='#accordion', href='#mis_denuncias', aria-expanded='true', aria-controls='mis_denuncias')
-												i.fa.fa-files-o
+												i.fa.fa-bullhorn
 												| #{contenido.denuncias}
 									#mis_denuncias.panel-collapse.collapse(role='tabpanel', aria-labelledby='headingTwo')
 										.panel-body(style='text-align: center;')
@@ -103,6 +103,8 @@ block script
 	// OpenLayers.js
 	script(src='/javascripts/plugins/ol3/build/ol.js')
 	script.
+		window.document.title += ' - Perfil - #{user.profile.username}';
+		user = JSON.parse('!{JSON.stringify(user)}');
 		fillAcciones(JSON.parse('!{JSON.stringify(mis_acciones)}'), traducciones);
 		fillNotificaciones(JSON.parse('!{JSON.stringify(mis_notificaciones)}'), traducciones);
 		fillDenuncias(JSON.parse('!{JSON.stringify(misDenuncias)}'));

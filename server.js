@@ -39,8 +39,8 @@ app.use(flash()); // Flashear mensaje almacenados en la sesión
   next();
 });*/
 
-//var os = require('os');
-//console.log(os.networkInterfaces()['ens33'][0]['address']);
+var os = require('os');
+console.log(os.networkInterfaces()['ens33'][0]['address']);
 //var IP = os.networkInterfaces()['ens33'][0]['address']; // IP desde donde ejecuto la aplicación
 //var IP = 'http://localhost:3000/'
 

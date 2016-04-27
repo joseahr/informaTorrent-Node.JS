@@ -1,4 +1,4 @@
-var ip = window.location.href.toString().split(':' + window.location.port)[0] + ":8001";
+var ip = window.location.href.toString().split(':' + window.location.port)[0] + ":8081";
 var mousePositionControl = new ol.control.MousePosition({
   coordinateFormat: ol.coordinate.toStringHDMS,
 }),

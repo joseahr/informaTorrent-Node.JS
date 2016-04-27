@@ -1,5 +1,6 @@
 html
   head
+    title #{contenido.titulo}
     block meta
     // block meta
     meta(charset='utf-8')
@@ -47,6 +48,7 @@ html
         float: right;
       }
     block link
+  block content
   body(style="margin-top: -10px;")
     - var nuevas = 0;
     if locals.user && mis_notificaciones
@@ -85,7 +87,7 @@ html
           if user
             .menu-item.col-xs-12
               a(href="#" id="notificaciones")
-                i.fa.fa-inbox
+                i.fa.fa-bell
                 |  #{contenido.notificaciones}
                 span(style="margin-left: 5px;").badge.noti_up #{nuevas}
             .menu-item.col-xs-12
@@ -211,7 +213,17 @@ html
       var notificaciones = JSON.parse('!{JSON.stringify(mis_notificaciones)}');
     $('#notificaciones').click(function(e){
       var d = new BootstrapDialog({
-        title : 'Mis notificaciones'
+        title : 'Mis notificaciones',
+        onshow : function(dialog){
+          dialog.getModalHeader().replaceWith($('<div class="row" style="margin: 0px; padding-top: 5px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
+            '<div class="col-xs-4" style="text-align: center; color: #fff; font-weight : bold;">' +
+            '<i class="fa fa-bell" style="font-size : 60px; color : #00bbff; text-shadow: 2px 2px #fff;"></i>' + 
+              '<h4 style="padding : 2px; color : #00bbff; background : rgba(0,0,0,0.7); border-radius : 15px;"> Notificaciones</h4>' +
+            '</div>' +
+          '</div>'));
+          dialog.getModalBody().parent().css('border-radius', '15px');
+          dialog.getModalBody().css('padding-top', '0px');
+        },
       });
 
       var message = '';
@@ -243,6 +255,14 @@ html
   script.
     //window.screen.lockOrientation('landscape');
     map.addControl(new app.Tracking());
+
+    $('[data-target=".sidebar-right"]').click(function(){
+      $('.sidebar-left').removeClass('sidebar-open');
+    });
+    $('[data-target=".sidebar-left"]').click(function(){
+      $('.sidebar-right').removeClass('sidebar-open');
+    });
+
     $(function(){
       $('.dropdown-toggle').dropdown();
       $('[data-toggle="left"]').popover({
@@ -258,4 +278,10 @@ html
     $('#map').click(function(e){
       //alert('hideee');
       $('[data-toggle="right"], [data-toggle="left"]').popover('hide');
-    });  
+    });
+
+    $("h1, h2").each(function(){
+      var fontSize = $(this).css('font-size');
+      console.log(fontSize);
+      $(this).fitText(1.1, {maxFontSize: fontSize});
+    });

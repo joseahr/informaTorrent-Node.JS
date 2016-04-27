@@ -1,4 +1,4 @@
-var num_denuncias_io = io.connect(window.location.href.toString().split(':' + window.location.port)[0] + ":8000/app/visor");
+var num_denuncias_io = io.connect(window.location.href.split(':')[1] + ":3000/app/visor");
 
 /*
 ==============================================================================================
@@ -208,6 +208,38 @@ num_denuncias_io.on('denuncia_cerca', function(data){
 
 // Un usuario ha comentado nuestra denuncia
 num_denuncias_io.on('denuncia_comentada', function(data){
+	console.log(JSON.stringify(data));
+
+	data.noti.denuncia = data.denuncia;
+	data.noti.profile_from = data.from.profile;
+	
+	// Aumentamos en uno las notificaciones nuevas
+	var nuevas = parseInt($('.noti_up:eq(1)').text()) + 1;
+	$('.noti_up').empty();
+	$('.noti_up').append(nuevas);
+	// Aumentamos en uno las notificaciones totales
+	var not_tot = parseInt($('.noti_tot').text()) + 1;
+	$('.noti_tot').empty();
+	$('.noti_tot').append(not_tot);
+	
+	// Insertamos la notificacion al principio de la lista de notificaciones
+	var html = getNotificacionRow(data.noti, traducciones);
+	$('#notificaciones > .panel-body').prepend($(html));
+	
+	// Insertamos la notificacion al principio del array de notificaciones
+	if(notificaciones) notificaciones.unshift(data.noti);
+	/*BootstrapDialog.show({
+		title: 'Nueva notificación - Denuncia Comentada',
+		message: $(html),
+		buttons: [{label: 'Cerrar', action: function(dialog){dialog.close()}}],
+		onshown: function(dialog){
+			//setTimeout(function(){dialog.close()}, 1500);
+		}
+	});*/
+	
+});
+
+num_denuncias_io.on('replica', function(data){
 	console.log(JSON.stringify(data));
 
 	data.noti.denuncia = data.denuncia;

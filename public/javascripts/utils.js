@@ -1,13 +1,24 @@
- var ip = window.location.href.toString().split(':' + window.location.port)[0] + ':8001';
+ var ip = window.location.href.toString().split(':' + window.location.port)[0] + ':8081';
+ console.log(ip, 'utils');
 // Eliminar una denuncia
 function eliminar(id){
 	//alert(id);
 	BootstrapDialog.show({
-		title: 'Eliminar denuncia ID ' + id,
-		message: '¿Estás seguro de eliminar esta denuncia?',
+		title: 'ID: ' + id,
+		message: traducciones.seguro_eliminar_denuncia + ' (ID = ' + id + ')',
 		type: BootstrapDialog.TYPE_INFO,
+		onshow : function(dialog){
+            dialog.getModalHeader().replaceWith($('<div class="row" style="margin: 0px; padding-top: 5px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
+		        '<div class="col-xs-4" style="text-align: center; color: #fff; font-weight : bold;">' +
+		        '<i class="fa fa-trash" style="font-size : 60px; color :  #9E1C1C; text-shadow: 2px 2px #fff;"></i>' + 
+		          '<h4 style="padding : 2px; color :  #9E1C1C; background : rgba(0,0,0,0.7); border-radius : 15px;"> ¿Eliminar denuncia?</h4>' +
+		        '</div>' +
+		      '</div>'));
+    	    dialog.getModalBody().parent().css('border-radius', '15px');
+	        dialog.getModalBody().css('padding-top', '10px');
+		},
 		buttons: [
-			{label: 'Aceptar', action: function(dialog){
+			{label: traducciones.aceptar, action: function(dialog){
 				$.ajax({
 					url : '/app/denuncias/' + id,
 					type : 'DELETE',
@@ -19,7 +30,7 @@ function eliminar(id){
 					}
 				});
 			}}, 
-			{label: 'Cancelar', action: function(dialog){dialog.close();}}
+			{label: traducciones.cancelar, action: function(dialog){dialog.close();}}
 		]
 	});
 }
@@ -92,6 +103,12 @@ function getIconoNotificacion(noti, traduc){
 	else if(tipo == 'COMENTARIO_DENUNCIA'){
 		return html + '<span class="fa-stack fa-lg">' +
 			   		'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB"></i>' +
+			   		'<i class="fa fa-comment fa-stack-1x fa-inverse"></i>' +
+			   '</span>';
+	}
+	else if(tipo == 'REPLICA'){
+		return html + '<span class="fa-stack fa-lg">' +
+			   		'<i class="fa fa-circle fa-stack-2x" style="color: #339BEB"></i>' +
 			   		'<i class="fa fa-comments fa-stack-1x fa-inverse"></i>' +
 			   '</span>';
 	}
@@ -124,6 +141,13 @@ function getInfoNotificacion(noti, traduc){
 				'...</i>" ' + traduc.en_tu_denuncia + '</p>' + 
 				'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';
 	}
+	else if(noti.tipo == 'REPLICA'){
+		console.log(noti.datos);
+		return '<p><a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
+				traduc.comento + ': <i>"' + decodeURIComponent(noti.datos.contenido).substring(0,20)  + 
+				'...</i>" ' + traduc.en_una_conversacion + '"</p>' + 
+				'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';
+	}
 	else if(noti.tipo == 'LIKE_DENUNCIA'){
 		return '<p><a href="/app/usuarios/' + noti.id_usuario_from + '">' + username + '</a> ' +
 				traduc.usuario_like_denuncia + '</p>' + 
@@ -149,6 +173,18 @@ function getInfoAccion(noti, traduc){
 			'<a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a></p>' + 
 			'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';
 	}
+	else if(noti.tipo == 'REPLICA'){
+		var comentaron = '';
+		if(noti.usuarios_conver)
+			noti.usuarios_conver.forEach(function(u){
+				console.log(u);
+				comentaron += '<div class="col-lg-2"><a target="_blank" href="/app/usuarios/' + u._id + '"><img style="max-width : 40px; max-height : 40px;" src="' + u.profile.picture + '"></img></a></div>';
+			});
+		return '<p>' + traduc.comentaste + ': <i>"' + decodeURIComponent(noti.datos.contenido).substring(0,20)  + '..."</i> en el comentario de ' +
+			'<a href="/app/usuarios/' + noti.datos.user_comentario._id + '">' + noti.datos.user_comentario.profile.username + '</a></p>' + 
+			'<p>También comentaron : </p>' +  comentaron + 
+			'<div style="clear : both; overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';
+	}
 	else if(noti.tipo == 'LIKE_DENUNCIA'){
 		return '<p>' + traduc.me_gusta_denuncia + ' <a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a></p>' +
 			'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';		
@@ -156,7 +192,8 @@ function getInfoAccion(noti, traduc){
 	else if(noti.tipo === 'NO_LIKE_DENUNCIA'){
 		return '<p>' + traduc.no_me_gusta_denuncia + ' <a href="/app/usuarios/' + id_usuario_to + '">' + username + '</a></p>' +
 			'<div style="overflow-x: hidden">' + traduc.denuncia + ' : ' + noti.denuncia.titulo + '</div>';			
-	}		
+	}
+
 }
 
 function icono(clase, color){
@@ -266,9 +303,21 @@ function getNotificacionRow(notificacion, trad){
 function fillNotificaciones(notificaciones, trad){
 	var html = '';
 	notificaciones.forEach(function(notificacion){
-		console.log(JSON.stringify(notificacion));
-		
-		html += getNotificacionRow(notificacion, trad);
+		if(notificacion.tipo == 'REPLICA' && notificacion.id_usuario_to == user._id){
+			
+		}
+		else if(notificacion.tipo == 'REPLICA' && tokens_usados.indexOf(notificacion.datos.token) == -1){
+			var token = notificacion.datos.token;
+			var usuarios_conver = [];
+			notificaciones.forEach(function(notii){
+				if(notii.datos.token == token)
+					usuarios_conver.push({_id : notii.id_usuario_to, profile : notii.profile_to});
+			});
+			tokens_usados.push(token);
+			notificacion.usuarios_conver = usuarios_conver;
+			html += getNotificacionRow(notificacion, trad);
+		}
+		else html += getNotificacionRow(notificacion, trad);
 	});
 	$('#notificaciones > .panel-body').append(html);
 };
@@ -276,7 +325,7 @@ function fillNotificaciones(notificaciones, trad){
 function getAccionRow(notificacion, trad){
 	var fecha = new Date(notificacion.fecha);
 
-	console.log(noti.id_denuncia);
+	console.log(notificacion.id_noti, notificacion.tipo, notificacion.profile_to);
 
 	return '<div class="row">' + 
 		'<div class="thumbnail container-fluid" style="margin: 5px; padding: 10 0 5 0px; overflow-x: hidden; background-color:#fff;">' + 
@@ -295,9 +344,23 @@ function getAccionRow(notificacion, trad){
 
 function fillAcciones(acciones, trad){
 	var html = '';
+	tokens_usados = [];
 	acciones.forEach(function(notificacion){
-
-		html += getAccionRow(notificacion, trad);
+		if(notificacion.tipo == 'REPLICA' && notificacion.id_usuario_to == user._id){
+			
+		}
+		else if(notificacion.tipo == 'REPLICA' && tokens_usados.indexOf(notificacion.datos.token) == -1){
+			var token = notificacion.datos.token;
+			var usuarios_conver = [];
+			acciones.forEach(function(notii){
+				if(notii.datos.token == token)
+					usuarios_conver.push({_id : notii.id_usuario_to, profile : notii.profile_to});
+			});
+			tokens_usados.push(token);
+			notificacion.usuarios_conver = usuarios_conver;
+			html += getAccionRow(notificacion, trad);
+		}
+		else html += getAccionRow(notificacion, trad);
 	});
 	$('#acciones > .panel-body').append(html);
 };

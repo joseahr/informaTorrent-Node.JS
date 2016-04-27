@@ -168,6 +168,13 @@ $("h1, h2").each(function(){
 	$(this).fitText(1.1, {maxFontSize: fontSize});
 });
 
+$('[data-target=".sidebar-right"]').click(function(){
+  $('.sidebar-left').removeClass('sidebar-open');
+});
+$('[data-target=".sidebar-left"]').click(function(){
+  $('.sidebar-right').removeClass('sidebar-open');
+});
+
 $(function(){
 	$('.dropdown-toggle').dropdown();
 });

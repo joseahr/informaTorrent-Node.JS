@@ -39,6 +39,7 @@ block content
 										|  Actualizar contraseña
 block script
 	script.
+		window.document.title += ' - Recuperar contraseña';
 		$('#form_token').submit(function(e){
 			e.preventDefault();
 			var xhr = new XMLHttpRequest();

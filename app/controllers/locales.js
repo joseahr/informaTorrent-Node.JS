@@ -8,6 +8,8 @@ var cont = {
 			apellidos : req.i18n.__('apellidos'),
 			al_menos_id : req.i18n.__('al_menos_id'),
 			accion : req.i18n.__('accion'),
+			aceptar : req.i18n.__('aceptar'),
+			add_comentario : req.i18n.__('add_comentario'),
 			// B
 			// C
 			crear_cuenta_usuario : req.i18n.__('crear_cuenta_usuario'),
@@ -15,6 +17,10 @@ var cont = {
 			contraseña : req.i18n.__('contraseña'),
 			comento : req.i18n.__('comento'),
 			comentaste : req.i18n.__('comentaste'),
+			cancelar : req.i18n.__('cancelar'),
+			comentarios : req.i18n.__('comentarios'),
+			contiene : req.i18n.__('contiene'),
+			comentarios_no_tiene : req.i18n.__('comentarios_no_tiene'),
 			// D
 			denuncias_fav : req.i18n.__('denuncias_fav'),
 			denuncias : req.i18n.__('denuncias'),
@@ -26,6 +32,7 @@ var cont = {
 			editar : req.i18n.__('editar'),
 			en_tu_denuncia : req.i18n.__('en_tu_denuncia'),
 			en_la_denuncia_de : req.i18n.__('en_la_denuncia_de'),
+			en_una_conversacion : req.i18n.__('en_una_conversacion'),
 			// F
 			// G
 			// H
@@ -43,6 +50,7 @@ var cont = {
 			// K
 			// L
 			localizacion : req.i18n.__('localizacion'),
+			logeado_para_comentar : req.i18n.__('logeado_para_comentar'),
 			// M
 			mi_perfil : req.i18n.__('mi_perfil'),
 			metros : req.i18n.__('metros'),
@@ -70,6 +78,8 @@ var cont = {
 			// S
 			slogan : req.i18n.__('slogan'),
 			subtitulo : req.i18n.__('subtitulo_app'),
+			seguro_eliminar_denuncia : req.i18n.__('seguro_eliminar_denuncia'),
+			se_el_primero : req.i18n.__('se_el_primero'),
 			// T
 			titulo : req.i18n.__('titulo_app'),
 			te_han_gustado : req.i18n.__('te_han_gustado'),

@@ -11,6 +11,12 @@ var usuarioModel = require('../models/usuario.js');
 	denunciaModel = new denunciaModel();
 	usuarioModel = new usuarioModel();
 
+router.get('/tags', function(req, res){
+	denunciaModel.getAllTags(function(error, tags){
+		if(error) return res.status(500).json(error);
+		return res.json(tags);
+	});
+})
 // api json para consultas
 router.get('/api', function(req, res){
 	console.log(req.query);
@@ -305,6 +311,19 @@ router.get('/:id_denuncia/actualizar', function(req, res, next){
 	});
 });
 
+// Replicar un comentario 
+router.post('/:id_denuncia/comentario/:id_comentario/replicar', function(req, res, next){
+	denunciaModel.añadir_replica({
+		contenido : req.body.contenido,
+		id_comentario : req.params.id_comentario,
+		usuario_from : req.user,
+		id_denuncia : req.params.id_denuncia,
+	}, function(error){
+		if(error) return res.status(500).json(error);
+		return res.json({type : 'success', contenido : req.body.contenido });
+	});
+});
+
 // Añadir un comentario -- OK
 router.post('/:id_denuncia/comentar', function(req, res, next){
 	// Comprobamos parámetros
@@ -343,7 +362,7 @@ router.get('/:id_denuncia/:titulo', function(req, res){
 				return res.render('denuncias/denuncia', {denuncia: req.denuncia});
 			else if(noti.id_denuncia != req.denuncia.gid)
 				return res.render('denuncias/denuncia', {denuncia: req.denuncia});
-			else if(noti.tipo == 'DENUNCIA_CERCA' || noti.tipo == 'COMENTARIO_DENUNCIA')
+			else if(noti.tipo == 'DENUNCIA_CERCA' || noti.tipo == 'COMENTARIO_DENUNCIA' || noti.tipo == 'REPLICA')
 				return res.render('denuncias/denuncia', {
 					denuncia: req.denuncia,
 					notificacion : noti

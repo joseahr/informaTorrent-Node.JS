@@ -97,7 +97,7 @@
 	 			<option value="jahr:nombres_viales">Etiquetado Calles</option>
 	 			<option value="jahr:denuncias_puntos">Denuncias Puntual</option>
 	 			<option value="jahr:denuncias_lineas">Denuncias Lineal</option>
-	 			<option value="jahr:denuncias_poligonos">Denuncias Polígonal</option>
+	 			<option value="jahr:denuncias_poligonos">Denuncias Poligonal</option>
 		   	</select>
 		</div>
 	</div>
@@ -176,6 +176,13 @@ $("h1, h2").each(function(){
 	var fontSize = $(this).css('font-size');
 	console.log(fontSize);
 	$(this).fitText(1.1, {maxFontSize: fontSize});
+});
+
+$('[data-target=".sidebar-right"]').click(function(){
+  $('.sidebar-left').removeClass('sidebar-open');
+});
+$('[data-target=".sidebar-left"]').click(function(){
+  $('.sidebar-right').removeClass('sidebar-open');
 });
 
 denuncias_puntos.setVisible(false);

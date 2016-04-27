@@ -5,6 +5,8 @@
 	"al_menos_id" : "You should pass at least report&#39;s id as parameter in query string",
 	"accion_post" : "Action require to be handled by POST method",
 	"apellidos_params" : "Surname should be between 3 and 15 characters",
+	"aceptar" : "Accept",
+	"add_comentario" : "Add a comment",
 
 	"crear_cuenta_usuario": "Create an user account",
 	"cerrar_sesion": "Log Out",
@@ -17,6 +19,10 @@
 	"cuenta_de" : "Account of",
 	"contraseña_parametros" : "The password should have between 5 and 20 characters",
 	"cuenta_confirmada" : "Your account has been confirmed successfuly.",
+	"cancelar" : "Cancel",
+	"comentarios" : "Comments",
+	"contiene" : "It contains",
+	"comentarios_no_tiene" : "This report has no comments",
 
 	"denuncia_añadida_ok" : "Report successfuly saved",
 	"denuncia": "Report",
@@ -57,6 +63,7 @@
 	"error_subiendo_archivo" : "Error uploading file. ",
 	"eliminada_correctamente" : "successfuly deleted",
 	"error_servidor" : "opps! An error ocurred...",
+	"en_una_conversacion" : "in a conversation",
 
 	"formato_no_permitido" : "Format not allowed",
 	"faltan_parametros" : "Missing parameters",
@@ -77,6 +84,7 @@
 	"idioma" : "Language",
 
 	"localizacion" : "Location",
+	"logeado_para_comentar" : "You should be logged in to comment!",
 
 	"mi_perfil": "My Profile",
 	"metros" : "meters", 
@@ -109,6 +117,8 @@
 
 	"slogan": "Your report website",
 	"subtitulo_app": "The app to improve Torrent yourself",
+	"seguro_eliminar_denuncia" : "Are you sure to delete this report?",
+	"se_el_primero" : "post the first comment!",
 
 	"titulo_app": "Report Torrent",
 	"te_han_gustado" : "You like",

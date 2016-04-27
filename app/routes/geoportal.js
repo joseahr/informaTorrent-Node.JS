@@ -3,6 +3,7 @@ var request = require('request'),
 	database = require('../../config/database.js'),
 	db = database.db,
 	dbCarto = database.dbCarto,
+	consultas = require('../controllers/queries.js'),
 	router = require('express').Router();
 
 router.get('/', function(req, res, next){
@@ -61,7 +62,7 @@ router.get('/xhr', function(req, res){
 router.get('/info', function(req, res){
 	var tabla = req.query.tabla || '';
 
-	if (nombre_tabla.match(/denuncias/g))
+	if (tabla.match(/denuncias/g))
 		get_denuncias_tabla_info(tabla, function(result){
 			res.send({cols : result})
 		});
@@ -72,7 +73,7 @@ router.get('/info', function(req, res){
 });
 
 function get_denuncias_tabla_info (tabla, callback){
-	db.query(queries.obtener_info_tabla_geoportal, tabla)
+	db.query(consultas.obtener_info_tabla_geoportal, tabla)
 	.then(function(info){
 		callback(info);
 	})
@@ -83,7 +84,7 @@ function get_denuncias_tabla_info (tabla, callback){
 };
 
 function get_carto_tabla_info (tabla, callback){
-	dbCarto.query(queries.obtener_info_tabla_geoportal, nombre_tabla)
+	dbCarto.query(consultas.obtener_info_tabla_geoportal, tabla)
 	.then(function(info){
 		callback(info);
 	})

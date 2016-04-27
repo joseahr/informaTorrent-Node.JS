@@ -38,6 +38,16 @@ app.ExternalWMS = function(opt_options) {
       title : 'Añade un servidor WMS externo',
       message : message, 
       autodestroy : true, 
+      onshow : function(dialog){
+          dialog.getModalHeader().replaceWith($('<div class="row" style="margin: 0px; padding-top: 5px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
+            '<div class="col-xs-4" style="text-align: center; color: #fff; font-weight : bold;">' +
+            '<i class="fa fa-external-link" style="font-size : 60px; color : #00bbff; text-shadow: 2px 2px #fff;"></i>' + 
+              '<h4 style="padding : 2px; color : #00bbff; background : rgba(0,0,0,0.7); border-radius : 15px;"> Añade un Servidor WMS externo</h4>' +
+            '</div>' +
+          '</div>'));
+          dialog.getModalBody().parent().css('border-radius', '15px');
+          dialog.getModalBody().css('padding-top', '10px');
+      },
       onshown : function(d){
         $(dialog.getModalBody()).find('#btn_ext').click(function(e){
           var wms_ext = $(dialog.getModalBody()).find('#input_ext').val();

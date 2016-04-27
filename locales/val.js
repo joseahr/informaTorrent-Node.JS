@@ -5,6 +5,8 @@
 	"al_menos_id" : "Has de pasar almenys l&#39;id de la denúncia com a paràmetre en la consulta",
 	"accion_post" : "L&#39;acció requereix ser enviada mitjançant el mètode POST",
 	"apellidos_params" : "Els cognoms han de tindre entre 3 i 15 caràcters",
+	"aceptar" : "Acceptar",
+	"add_comentario" : "Afegeix un comentari",
 
 	"comento" : "ha comentat",
 	"crear_cuenta_usuario": "Crea un compte d&#39;usuari",
@@ -17,6 +19,10 @@
 	"cuenta_de" : "Compte de",
 	"contraseña_parametros" : "La contrasenya ha de tindre entre 5 i 20 caràcters",
 	"cuenta_confirmada" : "El teu compte s&#39;ha confirmat correctament.",
+	"cancelar" : "Cancel·lar",
+	"comentarios" : "Comentaris",
+	"contiene" : "Conté",
+	"comentarios_no_tiene" : "Aquesta denúncia no conté comentaris",
 
 	"denuncia_añadida_ok" : "La denúnica s&#39;ha guardat correctament",
 	"denuncia" : "Denúncia",
@@ -56,6 +62,7 @@
 	"error_subiendo_archivo" : "Error pujant arxiu. ",
 	"eliminada_correctamente" : "eliminada correctament",
 	"error_servidor" : "opps! Sembla que ha hagut un error...",
+	"en_una_conversacion" : "en una conversa",
 
 	"faltan_parametros" : "Falten paràmetres",
 	"formato_no_permitido" : "Format no permès",
@@ -76,6 +83,7 @@
 	"idioma" : "Idioma",
 
 	"localizacion" : "Localització",
+	"logeado_para_comentar" : "Has d&#39;iniciar sessió per comentar!",
 
 	"mi_perfil": "Perfil",
 	"metros" : "metros", 
@@ -108,6 +116,8 @@
 
 	"subtitulo_app": "L&#39;app amb la qual podràs contribuir a la millora de Torrent",
 	"slogan": "El teu portal de denúncies",
+	"seguro_eliminar_denuncia" : "Estàs segur d&#39;eliminar aquesta denúncia?",
+	"se_el_primero" : "Sigues el primer en opinar",
 
 	"titulo_app": "Informa Torrent",
 	"tienes" : "Tens",

@@ -22,7 +22,14 @@ SELECT * FROM (SELECT *,
 			u.local, 
 			u.profile, 
 			ST_AsGML(u.location_pref)::xml as location_pref,
-			u.distancia_aviso 
+			u.distancia_aviso,
+			(SELECT json_agg(r) AS replicas 
+				FROM (
+					SELECT re.*,u2.local, u2.profile, 
+					st_asgeojson(u2.location_pref)::json as location_pref,
+					u2.distancia_aviso
+					FROM replicas re, usuarios u2 
+					WHERE re.id_comentario = c.id AND re.id_usuario = u2._id ORDER BY fecha DESC)r)
 		FROM comentarios c, usuarios u 
 		WHERE c.id_usuario = u._id and c.id_denuncia = d.gid ORDER BY fecha DESC) com
 	),

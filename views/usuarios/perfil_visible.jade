@@ -61,5 +61,6 @@ block script
 	// OpenLayers.js
 	script(src='/javascripts/plugins/ol3/ol.js')
 	script.
+		window.document.title += ' - Perfil - #{user_otro.profile.username}';
 		fillDenuncias(JSON.parse('!{JSON.stringify(denuncias)}'));
 		fillFavoritas(JSON.parse('!{JSON.stringify(denuncias_fav)}'));

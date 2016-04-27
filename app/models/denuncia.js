@@ -191,15 +191,20 @@ Denuncia.prototype.añadir_comentario = function(opciones, callback){
 	var usuario_from = opciones.usuario_from;
 	var id_usuario = usuario_from._id;
 	var denuncia;
+	var id_comentario;
 	// ejecutamos la consulta para añadir comentario
-	db.none(consultas.añadir_comentario, [id_usuario, id_denuncia, contenido])
-	.then(function(){
+	db.one(consultas.añadir_comentario, [id_usuario, id_denuncia, contenido])
+	.then(function(id_coment){
+		id_comentario = id_coment.id;
 		return db.one(consultas.denuncia_por_id, id_denuncia);
 	})
 	.then(function(denuncia_){
 		denuncia = denuncia_;
 		denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-		var datos = JSON.stringify({contenido : contenido});
+		var datos = JSON.stringify({
+			contenido : contenido,
+			id_comentario : id_comentario
+		});
 		// Si es el propio usuario el que comenta su denuncia no enviamos la notificación
 		console.log(id_usuario, denuncia.id_usuario);
 		if(denuncia.id_usuario == id_usuario){
@@ -212,6 +217,7 @@ Denuncia.prototype.añadir_comentario = function(opciones, callback){
 				[id_denuncia, id_usuario, denuncia.id_usuario, datos]);
 	})
 	.then(function(notificacion){
+		notificacion.id_comentario = id_comentario;
 		if(clients[denuncia.id_usuario]){
 			// Emitimos la notificación a todos sus sockets abiertos
 			for(var socketId in clients[denuncia.id_usuario]){
@@ -234,6 +240,122 @@ Denuncia.prototype.añadir_comentario = function(opciones, callback){
 	});
 
 };
+
+
+Denuncia.prototype.añadir_replica = function(opciones, callback){
+
+	// Parámetros para añadir comentario
+	//var denuncia, notificacion;
+	var contenido = opciones.contenido;
+	var id_comentario = opciones.id_comentario;
+	var usuario_from = opciones.usuario_from;
+	var id_usuario = usuario_from._id;
+	var id_denuncia = opciones.id_denuncia;
+	var denuncia, comentario, id_replica;
+	// ejecutamos la consulta para añadir comentario
+	db.one(consultas.replicar_comentario, [id_comentario, id_usuario, contenido])
+	.then(function(id_repli){
+		id_replica = id_repli.id;
+		return db.one('SELECT c.*, u._id,' +
+			'u.local,' +
+			'u.profile,' +
+			'st_asgeojson(u.location_pref)::json as location_pref,' +
+			'u.distancia_aviso,' +
+			'(SELECT json_agg(r) AS replicas ' + 
+				'FROM (' +
+					'SELECT * ' + 
+					'FROM replicas ' +
+					'WHERE id_comentario = c.id)r) ' +
+		'FROM comentarios c, usuarios u ' +
+		'WHERE c.id_usuario = u._id AND c.id = $1', id_comentario);
+	})
+	.then(function(comentario_){
+		comentario = comentario_;
+		return db.one(consultas.denuncia_por_id, id_denuncia);
+	})
+	.then(function(denuncia_){
+		denuncia = denuncia_;
+		denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+		var datos = JSON.stringify({
+			contenido : contenido,
+			id_replica : id_replica,
+			user_comentario : {_id : comentario._id , profile : comentario.profile},
+			token : new Array(5).join().replace(/(.|$)/g, function(){return ((Math.random()*36)|0).toString(36)[Math.random()<.5?"toString":"toUpperCase"]();}),
+		});
+		// Si es el propio usuario el que comenta su denuncia no enviamos la notificación
+		console.log(id_usuario, denuncia.id_usuario);
+		return db.tx(function (t){
+			var q = []; // Consultas
+			var usuarios_notificados = [];
+			if(denuncia.id_usuario != id_usuario && comentario.id_usuario != id_usuario){
+				// No es ni mi denuncia ni mi comentario
+				// Notificar al propietario de la denuncia y del coment
+				if(denuncia.id_usuario == comentario.id_usuario){
+					// Denuncia y comentario del mismo usuario -- Solo le notifico d la respuesta
+					usuarios_notificados.push(denuncia.id_usuario);
+					q.push(t.one(consultas.insertar_notificacion, [id_denuncia, id_usuario, denuncia.id_usuario, 'REPLICA', datos]));
+				}
+				else{
+					// Notificar al prop del coment y la denuncia
+					usuarios_notificados.push(comentario.id_usuario);
+					usuarios_notificados.push(denuncia.id_usuario);
+					q.push(t.one(consultas.insertar_notificacion, [id_denuncia, id_usuario, denuncia.id_usuario, 'REPLICA', datos]));
+					q.push(t.one(consultas.insertar_notificacion, [id_denuncia, id_usuario, comentario.id_usuario, 'REPLICA', datos]));
+				}
+			}
+			else {
+				// Es mi denuncia o comentario
+				if(comentario.id_usuario != id_usuario){
+					// No es mi comentario -- Notificar al prop del comentario
+					usuarios_notificados.push(comentario.id_usuario);
+					q.push(t.one(consultas.insertar_notificacion, [id_denuncia, id_usuario, comentario.id_usuario, 'REPLICA', datos]));
+				}
+				if(denuncia.id_usuario != id_usuario){
+					// No es mi denuncia -- Notificar al prop de la denuncia
+					usuarios_notificados.push(denuncia.id_usuario);
+					q.push(t.one(consultas.insertar_notificacion, [id_denuncia, id_usuario, denuncia.id_usuario, 'REPLICA', datos]));
+				}
+			}
+
+			if(comentario.replicas){
+				comentario.replicas.forEach(function(replica){
+					if(replica.id_usuario != comentario.id_usuario && 
+					replica.id_usuario != denuncia.id_usuario &&
+					usuarios_notificados.indexOf(replica.id_usuario) == -1){
+						// No es el prop del comentario ni de la denuncia
+						usuarios_notificados.push(replica.id_usuario);
+						q.push(t.one(consultas.insertar_notificacion, [id_denuncia, id_usuario, replica.id_usuario, 'REPLICA', datos]));
+					}
+				});
+			}	
+			// Ejecutamos la conulta
+			return t.batch(q);
+		});
+	})
+	.then(function(notificaciones){
+		notificaciones.forEach(function(notificacion){
+			notificacion.id_replica = id_replica;
+			// Si el usuario a que se notific est´a conectado...
+			for(var socketId in global.clients[notificacion.id_usuario_to]){
+				//console.log(socketId);
+				console.log('El usuario ' + notificacion.id_usuario_from + ' ha comentado en una conversación');
+				// Emitimos un evento para notificar al usuario de una denuncia cerca
+				clients[notificacion.id_usuario_to][socketId].emit('replica', 
+					{denuncia: denuncia, from: usuario_from, noti: notificacion});	
+			}
+		});
+		callback(null);
+	})
+	.catch(function(error){
+		console.log(error);
+		if(error.mismo_usuario)
+			callback(null);
+		else
+			callback({type : 'error', msg : error.toString()});
+	});
+
+};
+
 
 Denuncia.prototype.guardar = function(opciones, callback){
 	var usuarios_cerca = [];
@@ -624,6 +746,20 @@ Denuncia.prototype.denuncias_cerca = function(posicion, callback){
 		}
 		else
 			callback(null, []);
+	})
+	.catch(function(error){
+		callback({type : 'error', msg : error.toString()})
+	});
+};
+
+Denuncia.prototype.getAllTags = function(callback){
+	db.any('SELECT DISTINCT tag FROM tags')
+	.then(function(tags_){
+		var tags = [];
+		tags_.forEach(function(tag){
+			tags.push(tag.tag);
+		});
+		callback(null, tags);
 	})
 	.catch(function(error){
 		callback({type : 'error', msg : error.toString()})

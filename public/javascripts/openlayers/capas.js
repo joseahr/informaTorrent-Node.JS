@@ -2,7 +2,7 @@
  * Variables de las capas de los visores
  */
 
- var ip = window.location.href.toString().split(':' + window.location.port)[0] + ':8001';
+ var ip = window.location.href.toString().split(':' + window.location.port)[0] + ':8081';
 
 var resolutions = new Array(22),
 matrixIds = new Array(22),

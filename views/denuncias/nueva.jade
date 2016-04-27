@@ -14,16 +14,15 @@ block link
 // block script
 block script
 	// TAGS
+	script(src="http://twitter.github.io/typeahead.js/releases/latest/typeahead.jquery.js")
+	script(src="http://twitter.github.io/typeahead.js/releases/latest/bloodhound.js")
 	script(src="/javascripts/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.js")
 	// TinyMCE Editor
 	script(src="//cdn.tinymce.com/4/tinymce.min.js")
 	script(src='http://cdnjs.cloudflare.com/ajax/libs/dropzone/3.8.4/dropzone.min.js')
 	// JS DROPZONE
-	script(src="/javascripts/upload.js")
-	// INTERACCIONES MAPA DIBUJAR ...
-	script(src="/javascripts/openlayers/olnueva.js")
-	// JS CONFIG SUBIR IMÁGENES
 	script(type="text/javascript").
+		window.document.title += ' - Añadir nueva denuncia';
 		map.addControl(new app.Draw());
 		map.addControl(new app.Lateral({titulo: 'Añadir nueva denuncia'}));
 		var random = '#{random}';

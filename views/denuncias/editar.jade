@@ -27,11 +27,12 @@ block script
 			imagenes : JSON.parse('!{JSON.stringify(denuncia.imagenes)}'),
 			tags : JSON.parse('!{JSON.stringify(denuncia.tags_)}'),
 			geometria : JSON.parse('!{JSON.stringify(denuncia.geometria)}')
-
 		};
+		window.document.title += ' - Editar denuncia - ' + denuncia.titulo;
 	// TAGS
+	script(src="http://twitter.github.io/typeahead.js/releases/latest/typeahead.jquery.js")
+	script(src="http://twitter.github.io/typeahead.js/releases/latest/bloodhound.js")
 	script(src="/javascripts/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.js")
-	// TinyMCE Editor
 	script(src="//cdn.tinymce.com/4/tinymce.min.js")
 	script(src='http://cdnjs.cloudflare.com/ajax/libs/dropzone/3.8.4/dropzone.min.js')
 	// JS DROPZONE

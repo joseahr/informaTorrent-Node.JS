@@ -144,18 +144,18 @@ module.exports = function(io){
 			// Validamos los parámetros que envía el usuario
 			if(filtro.lat && filtro.lon && filtro.buffer_radio){
 				if(!validator.isDecimal(filtro.lon.replace(',', '.')) && !validator.isNumeric(filtro.lon))
-					return res.status(500).json({type : 'error', msg: 'La longitud del centro del buffer debe ser numérica'});
+					return socket.emit('error_query', {msg: 'La longitud del centro del buffer debe ser numérica'});
 
 				if(!validator.isDecimal(filtro.lat.replace(',', '.')) && !validator.isNumeric(filtro.lat))
-					return res.status(500).json({type : 'error', msg: 'La latitud del centro del buffer debe ser numérica'});
+					return socket.emit('error_query', {msg: 'La latitud del centro del buffer debe ser numérica'});
 				
 				if(!validator.isDecimal(filtro.buffer_radio) && !validator.isNumeric(filtro.buffer_radio))
-					return res.status(500).json({type : 'error', msg: 'El radio del centro del buffer debe ser numérico'});
+					return socket.emit('error_query', {msg: 'El radio del centro del buffer debe ser numérico'});
 			}
 			else if((filtro.lat || filtro.lon) && !filtro.buffer_radio) 
-				return res.status(500).json({type : 'error', msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros'});
+				return socket.emit('error_query', {msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros'});
 			else if(!(filtro.lat || filtro.lon) && filtro.buffer_radio) 
-				return res.status(500).json({type : 'error', msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros'});
+				return socket.emit('error_query', {msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros'});
 			// Ejecutamos consulta
 			denunciaModel.find(filtro, function(error, result){
 				if(error)

@@ -1,67 +1,39 @@
 extends ../base/map_layout
 block meta
-	meta(property='og:url' content='/app/denuncia/#{denuncia.gid}')
-	meta(property='og:type' content='website')
-	meta(property='og:title' content='Your Website Title')
-	meta(property='og:description' content='Your description')
-block panel-lateral
-	#imagenes.cd-panel.from-right
-		header.cd-panel-header
-			h1(style="margin-top: 0px; color: #55ACEE !important; font-size: 20px;") Imágenes
-			a.cd-panel-close(href='#0') Close
-		.cd-panel-container
-			.cd-panel-content
-				if(denuncia.imagenes)
-					p Contiene #{denuncia.imagenes.length} imágenes
-					.well(style="height: 100%;")
-						#thumbnail-preview-indicators.carousel.slide(data-ride='carousel' style="height: 100%;")
-							ol.carousel-indicators
-								- var aux = 0;
-								each imagen in denuncia.imagenes
-									if aux == 0
-										li.active(data-target='#thumbnail-preview-indicators', data-slide-to='#{aux}')
-											.thumbnail
-												img.img-responsive(src='#{imagen.path}')										
-									else
-										li(data-target='#thumbnail-preview-indicators', data-slide-to='#{aux}')
-											.thumbnail
-												img.img-responsive(src='#{imagen.path}' style="height: 10%;")
-									- aux++;
-							.carousel-inner(style="height: 100%;")
-								- var aux = 0
-								if denuncia.imagenes
-									each imagen in denuncia.imagenes
-										if aux == 0
-											.item.slides.active(style="height: 100%;")
-												.slide(class="slide-#{aux + 1}" style="height: 100%;background: url('#{imagen.path}'); background-size: 100% 100%;")
-										else
-											.item.slides(style="height: 100%;")
-												div(class="slide-#{aux + 1}" style="height: 100%;background: url('#{imagen.path}'); background-size: 100% 100%;")
-										- aux++;
-				else
-					p Esta denuncia no contiene imágenes
+	meta(property='og:title' content='#{denuncia.titulo}')
+	meta(property='og:description' content='#{desc}')
+	meta(property='og:image' content='http://3.bp.blogspot.com/-MGedRBgtcQY/VWZTWWKEfGI/AAAAAAAAABQ/um8W-TDSTnw/s1600/www.BancodeImagenesGratuitas.com-Fantasticas-20.jpg')
+block link
+	link(rel="stylesheet" href="/javascripts/plugins/share/share-button.css")
+block content
+	div(style="position : absolute; bottom : 2em; left : 5.5em; right : 5.5em; z-index : 1; text-align : center;")
+		share-button.share-button
 block script
 	// TinyMCE Editor
 	script(src="//cdn.tinymce.com/4/tinymce.min.js")
 	script(src='/javascripts/plugins/ol3-ext/style/photostyle.js')
+	script(src="/javascripts/plugins/share/share-button.js")
 	script.
 		//alert('!{denuncia.descripcion}');
-		var denuncia = {
-			titulo: '#{denuncia.titulo}',
-			descripcion: '!{denuncia.descripcion}',
-			gid: '#{denuncia.gid}',
-			fecha : '#{denuncia.fecha}',
-			id_usuario: '#{denuncia.id_usuario}',
-			usuario : JSON.parse('!{JSON.stringify(denuncia.usuario[0])}'),
-			veces_vista : '#{denuncia.veces_vista}',
-			likes : JSON.parse('!{JSON.stringify(denuncia.likes)}'),
-			comentarios : JSON.parse('!{JSON.stringify(denuncia.comentarios)}'),
-			imagenes : JSON.parse('!{JSON.stringify(denuncia.imagenes)}'),
-			tags : JSON.parse('!{JSON.stringify(denuncia.tags_)}')
-		};
 
-		var notificacion = JSON.parse('!{JSON.stringify(notificacion) || null}');
-		console.log('notificacion', notificacion);
+		var denuncia = JSON.parse('!{JSON.stringify(denuncia)}');
+
+		window.document.title += ' - Denuncia - ' + denuncia.titulo;
+
+		var titulo = denuncia.titulo;
+		var url = window.location.href;
+		var descripcion = $(decodeURIComponent(denuncia.descripcion.replace(/%0A/g, ''))).text().substr(0,20) + '...';
+		var imagen = denuncia.imagenes ? denuncia.imagenes[0] : getGeoserverMiniatura(denuncia, 500);
+
+		var share = new ShareButton('.share-button', {
+			url : url,
+			title: titulo,
+			description:  descripcion, 
+			image: imagen,
+			ui: {
+				buttonText:  'Compartir'
+			}
+		});
 
 		var user;
 		if('#{user}' == ''){
@@ -96,14 +68,17 @@ block script
 			});
 		}
 
-		vector.getSource().addFeature(feature);
+		var notificacion;
+		if('!{notificacion}' != ''){
+			parseNoti(JSON.parse('!{JSON.stringify(notificacion)}'));
+		}
+		console.log(notificacion);
+		console.log(feature);
 
-		map.addLayer(vector);
+		vector.getSource().addFeature(feature);
 
 		var geom = feature.getGeometry().getExtent();
 		var size = map.getSize();
-
-		parseNoti(notificacion);
 
 		map.getView().fit(geom,size);
 		// solo podemos acceder a ella desde este tipo de scripts que tienen un punto al final
@@ -113,6 +88,7 @@ block script
 		map.addControl(new app.LikeDenuncia());
 
 		function parseNoti(noti){
+			console.log(noti.tipo);
 			if(noti.tipo == 'DENUNCIA_CERCA'){
 				var posicion = noti.datos.location;
 				var vector_ = new ol.layer.Vector({
@@ -145,6 +121,7 @@ block script
 				vector_.getSource().addFeature(feature_lin);
 
 				map.addLayer(vector_);
+				map.addLayer(vector);
 
 				feature_pos.setStyle(
 					new ol.style.Style({
@@ -168,10 +145,7 @@ block script
 				console.log('comentario', noti);
 				$(function(){
 					$('.comentarios_denuncia').find('button').click();
-					var date = new Date(noti.fecha),
-					fecha_id = date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate() + '-' + date.getHours() + '-' + date.getMinutes();
-					console.log('#' + noti.id_usuario_from + fecha_id);
-					var selector = '#' + noti.id_usuario_from + fecha_id;
+					var selector = '#' + noti.datos.id_comentario;
 					setTimeout(function(){
 						$(selector).get(0).scrollIntoView();
 						$(selector).css('background-color', '#ffbb00');
@@ -180,5 +154,19 @@ block script
 						},1000);
 					}, 1000);
 				});
+			}
+			else if(noti.tipo == 'REPLICA'){
+				console.log('replica');
+				$(function(){
+					$('.comentarios_denuncia').find('button').click();
+					var selector = '#' + noti.datos.id_replica;
+					setTimeout(function(){
+						$(selector).get(0).scrollIntoView();
+						$(selector).css('background-color', '#ffbb00');
+						setTimeout(function(){
+							$(selector).css('background-color', '#fff');
+						},1000);
+					}, 1000);
+				});			
 			}
 		};

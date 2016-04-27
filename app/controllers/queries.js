@@ -16,6 +16,8 @@ module.exports = {
 
 		añadir_comentario : helper.insert.denuncias.comentario,
 
+		replicar_comentario : helper.insert.denuncias.replica,
+
 		añadir_imagen_denuncia : helper.insert.denuncias.imagen,
 			
 		añadir_tag_denuncia : helper.insert.denuncias.tag,

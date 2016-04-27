@@ -169,8 +169,8 @@ denuncias.forEach(function(denuncia){
 });
 
 //map.addLayer(vector_markers);
-map.addLayer(clusterLayer);
 map.addLayer(vector_denuncias);
+map.addLayer(clusterLayer);
 //map.addLayer(vector);
 //map.addOverlay(overlay);
 
