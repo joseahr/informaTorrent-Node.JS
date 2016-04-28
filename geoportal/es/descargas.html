@@ -52,11 +52,11 @@
 
 </head>
 
-<body class="no-trans" style="margin-top: -10px;">
+<body class="no-trans" style="margin-top: -12px;">
 	<div style="background: rgba(255,255,255, 1); top: 0px !important; box-shadow: 5px 0px 15px 1px rgba(50, 50, 50, 0.5); padding : 0px; bottom : 1.5em; min-height : 0px;" class="col-xs-7 col-sm-3 col-md-2 sidebar sidebar-right sidebar-animate">
 		<div style="padding : 0px;" class="col-lg-12 layer_switcher"></div>
 	</div>
-	<div style="background: rgba(255,255,255, 1); top: 0px !important; box-shadow: 5px 0px 15px 1px rgba(50, 50, 50, 0.5);" class="col-xs-7 col-sm-3 col-md-2 sidebar sidebar-left sidebar-animate">
+	<div style="background: rgba(255,255,255, 1); top: 0px !important; box-shadow: 5px 0px 15px 1px rgba(50, 50, 50, 0.5); bottom : 1.5em; min-height : 0px;" class="col-xs-7 col-sm-3 col-md-2 sidebar sidebar-left sidebar-animate">
   		<!--content-->
  		<div style="padding: 10 0 10 0px; border-bottom: 1px solid rgba(0,0,0,0.6)" class="media">
   			<a class="media-left"><img src="/files/images/logo-ayunt.png"/></a>
@@ -81,11 +81,7 @@
             </a>
         </li>
         </ul>
-        <div style="position : absolute; right : 0.5em; top : 2.5em; z-index : 1; background: #00bbff; border-radius : 2px;">
-        	<a data-toggle="sidebar" data-target=".sidebar-right" href="#" style="padding: 0px; margin: 0px;" class="navbar-toggle">
-        		<img src="/files/images/layers.svg"/>
-        	</a>
-        </div>
+        <a data-toggle="sidebar" data-target=".sidebar-right" href="#" style="padding: 0px; margin: 0px;" class="navbar-toggle"></a>
 		<!-- Selector Capas Descargar -->
 		<div style="position: absolute; top: 0.5em; left: 20%; right: 20%; z-index: 2" class="btn-map">
 			<select id="capas_mapa" class="selectpicker" data-style="btn-info" data-live-search="false" style="width: 100%">
@@ -205,8 +201,11 @@ ignBase.setVisible(false);
 <script src="/javascripts/openlayers/controles/download_bbox.js"></script>
 <script src="/javascripts/openlayers/controles/close_header.js"></script>
 <script src="/javascripts/openlayers/controles/draw.js"></script>
+<script src="/javascripts/openlayers/controles/layers.js"></script>
+
 <script type="text/javascript">
 	map.addControl(new app.BBOX());
+	map.addControl(new app.Layers());
 </script>
 </body>
 </html>

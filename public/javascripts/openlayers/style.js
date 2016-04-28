@@ -93,6 +93,19 @@ styles_markers = {
       lineDash : [4]
     })
   }),
+  'distancia' : new ol.style.Style({
+    text: new ol.style.Text({
+      text: '',
+      scale: 1.3,
+      fill: new ol.style.Fill({
+        color: '#00bbff'
+      }),
+      stroke: new ol.style.Stroke({
+        color: '#fff',
+        width: 3
+      })
+    })
+  }),
   'visor' : marker('fa-asterisk', '#40cdeb'),
   'buscar' : marker('fa-search', '#91a043'),
   'nueva' : marker('fa-plus-circle', '#ef4428')

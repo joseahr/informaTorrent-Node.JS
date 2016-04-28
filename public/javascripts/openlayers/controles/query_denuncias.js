@@ -173,16 +173,19 @@ app.QueryDenuncias = function(opt_options) {
 	    }}],
 	    onshow : function(dialog){
 	        dialog.getModalHeader().replaceWith($('<div class="row" style="margin: 0px; padding-top: 5px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
-	          '<div class="col-xs-4" style="text-align: center; color: #fff; font-weight : bold;">' +
+	          '<div class="bootstrap-dialog-close-button">' + 
+	          	'<button class="close" style="color : #fff; margin-right : 10px;">X</button>' +
+	          '</div>' +
+	          '<div class="col-xs-6" style="text-align: center; color: #fff; font-weight : bold;">' +
 	          '<i class="fa fa-search" style="font-size : 60px; color : #00bbff; text-shadow: 2px 2px #fff;"></i>' + 
 	            '<h4 style="padding : 2px; color : #00bbff; background : rgba(0,0,0,0.7); border-radius : 15px;"> Buscar por...</h4>' +
 	          '</div>' +
 	        '</div>'));
+	        dialog.getModalDialog().find('.close').click(function(){dialog.close()});
 	        dialog.getModalBody().parent().css('border-radius', '15px');
 	        dialog.getModalBody().css('padding-top', '10px');
 	    },
 	  	onshown: function(dialog){
-
 			var tags_servidor = new Bloodhound({
 			  datumTokenizer: Bloodhound.tokenizers.obj.whitespace('tag'),
 			  queryTokenizer: Bloodhound.tokenizers.whitespace,

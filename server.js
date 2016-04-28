@@ -11,12 +11,14 @@ var cookieParser = require('cookie-parser'); // Módulo cookieParser - Se encarg
 var session      = require('express-session'); // Módulo de sesiones de express
 var bodyParser = require('body-parser'); // BodyParser - Se encarga de parsear el cuerpo de las peticiones
 
+var favicon = require('serve-favicon');
 //process.on('uncaughtException', function (err) {
 //    console.log(err);
 //});
 //http.globalAgent.maxSockets = Infinity;
 
 // Express
+app.use(favicon(path.join(__dirname,'public','files','images','logo-ayunt.png')));
 app.use(morgan('dev')); // Log cada request en la consola
 app.use(cookieParser()); // Usa el cookie parser de express
 app.use(bodyParser.json()); // Body JSON

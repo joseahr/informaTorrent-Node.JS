@@ -91,7 +91,7 @@ html
                                 img.img-responsive.img-circle.media-object(src="#{locals.user.profile.picture}" style="height: 40px; width: 40px; margin: -10 5 0 0px;")                                       
                                 span.badge.badge-success.danger.pull-right.noti_up #{nuevas}
                               div.media-body.pull-left
-                                | #{locals.user.profile.username}
+                                | #{locals.user.profile.username.length < 7 ? locals.user.profile.username : locals.user.profile.username.substr(0,7) + '...'}
                                 span.caret
                             ul.dropdown-menu(style="width: 100%")
                               li.dropdown

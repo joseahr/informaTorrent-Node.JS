@@ -103,7 +103,7 @@ block content
 block script
 	script(src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/md5.js")
 	script.
-		window.document.title += ' - Editar perfil - #{user_otro.profile.username}';
+		window.document.title += ' - Editar perfil - #{user.profile.username}';
 		$('.selectpicker').selectpicker({width : '80%'});
 		$('.selectpicker').change(function(event){
 			console.log($('.selectpicker').val());
@@ -287,5 +287,4 @@ block script
 					$('#imagen').append('<img class="img img-responsive img-thumbnail img-circle" id="imagenperfil" src="' + res.path + '" style="width: 200px; height: 200px;">');
 				}
 			}
-			
 		};

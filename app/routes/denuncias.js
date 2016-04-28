@@ -65,7 +65,7 @@ router.get('/api', function(req, res){
 	else if(!(req.query.lat || req.query.lon) && req.query.buffer_radio) 
 		return res.status(500).json({type : 'error', msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros'});
 
-	denunciaModel.find(filtro, function(error, denuncias){
+	denunciaModel.find(filtro, true, function(error, denuncias){
 		res.json({type : 'success', count : denuncias.query.length || 0, denuncias : denuncias.query});
 	});
 });
@@ -318,9 +318,9 @@ router.post('/:id_denuncia/comentario/:id_comentario/replicar', function(req, re
 		id_comentario : req.params.id_comentario,
 		usuario_from : req.user,
 		id_denuncia : req.params.id_denuncia,
-	}, function(error){
+	}, function(error, id_noti){
 		if(error) return res.status(500).json(error);
-		return res.json({type : 'success', contenido : req.body.contenido });
+		return res.json({ type : 'success', contenido : req.body.contenido, id_noti : id_noti });
 	});
 });
 
@@ -336,10 +336,10 @@ router.post('/:id_denuncia/comentar', function(req, res, next){
 		contenido : req.body.contenido,
 		id_denuncia : req.denuncia.gid,
 		usuario_from : req.user
-	}, function(error){
+	}, function(error, id_noti){
 		if(error)
 			return res.status(500).json(error);
-		res.json({type : 'success', contenido : req.body.contenido })
+		res.json({ type : 'success', contenido : req.body.contenido, id_noti : id_noti })
 	});
 });
 

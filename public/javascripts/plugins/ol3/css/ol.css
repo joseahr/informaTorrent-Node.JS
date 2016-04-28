@@ -1,6 +1,11 @@
+.layers_{
+  top: 3.25em;
+  right: 0.5em;
+}
+
 .denuncias_cerca_track_abrir {
-  position: absolute;
-  z-index : 1;
+  /*position: absolute;
+  z-index : 1;*/
   bottom: 4.875em;
   right: 3.375em;
 }

@@ -52,7 +52,7 @@
 
 </head>
 
-<body class="no-trans" style="margin-top: -10px;">
+<body class="no-trans" style="margin-top: -12px;">
 	<div style="background: rgba(255,255,255, 1); top: 0px !important; box-shadow: 5px 0px 15px 1px rgba(50, 50, 50, 0.5); padding : 0px; bottom : 1.5em; min-height : 0px;" class="col-xs-7 col-sm-3 col-md-2 sidebar sidebar-right sidebar-animate">
 		<div style="padding : 0px;" class="col-lg-12 layer_switcher"></div>
 	</div>
@@ -83,11 +83,7 @@
         </li>
         </ul>
 
-        <div style="position : absolute; right : 0.5em; top : 2.5em; z-index : 1; background: #00bbff; border-radius : 2px;">
-        	<a data-toggle="sidebar" data-target=".sidebar-right" href="#" style="padding: 0px; margin: 0px;" class="navbar-toggle">
-        		<img src="/files/images/layers.svg"/>
-        	</a>
-        </div>
+        <a data-toggle="sidebar" data-target=".sidebar-right" href="#" style="padding: 0px; margin: 0px;" class="navbar-toggle"></a>
 		<!-- Popup Info -->
 		<div id="popup" class="ol-popup" style="min-width: 400px;">
 			<a href="#" id="popup-closer" class="ol-popup-closer"></a>
@@ -202,9 +198,12 @@ $('[data-toggle="tab"]').popover({
 <script src="/javascripts/openlayers/controles/get_feature_info.js"></script>
 <script src="/javascripts/openlayers/controles/draw.js"></script>
 <script src="/javascripts/openlayers/controles/external_wms.js"></script>
+<script src="/javascripts/openlayers/controles/layers.js"></script>
+
 <script type="text/javascript">
 	map.addControl(new app.GetFeatureInfo());
 	map.addControl(new app.ExternalWMS());
+	map.addControl(new app.Layers());
 </script>
 <script src="/javascripts/plugins/multiselect/js/multiselect.min.js"></script>
 </body>

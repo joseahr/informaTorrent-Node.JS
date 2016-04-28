@@ -86,7 +86,7 @@ html
               |  #{contenido.denuncias}
           if user
             .menu-item.col-xs-12
-              a(href="#" id="notificaciones")
+              a(href="javascript:void(0)" id="notificaciones")
                 i.fa.fa-bell
                 |  #{contenido.notificaciones}
                 span(style="margin-left: 5px;").badge.noti_up #{nuevas}
@@ -104,16 +104,14 @@ html
                 |  #{contenido.cerrar_sesion}
     ul
       li(style="position: absolute; top: 8.5em; left: 0.5em;z-index: 1; border-radius: 5px;")
-        a(class="navbar-toggle" data-toggle="sidebar" data-target=".sidebar-left" href="#" style="padding: 0px; margin: 0px;")
+        a(class="navbar-toggle" data-toggle="sidebar" data-target=".sidebar-left" href="javascript:void(0)" style="padding: 0px; margin: 0px;")
           if(user)
             img.img-responsive.img-circle.pull-left(src="#{locals.user.profile.picture}" style="height: 40px; width: 40px;")
             span(style="margin-left: -15px; margin-top: 25px;").badge.noti_up #{nuevas}
           else
             img.img-responsive.img-circle.pull-left(src="http://appstudio.windows.com/Content/img/temp/icon-user.png" style="height: 40px; width: 40px; margin: 0 5 0 0px;")
-
-    div(style="position : absolute; right : 0.5em; top : 2.5em; z-index : 1; background: #00bbff; border-radius : 2px;")
-        a(class="navbar-toggle" data-toggle="sidebar" data-target=".sidebar-right" href="#" style="padding: 0px; margin: 0px;")
-          img(src="/files/images/layers.svg") 
+    // Abrir layers
+    a(class="navbar-toggle" data-toggle="sidebar" data-target=".sidebar-right" href="javascript:void(0)" style="border : none; background: #00bbff; padding: 0px; margin: 0px;")
     // header-right end
     // header end
     // section start
@@ -216,11 +214,15 @@ html
         title : 'Mis notificaciones',
         onshow : function(dialog){
           dialog.getModalHeader().replaceWith($('<div class="row" style="margin: 0px; padding-top: 5px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
-            '<div class="col-xs-4" style="text-align: center; color: #fff; font-weight : bold;">' +
-            '<i class="fa fa-bell" style="font-size : 60px; color : #00bbff; text-shadow: 2px 2px #fff;"></i>' + 
+            '<div class="bootstrap-dialog-close-button">' + 
+              '<button class="close" style="color : #fff; margin-right : 10px;">X</button>' +
+            '</div>' +
+            '<div class="col-xs-6" style="text-align: center; color: #fff; font-weight : bold;">' +
+              '<i class="fa fa-bell" style="font-size : 60px; color : #00bbff; text-shadow: 2px 2px #fff;"></i>' + 
               '<h4 style="padding : 2px; color : #00bbff; background : rgba(0,0,0,0.7); border-radius : 15px;"> Notificaciones</h4>' +
             '</div>' +
           '</div>'));
+          dialog.getModalDialog().find('.close').click(function(){dialog.close()});
           dialog.getModalBody().parent().css('border-radius', '15px');
           dialog.getModalBody().css('padding-top', '0px');
         },
@@ -250,11 +252,13 @@ html
   script(type='text/javascript', src='/javascripts/openlayers/controles/tracking_denuncias_cerca.js')
   script(type='text/javascript', src='/javascripts/openlayers/controles/query_denuncias.js')
   script(type='text/javascript', src='/javascripts/openlayers/controles/tracking.js')
+  script(type='text/javascript', src='/javascripts/openlayers/controles/layers.js')
   // Block Script
   block script
   script.
     //window.screen.lockOrientation('landscape');
     map.addControl(new app.Tracking());
+    map.addControl(new app.Layers());
 
     $('[data-target=".sidebar-right"]').click(function(){
       $('.sidebar-left').removeClass('sidebar-open');
@@ -265,6 +269,7 @@ html
 
     $(function(){
       $('.dropdown-toggle').dropdown();
+
       $('[data-toggle="left"]').popover({
         trigger: 'hover',
         placement: 'left'

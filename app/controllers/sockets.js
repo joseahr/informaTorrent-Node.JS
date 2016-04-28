@@ -157,7 +157,7 @@ module.exports = function(io){
 			else if(!(filtro.lat || filtro.lon) && filtro.buffer_radio) 
 				return socket.emit('error_query', {msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros'});
 			// Ejecutamos consulta
-			denunciaModel.find(filtro, function(error, result){
+			denunciaModel.find(filtro, false, function(error, result){
 				if(error)
 					return socket.emit('error_query', {msg: 'Debe introducir algún parámetro de búsqueda'});
 				return socket.emit('api', {query: result.query});

@@ -38,24 +38,43 @@ Denuncia.prototype.eliminar_tag = function(tag, id_denuncia){
 	return db.none(consultas.eliminar_tag, [tag, id_denuncia]);
 };
 
-Denuncia.prototype.find = function(filtro, callback){
+Denuncia.prototype.find = function(filtro, gjson_format, callback){
 	// Consultas que se hagan de la api de denuncias
-
 	// formateamos la consulta
 	var query = consultas[filtro.consulta].query + filtro_denuncias(filtro);
+	var denuncias = [];
 	// realizamos la consulta
 	db.query(query)
-	.then(function(denuncias){
+	.then(function(denuncias_){
 		// obtenemos las denuncias respecto a los criterios de búsqueda
-		denuncias.forEach(function(denuncia){
+		denuncias_.forEach(function(denuncia){
 			// Asignamos geometría
-			denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-			denuncia.geometria_pt = undefined;
-			denuncia.geometria_li = undefined;
-			denuncia.geometria_po = undefined;
-			denuncia.geom_pt = undefined;
-			denuncia.geom_li = undefined;
-			denuncia.geom_po = undefined;
+			if (gjson_format){
+				var tags = [];
+				if(denuncia.tags_) denuncia.tags_.forEach(function(tag){tags.push('#' + tag.tag)});
+				denuncias.push({
+					geometry : denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po,
+					type : 'Feature',
+					properties : {
+						id : denuncia.gid,
+						id_usuario : denuncia.id_usuario,
+						veces_vista : denuncia.veces_vista,
+						comentarios : denuncia.comentarios ? denuncia.comentarios.length : 0,
+						imagenes : denuncia.imagenes ? denuncia.imagenes.length : 0,
+						tags : denuncia.tags_ ? tags.join(', ') : 0,
+						likes : denuncia.likes ? denuncia.likes.length : 0,
+						titulo : denuncia.titulo,
+						descripcion : denuncia.descripcion,
+						usuario : denuncia.usuario,
+						
+					}
+				});
+			}
+			else {
+				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
+				denuncias.push(denuncia);
+			}
+
 		});
 		//console.log('denuncias api');
 		callback(null, {query: denuncias});					
@@ -224,11 +243,11 @@ Denuncia.prototype.añadir_comentario = function(opciones, callback){
 				clients[denuncia.id_usuario][socketId].emit('denuncia_comentada', 
 					{denuncia: denuncia, from: usuario_from, noti: notificacion});
 			}
-			callback(null);
+			callback(null, notificacion);
 		}
 		else {
 			console.log('el usuario de la denuncia comentada está desconectado');
-			callback(null);
+			callback(null, notificacion.id_noti);
 		}
 	})
 	.catch(function(error){
@@ -344,14 +363,11 @@ Denuncia.prototype.añadir_replica = function(opciones, callback){
 					{denuncia: denuncia, from: usuario_from, noti: notificacion});	
 			}
 		});
-		callback(null);
+		callback(null, notificaciones[0].id_noti);
 	})
 	.catch(function(error){
 		console.log(error);
-		if(error.mismo_usuario)
-			callback(null);
-		else
-			callback({type : 'error', msg : error.toString()});
+		callback({type : 'error', msg : error.toString()});
 	});
 
 };

@@ -29,11 +29,15 @@ app.TrackingDenunciasCerca = function(opt_options) {
     autodestroy : false,
     onshow : function(dialog){
         dialog.getModalHeader().replaceWith($('<div class="row" style="margin: 0px; padding-top: 5px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
-          '<div class="col-xs-4" style="text-align: center; color: #fff; font-weight : bold;">' +
+          '<div class="bootstrap-dialog-close-button">' + 
+            '<button class="close" style="color : #fff; margin-right : 10px;">X</button>' +
+          '</div>' +
+          '<div class="col-xs-6" style="text-align: center; color: #fff; font-weight : bold;">' +
           '<i class="fa fa-globe" style="font-size : 60px; color : #00bbff; text-shadow: 2px 2px #fff;"></i>' + 
             '<h4 style="padding : 2px; color : #00bbff; background : rgba(0,0,0,0.7); border-radius : 15px;"> Denuncias cercanas a mi posición</h4>' +
           '</div>' +
         '</div>'));
+        dialog.getModalDialog().find('.close').click(function(){dialog.close()});
         dialog.getModalBody().parent().css('border-radius', '15px');
         dialog.getModalBody().css('padding-top', '10px');
     },
@@ -204,7 +208,7 @@ app.TrackingDenunciasCerca = function(opt_options) {
   element.setAttribute('data-content', 'Denuncias cercanas a mi posición');
   element.className = 'denuncias_cerca_track ol-unselectable ol-control';
   element.appendChild(button);
-  $('#map').append($(element_abrir));
+  $(element_abrir).appendTo($('#map'));
 
   ol.control.Control.call(this, {
     element: element,

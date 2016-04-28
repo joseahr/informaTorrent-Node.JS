@@ -327,6 +327,7 @@ selectCluster.getFeatures().on(['add'], function (e){
 				if(f.attributes.denuncia.gid != feature.attributes.denuncia.gid){
 					var fe = features_cache[f.attributes.denuncia.gid];
 					fe.attributes.added = false;
+					return;
 				}
 			});
 			// Limpiamos la cpaa de geometrías de denuncias
@@ -406,6 +407,9 @@ function show_denuncia(denuncia){
 
 	sel_dialog.onShow(function(dialog){
 		$(dialog.getModalHeader()).replaceWith($('<div class="row" style="margin: 0px; padding-bottom: 15px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
+	            '<div class="bootstrap-dialog-close-button">' + 
+	          	  '<button class="close" style="color : #fff; margin-right : 10px;">X</button>' +
+	            '</div>' +
 				'<div class="col-xs-4" style="text-align: center;">' +
 					'<img class="img img-thumbnail" src="' + denuncia.usuario[0].profile.picture + '" style="margin-top: 15px; width: 90px; height: 90px; object-fit: cover;" />' +
 				'</div>' +
@@ -422,6 +426,7 @@ function show_denuncia(denuncia){
 				'</div>' + 
 			'</div>'));
 
+		dialog.getModalDialog().find('.close').click(function(){dialog.close()});
   		dialog.getModalBody().parent().css('border-radius', '15px');
   		dialog.getModalBody().css('padding-top', '0px');
 	});

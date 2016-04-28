@@ -24,11 +24,15 @@ app.InfoDenuncia = function(opt_options, denuncia) {
       buttons: [{label: 'Cerrar', action: function(d){d.close();}}],
       onshow : function(dialog){
         dialog.getModalHeader().replaceWith($('<div class="row" style="margin: 0px; padding-top: 5px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
-          '<div class="col-xs-4" style="text-align: center; color: #fff; font-weight : bold;">' +
+          '<div class="bootstrap-dialog-close-button">' + 
+            '<button class="close" style="color : #fff; margin-right : 10px;">X</button>' +
+          '</div>' +
+          '<div class="col-xs-6" style="text-align: center; color: #fff; font-weight : bold;">' +
           '<i class="fa fa-thumbs-up" style="font-size : 60px; color : #00bbff; text-shadow: 2px 2px #fff;"></i>' + 
             '<h4 style="padding : 2px; color : #00bbff; background : rgba(0,0,0,0.7); border-radius : 15px;"> Apoyos</h4>' +
           '</div>' +
         '</div>'));
+        dialog.getModalDialog().find('.close').click(function(){dialog.close()});
         dialog.getModalBody().parent().css('border-radius', '15px');
         dialog.getModalBody().css('padding-top', '10px');
       },
@@ -71,7 +75,10 @@ app.InfoDenuncia = function(opt_options, denuncia) {
       }], 
 	  	onshow : function(dialog){
 	  		dialog.getModalHeader().replaceWith($('<div class="row" style="margin: 0px; padding-bottom: 15px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
-  				'<div class="col-xs-4" style="text-align: center;">' +
+          '<div class="bootstrap-dialog-close-button">' + 
+            '<button class="close" style="color : #fff; margin-right : 10px;">X</button>' +
+          '</div>' +
+          '<div class="col-xs-4" style="text-align: center;">' +
   					'<img class="img img-thumbnail" src="' + denuncia.usuario[0].profile.picture + '" style="margin-top: 15px; width: 90px; height: 90px; object-fit: cover;" />' +
   				'</div>' +
   				'<div class="col-xs-8" style="text-align: center; color: #fff">' +
@@ -80,7 +87,7 @@ app.InfoDenuncia = function(opt_options, denuncia) {
   					'<div class="col-lg-12" style="height: 30px;"><i class="fa fa-calendar"></i> ' + fecha + '</div>' +
   				'</div>' + 
   			'</div>'));
-
+        dialog.getModalDialog().find('.close').click(function(){dialog.close()});
 	  		dialog.getModalBody().parent().css('border-radius', '15px');
 	  		dialog.getModalBody().css('padding-top', '0px');
 	  	},

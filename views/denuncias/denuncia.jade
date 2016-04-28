@@ -46,7 +46,7 @@ block script
 		
 		var json = JSON.parse('!{JSON.stringify(denuncia.geometria)}'); // geometría del servidor
 		var type = json.type;
-
+		console.log(json);
 		var feature;
 
 		if(type == 'Point'){
@@ -79,6 +79,8 @@ block script
 
 		var geom = feature.getGeometry().getExtent();
 		var size = map.getSize();
+
+		map.addLayer(vector);
 
 		map.getView().fit(geom,size);
 		// solo podemos acceder a ella desde este tipo de scripts que tienen un punto al final
@@ -118,10 +120,25 @@ block script
 				feature_lin.attributes = {};
 				feature_lin.attributes.marker_type = 'posicion_linea';
 
+				var centro_lin = ol.extent.getCenter(feature_lin.getGeometry().getExtent());
+
+				var feature_distancia = new ol.Feature({
+					geometry: new ol.geom.Point(centro_lin),
+					name: 'Linea',
+					attributes : {marker_type : 'posicion_linea'},
+				});
+				feature_lin.attributes = {};
+				feature_lin.attributes.marker_type = 'distancia';
+
 				vector_.getSource().addFeature(feature_lin);
+				vector_.getSource().addFeature(feature_distancia);
+
+				feature_lin.setStyle(styles_markers['posicion_linea']);
+				feature_distancia.setStyle(styles_markers['distancia']);
+
+				feature_distancia.getStyle().getText().setText('distancia \n' +noti.datos.distancia.toFixed(3) + ' m');
 
 				map.addLayer(vector_);
-				map.addLayer(vector);
 
 				feature_pos.setStyle(
 					new ol.style.Style({
@@ -139,6 +156,16 @@ block script
 						})
 					})
 				);
+
+				map.getView().on('change:resolution', function(){
+					zoom = map.getView().getZoom();
+					if (zoom >= 9) {
+						vector_.setVisible(true);
+					}
+					else if (zoom < 9) {
+						vector_.setVisible(false);
+					}
+				});
 
 			}
 			else if(noti.tipo == 'COMENTARIO_DENUNCIA'){
