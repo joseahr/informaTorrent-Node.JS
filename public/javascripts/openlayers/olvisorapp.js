@@ -77,9 +77,9 @@ cambiar_imagen = function(denuncia, boton, d_body){
 	var imagenes = denuncia.imagenes;
 	if(!imagenes) {
 		BootstrapDialog.alert({
-			title : 'Imágenes', 
+			title : 'ERROR', 
 			message : 'La denuncia no contiene imágenes',
-			inshow : function(dialog){$(dialog.getModalHeader()).css('background', 'rgb(200,50,50)')}
+			/*onshow : function(dialog){$(dialog.getModalHeader()).parent().css('background-color', 'rgb(200,50,50)')}*/
 		});
 		return;
 	}
@@ -435,14 +435,14 @@ function show_denuncia(denuncia){
 		dialog.setMessage('<h4 style="width: 100%; color: #fff; background-color: rgba(0,0,0,0.4); margin-top: -10px;text-align:center; border-radius: 5px">' + denuncia.titulo + '</h4>' +
 		'<div class="row" style="margin-top: 15px; overflow-x: hidden; background-color: #fff">' + 
 			'<i class="fa fa-tags"> ' + tags + '</i>' +
-			'<div class="col-lg-12 text-center"><img class="img img-thumbnail" id="imagenes_denuncia" src="' + getGeoserverMiniatura(denuncia, 500) + '" style="width: 300px; height: 300px; object-fit: cover; margin: 10 0 10 0px;"></img></div>' +
+			'<div class="col-lg-12 text-center"><a href="javascript:void(0)"><img class="img img-thumbnail" id="imagenes_denuncia" src="' + getGeoserverMiniatura(denuncia, 500) + '" style="width: 300px; height: 300px; object-fit: cover; margin: 10 0 10 0px;"></img></a><div style="position : absolute; bottom : 15px; left : 50%; right : 50%; margin-left : -145px; margin-right : -145px; background : #00bbff; color : #fff;">CLICK PARA VER MÁS</div></div>' +
 			'<h4>Descripción</h4>' + 
 			'<div id="desc" style="margin: 5px;"></div>' + 
 		'</div>');
 		$(dialog.getModalBody()).find('#desc').append(decodeURIComponent(denuncia.descripcion));
 
 		$(dialog.getModalBody()).find('#imagenes_denuncia').click(function(e){
-			cambiar_imagen(f.attributes.denuncia, this, dialog.getModalBody());
+			cambiar_imagen(denuncia, this, dialog.getModalBody());
 		});
 	});
 
@@ -456,3 +456,87 @@ function show_denuncia(denuncia){
 
 	sel_dialog.open();
 };
+
+
+/***** PERMALINK ******/
+if (window.location.hash) {
+  var hash = window.location.hash.replace('#', '');
+  var parts = hash.split(';');
+  if (parts.length > 3) {
+    zoom = parseInt(parts[2], 10);
+    center = [
+      parseFloat(parts[0]),
+      parseFloat(parts[1])
+    ];
+
+    map.getView().setCenter(center);
+    map.getView().setZoom(zoom);
+
+    if (parts[3]) {
+	    $.ajax({
+	      url:"/app/denuncias/api?geojson=false&ids=" + parts[3],
+	      dataType:"json",
+	      success:function(v) {
+	        var denuncias = v.denuncias;
+	        console.log(denuncias, v);
+	        denuncias.forEach(function(denuncia){
+	        	if(!features_cache[denuncia.gid]){
+					denuncia.tipo = denuncia.geometria.type;
+					denuncia.coordenadas = denuncia.geometria.coordinates;
+					//alert('denuncia ' + denuncia.tipo + ' ' + denuncia.coordenadas);
+
+					var feature, 
+					feature_marker,
+					type = denuncia.geometria.type, 
+					coordinates = denuncia.geometria.coordinates;
+
+					if(type == 'Point'){
+					  feature = new ol.Feature({
+					      geometry: new ol.geom.Point(coordinates),
+					      name: 'Denuncia - Punto'
+					  });
+					  
+					}
+					else if(type == 'LineString'){
+					  feature = new ol.Feature({
+					    geometry: new ol.geom.LineString(coordinates),
+					    name: 'Denuncia - Polígono'
+					  });
+					}
+					else if(type == 'Polygon'){
+					  feature = new ol.Feature({
+					    geometry: new ol.geom.Polygon(coordinates),
+					    name: 'Denuncia - Polígono'
+					  });
+					}
+
+					feature_marker = new ol.Feature({
+					  geometry : new ol.geom.Point(ol.extent.getCenter(feature.getGeometry().getExtent())),
+					  name : 'Denuncia Marker'
+					});
+
+					feature.attributes = {
+					  type : 'denuncia',
+					  from : 'query',
+					  denuncia: denuncia
+					};
+					feature_marker.attributes = {
+					  type : 'marker',
+					  marker_type : 'visor',
+					  denuncia: denuncia
+					};
+
+					features_cache[denuncia.gid] = feature;
+					clusterSource.getSource().addFeature(feature_marker);
+	        	}
+	        });
+	      }
+	    });
+	}
+  }
+}
+
+map.on('moveend', function(){
+  var centro = map.getView().getCenter();
+  window.location.hash = centro[0] + ';' + centro[1] + ';' + map.getView().getZoom() + ';' + Object.keys(features_cache).join();
+});

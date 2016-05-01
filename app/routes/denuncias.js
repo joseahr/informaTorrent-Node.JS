@@ -11,6 +11,8 @@ var usuarioModel = require('../models/usuario.js');
 	denunciaModel = new denunciaModel();
 	usuarioModel = new usuarioModel();
 
+var isLoggedIn = require('../middlewares/logged.js');
+
 router.get('/tags', function(req, res){
 	denunciaModel.getAllTags(function(error, tags){
 		if(error) return res.status(500).json(error);
@@ -19,6 +21,8 @@ router.get('/tags', function(req, res){
 })
 // api json para consultas
 router.get('/api', function(req, res){
+	var geojson_format = req.query.geojson == 'false' ? false : true;
+	console.log(geojson_format, 'GOEJSON FORMAT');
 	console.log(req.query);
 	var aux = false;
 	var filtro = {};
@@ -31,6 +35,7 @@ router.get('/api', function(req, res){
 
 	filtro.consulta = formato == 'gml' ? 'denuncias_sin_where_gml' : 'denuncias_sin_where'; 
 
+	filtro.ids = req.query.ids;
 	filtro.tags = req.query.tags ? req.query.tags.split(',') : undefined;
 	filtro.usuario_nombre = req.query.username;
 	filtro.fecha_desde = req.query.fecha_desde ? req.query.fecha_desde.split('/') : undefined;
@@ -46,9 +51,11 @@ router.get('/api', function(req, res){
 			console.log('keeeeey' + key);
 		}				
 	}
+
 	// Si no ha añadido ningún parámetro de búsqueda emitimos un evento de error
 	if(!aux) 
 		return res.status(500).json({type : 'error', msg: 'Debe introducir algún parámetro de búsqueda'});
+	var bbox = req.query.bbox ? req.query.bbox.split(',') : undefined;
 	// Validamos los parámetros que envía el usuario
 	if(req.query.lat && req.query.lon && req.query.buffer_radio){
 		if(!validator.isDecimal(req.query.lon.replace(',', '.')) && !validator.isNumeric(req.query.lon))
@@ -64,9 +71,16 @@ router.get('/api', function(req, res){
 		return res.status(500).json({type : 'error', msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros'});
 	else if(!(req.query.lat || req.query.lon) && req.query.buffer_radio) 
 		return res.status(500).json({type : 'error', msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros'});
+	else if(req.query.bbox){
+		console.log(bbox.length);
+		if(bbox.length != 4) return res.status(500).json({type : 'error', msg: 'Faltan parámetros en el bbox'});
+		if(parseFloat(bbox[0]) >= parseFloat(bbox[2])) return res.status(500).json({type : 'error', msg: 'La longitud mínima del bbox debe ser menor que la longitud máxima'});
+		if(parseFloat(bbox[1]) >= parseFloat(bbox[3])) return res.status(500).json({type : 'error', msg: 'La latitud mínima del bbox debe ser menor que la latitud máxima'});
+	}
 
-	denunciaModel.find(filtro, true, function(error, denuncias){
-		res.json({type : 'success', count : denuncias.query.length || 0, denuncias : denuncias.query});
+	denunciaModel.find(filtro, geojson_format, function(error, denuncias){
+		if(!error) res.json({type : 'success', count : denuncias.query.length || 0, denuncias : denuncias.query});
+		else res.status(500).json({type : 'error', msg: error.msg});
 	});
 });
 
@@ -108,12 +122,10 @@ router.get('/visor', function(req, res, next){
 	});
 });
 
-// Middleware autentificación
-router.use(require('../middlewares/logged.js'));
 
 router.route('/nueva')
 // Página nueva denuncia -- OK
-.get(function(req, res, next){
+.get(isLoggedIn, function(req, res, next){
 	console.log('nueva');
 	denunciaModel.crear_temp_dir(function(error, token){
 		if(error)
@@ -122,7 +134,7 @@ router.route('/nueva')
 	});
 })
 // Petición añadir denuncia -- OK
-.post(function(req, res){
+.post(isLoggedIn, function(req, res){
 	var errormsg = ''; // String para mensajes de error
 	// comprobando datos de la denuncia
 	if(!req.body.tempDir) errormsg += 'No hay tempdir';
@@ -161,7 +173,7 @@ router.route('/nueva')
 
 router.route('/imagen/temporal')
 // Subir imagen a la carpeta temporal -- OK
-.post(function(req, res, next){
+.post(isLoggedIn, function(req, res, next){
 	multer_temp_denuncia(req, res, function(error){
 		// Enviamos un mensaje de error
 		if(error)
@@ -179,7 +191,7 @@ router.route('/imagen/temporal')
 	});
 })
 // Eliminar imagen de la carpeta temporal -- OK
-.delete(function(req, res, next){
+.delete(isLoggedIn, function(req, res, next){
 	// Comprobamos parámetros
 	if(!(req.query.tempdir && req.query.filename))
 		return res.status(500).json({type : 'error', msg : req.i18n.__('error_borrando_imagen') + req.i18n.__('error_borrando_imagen_params')})
@@ -191,7 +203,7 @@ router.route('/imagen/temporal')
 });
 
 // Eliminar imagen de la carpeta final de denuncias -- OK
-router.delete('/imagen', function(req, res, next){
+router.delete('/imagen', isLoggedIn, function(req, res, next){
 	if(!req.query.path)
 		return res.status(500).json(req.i18n.__('parametro_no_valido'));
 	else {
@@ -235,7 +247,7 @@ router.route('/:id_denuncia')
 	res.redirect('/app/denuncias/' + req.denuncia.gid + '/' + req.denuncia.titulo.replace(/ /g, '-').replace(/\?/g,'') + id_noti);
 })
 // Actualizar denuncia -- OK
-.put(function(req, res){
+.put(isLoggedIn, function(req, res){
 	if(req.denuncia.id_usuario != req.user._id) 
 		return res.status(500).json({type : 'error', msg : req.i18n.__('no_tiene_permiso')});
 	var errormsg = ''; // String para mensajes de error
@@ -286,7 +298,7 @@ router.route('/:id_denuncia')
 
 })
 // Eliminar denuncia -- OK
-.delete(function(req, res){
+.delete(isLoggedIn, function(req, res){
 	if(req.user._id != req.denuncia.id_usuario) 
 		return res.status(500).json({type : 'error', msg : req.i18n.__('no_tiene_permiso')});
 	denunciaModel.eliminar(req.denuncia.gid, function(error){
@@ -301,7 +313,7 @@ router.route('/:id_denuncia')
 });
 
 // Página para actualizar la denuncia -- OK
-router.get('/:id_denuncia/actualizar', function(req, res, next){
+router.get('/:id_denuncia/actualizar', isLoggedIn, function(req, res, next){
 	if(req.denuncia.id_usuario != req.user._id) 
 		return next({type : 'error', msg : req.i18n.__('no_tiene_permiso')});
 	denunciaModel.crear_temp_dir(function(error, token){
@@ -312,7 +324,7 @@ router.get('/:id_denuncia/actualizar', function(req, res, next){
 });
 
 // Replicar un comentario 
-router.post('/:id_denuncia/comentario/:id_comentario/replicar', function(req, res, next){
+router.post('/:id_denuncia/comentario/:id_comentario/replicar', isLoggedIn, function(req, res, next){
 	denunciaModel.añadir_replica({
 		contenido : req.body.contenido,
 		id_comentario : req.params.id_comentario,
@@ -325,7 +337,7 @@ router.post('/:id_denuncia/comentario/:id_comentario/replicar', function(req, re
 });
 
 // Añadir un comentario -- OK
-router.post('/:id_denuncia/comentar', function(req, res, next){
+router.post('/:id_denuncia/comentar', isLoggedIn, function(req, res, next){
 	// Comprobamos parámetros
 	if (!req.body.contenido || !req.denuncia.gid) 
 		return res.status(500).json({type : 'error', msg : req.i18n.__('error_comentario')});

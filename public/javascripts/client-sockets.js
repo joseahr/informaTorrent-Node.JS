@@ -1,5 +1,7 @@
 var num_denuncias_io = io.connect(window.location.href.split(':')[1] + ":3000/app/visor");
 
+var audio = new Audio('/files/audios/noti.mp3');
+
 /*
 ==============================================================================================
 CONEXIÓN CON EL SERVIDOR MEDIANTE WEB SOCKETS -- Socket.io
@@ -101,6 +103,8 @@ num_denuncias_io.on('num_usuarios_conectados', function(data){
 // recibimos este evento
 num_denuncias_io.on('denuncia_no_likeada', function(data){
 
+	audio.play();
+
 	// Notificamos al usuario de la denuncia de ello
 	// Alertamos de una notificación
 	//data.noti = data.noti[1];
@@ -120,8 +124,8 @@ num_denuncias_io.on('denuncia_no_likeada', function(data){
 	// Ponemos la notificación al principio de nuestra 
 	// lista de notificaciones
 	var html =  getNotificacionRow(data.noti, traducciones);
-	$('#notificaciones > .panel-body').prepend($(html));
-	
+	$(html).prependTo($('#notificaciones > .panel-body'));
+	$('#notificaciones > .panel-body').find('p.lead').prependTo($('#notificaciones > .panel-body'));
 	// Insertamos la notificación al principio de nuestro
 	// array de notificaciones
 	if(notificaciones) notificaciones.unshift(data.noti);
@@ -140,6 +144,8 @@ num_denuncias_io.on('denuncia_no_likeada', function(data){
 // recibimos este evento
 num_denuncias_io.on('denuncia_likeada', function(data){
 
+	audio.play();
+
 	//data.noti = data.noti[1];
 	data.noti.profile_from = data.from.profile;
 	data.noti.denuncia = data.denuncia;
@@ -157,7 +163,8 @@ num_denuncias_io.on('denuncia_likeada', function(data){
 	// Insertamos la notificación al principio de la lista
 	// de notificaciones
 	var html = getNotificacionRow(data.noti, traducciones);
-	$('#notificaciones > .panel-body').prepend($(html));
+	$(html).prependTo($('#notificaciones > .panel-body'));
+	$('#notificaciones > .panel-body').find('p.lead').prependTo($('#notificaciones > .panel-body'));
 	
 	// Insertamos la notificación al principio de el array 
 	// de notificaciones
@@ -176,6 +183,8 @@ num_denuncias_io.on('denuncia_likeada', function(data){
 // Un usuario ha publicado una denuncia cerca de 
 // nuestra ubicación
 num_denuncias_io.on('denuncia_cerca', function(data){
+
+	audio.play();
 	//console.log(JSON.stringify(data));
 	//data.noti = data.noti[1];
 	data.noti.profile_from = data.from.profile;
@@ -191,7 +200,8 @@ num_denuncias_io.on('denuncia_cerca', function(data){
 	
 	// Insertamos la notificación en la lista de notificaciones
 	var html = getNotificacionRow(data.noti, traducciones);
-	$('#notificaciones > .panel-body').prepend($(html));
+	$(html).prependTo($('#notificaciones > .panel-body'));
+	$('#notificaciones > .panel-body').find('p.lead').prependTo($('#notificaciones > .panel-body'));
 	
 	// Insertamos la notificación en el array de notificaciones
 	if(notificaciones) notificaciones.unshift(data.noti);
@@ -208,6 +218,8 @@ num_denuncias_io.on('denuncia_cerca', function(data){
 
 // Un usuario ha comentado nuestra denuncia
 num_denuncias_io.on('denuncia_comentada', function(data){
+
+	audio.play();
 	console.log(JSON.stringify(data));
 
 	data.noti.denuncia = data.denuncia;
@@ -224,7 +236,8 @@ num_denuncias_io.on('denuncia_comentada', function(data){
 	
 	// Insertamos la notificacion al principio de la lista de notificaciones
 	var html = getNotificacionRow(data.noti, traducciones);
-	$('#notificaciones > .panel-body').prepend($(html));
+	$(html).prependTo($('#notificaciones > .panel-body'));
+	$('#notificaciones > .panel-body').find('p.lead').prependTo($('#notificaciones > .panel-body'));
 	
 	// Insertamos la notificacion al principio del array de notificaciones
 	if(notificaciones) notificaciones.unshift(data.noti);
@@ -240,6 +253,8 @@ num_denuncias_io.on('denuncia_comentada', function(data){
 });
 
 num_denuncias_io.on('replica', function(data){
+
+	audio.play();
 	console.log(JSON.stringify(data));
 
 	data.noti.denuncia = data.denuncia;
@@ -256,7 +271,8 @@ num_denuncias_io.on('replica', function(data){
 	
 	// Insertamos la notificacion al principio de la lista de notificaciones
 	var html = getNotificacionRow(data.noti, traducciones);
-	$('#notificaciones > .panel-body').prepend($(html));
+	$(html).prependTo($('#notificaciones > .panel-body'));
+	$('#notificaciones > .panel-body').find('p.lead').prependTo($('#notificaciones > .panel-body'));
 	
 	// Insertamos la notificacion al principio del array de notificaciones
 	if(notificaciones) notificaciones.unshift(data.noti);

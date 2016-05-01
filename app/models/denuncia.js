@@ -737,11 +737,7 @@ Denuncia.prototype.denuncias_visor = function(callback){
 
 Denuncia.prototype.denuncias_cerca = function(posicion, callback){
 	// Formateamos la consulta --> Usamos un buffer de 100 metros para saber si tengo denuncias cerca
-	var query = consultas.denuncias_sin_where.query + 
-		" (st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(x.geom_pt,25830)) < 100 or " +
-		"st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(x.geom_li,25830)) < 100 or " +
-		"st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(x.geom_po,25830)) < 100)" +
-		"order by fecha desc";
+	var query = consultas.denuncias_cerca;
 	// Ejecutamos la consulta
 	db.any(query, posicion)
 	.then(function(denuncias){
@@ -815,6 +811,10 @@ function filtro_denuncias(filter){
     }    
 
     // ID denuncia -- Si se pasa la id de la denuncia los parámetros más abajo no se tienen en cuente para la búsqueda
+    if(filter.ids){
+    	cnd.push(pgp.as.format("gid IN ('" + filter.ids.split(',').join("','") + "')"));
+    	return cnd.join(' and ');  	
+    }
     if(filter.id){
     	cnd.push(pgp.as.format("gid = '" + filter.id + "'"));
     	return cnd.join(' and ');

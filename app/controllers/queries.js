@@ -65,6 +65,8 @@ module.exports = {
 
 		//Select
 
+		denuncias_cerca : helper.select.denuncias.denuncias_cerca,
+
 		check_like_denuncia : helper.select.denuncias.me_gusta,
 		
 		denuncias_sin_where : helper.select.denuncias.sin_where, 

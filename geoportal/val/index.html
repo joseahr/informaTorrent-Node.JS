@@ -109,7 +109,7 @@
 												</ul>
 											</li>
 											<li><a href="/visor">Visor</a></li>
-											<li><a href=":8080/geonetwork">Cercador</a></li>
+											<li><a href="javascript:window.open(window.location.href.split(':3000')[0] + ':8081/geonetwork')">Cercador</a></li>
 											<li class="dropdown">
 												<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Més <span class="caret"></span></a>
 												<ul class="dropdown-menu" style="width : 100%">
@@ -203,7 +203,7 @@
 						<div class="row">
 							<div class="col-md-6">
 								<p>Des del menú podràs accedir als diferents serveis web elaborats per l'ajuntament de Torrent seguint els estàndards aprovats pel <b>Open Geospatial Consortium (OGC)</b> per al seu ús en sistemes d'informació geogràfica (SIG). Seguint aquests estàndards s'intenta aconseguir la integració i la interoperabilitat de grans volums de dades espacialment referenciats (Informació Geogràfica).</p>
-								<p>Si ho desitja també pots fer ús del nostre <span><a href="/visor">visor online</a></span> o buscar els recursos del seu interès accedint al <a href=":8080/geonetwork">catàleg de serveis</a></span>.</p>
+								<p>Si ho desitja també pots fer ús del nostre <span><a href="/visor">visor online</a></span> o buscar els recursos del seu interès accedint al <a href="javascript:window.open(window.location.href.split(':3000')[0] + ':8081/geonetwork')">catàleg de serveis</a></span>.</p>
 							</div>
 							<div class="col-md-6">
 								<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
@@ -462,15 +462,15 @@ console.log(window.location.href.toString().split(window.location.port)[0]);
 		console.log(capa + features);
 		
 		if (capa == 'jahr:ortofoto') {
-			window.open(window.location.href.toString().split(window.location.port)[0] + '8001/geoserver/jahr/wms?service=WMS&version=1.1.0&request=GetMap&layers=jahr:ortofoto&styles=&bbox=703922.4219253492,4361457.771400001,721973.2836746508,4370702.237000001&width=768' +
+			window.open(window.location.href.toString().split(window.location.port)[0] + '8081/geoserver/jahr/wms?service=WMS&version=1.1.0&request=GetMap&layers=jahr:ortofoto&styles=&bbox=703922.4219253492,4361457.771400001,721973.2836746508,4370702.237000001&width=768' +
 					'&height=393&srs=EPSG:25830&format=' + $('#format').val());
 		}
 		else {
 			if (features == '')
-				window.open(window.location.href.toString().split(window.location.port)[0] + '8001/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
+				window.open(window.location.href.toString().split(window.location.port)[0] + '8081/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
 				'&request=GetFeature&typeName=' + capa + '&outputFormat=shape-zip');
 			else
-				window.open(window.location.href.toString().split(window.location.port)[0] + '8001/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
+				window.open(window.location.href.toString().split(window.location.port)[0] + '8081/geoserver/jahr/ows?service=WFS&version=1.0.0' + 
 				'&request=GetFeature&typeName=' + capa + '&maxFeatures=' + features + '&outputFormat=shape-zip');		
 		}
 		
@@ -504,7 +504,7 @@ console.log(window.location.href.toString().split(window.location.port)[0]);
 	
 	// GetCapabilities Dialog
 	$('[id="capabilities"]').click(function(event){
-		var serviceURL = window.location.href.toString().split(window.location.port)[0] + '8001' + $(this).attr('service_url');
+		var serviceURL = window.location.href.toString().split(window.location.port)[0] + '8081' + $(this).attr('service_url');
 		var serviceName = $(this).attr('service_name');
 		
 		
@@ -556,7 +556,7 @@ console.log(window.location.href.toString().split(window.location.port)[0]);
 	
 	// Copy Service URL
 	$('[id="copy"]').click(function(event){
-		var service_url = window.location.href.toString().split(window.location.port)[0] + '8001' + $(this).attr('service_url');
+		var service_url = window.location.href.toString().split(window.location.port)[0] + '8081' + $(this).attr('service_url');
 	    var $temp = $("<input>")
 	    $("body").append($temp);
 	    $temp.val(service_url).select();
@@ -567,7 +567,7 @@ console.log(window.location.href.toString().split(window.location.port)[0]);
 	
 	// Go to Service
 	$('[id="ir"]').click(function(event){
-		window.open(window.location.href.toString().split(window.location.port)[0] + '8001' +  $(this).attr('service_url'));
+		window.open(window.location.href.toString().split(window.location.port)[0] + '8081' +  $(this).attr('service_url'));
 	});
 	
 </script>

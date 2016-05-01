@@ -8,6 +8,7 @@ app.TrackingDenunciasCerca = function(opt_options) {
 
   var options = opt_options || {},
   message, // mensaje con las denuncias cerca
+  coordinates, // ultimas coordenadas conocidas
   btn_abrir = document.createElement('button'), 
   show_position = false, // Bool - Activar/Desactivar control
   this_ = this,
@@ -62,7 +63,18 @@ app.TrackingDenunciasCerca = function(opt_options) {
     geolocation.setTracking(false);
     featuresOverlay.setVisible(false);
     coor_ant = false;
+    clearDenunciasCerca();
   };
+
+  function clearDenunciasCerca (){
+    clusterSource.getSource().getFeatures().forEach(function(f){
+      if(f.attributes.marker_type == 'cerca'){
+        console.log(f.attributes.denuncia.gid);
+        delete features_cache[f.attributes.denuncia.gid];
+        clusterSource.getSource().removeFeature(f);
+      }
+    });
+  }
 
   // Estilamos el feature
   positionFeature.setStyle(new ol.style.Style({
@@ -93,8 +105,7 @@ app.TrackingDenunciasCerca = function(opt_options) {
   }); // Manejador - Se dispara cuando cambia la precisión
 
   geolocation.on('change:position', function() {
-    var coordinates = geolocation.getPosition();
-
+    coordinates = geolocation.getPosition();
     if(coor_ant){
       var line = new ol.geom.LineString([coordinates, coor_ant]);
 
@@ -120,23 +131,6 @@ app.TrackingDenunciasCerca = function(opt_options) {
       distancia = 0;
     }
 
-    num_denuncias_io.on('si_que_tengo_denuncias_cerca', function(data){
-      /* Mostrar las denuncias */
-      console.log(data);
-      if(!data || data == '') return;
-      message = '<div style="text-align: center">' + 
-                    '<p> Posición actual : ' + ol.coordinate.toStringHDMS(coordinates, 2) + '</p>';
-      data.forEach(function(denuncia){
-        denuncia.tipo = denuncia.geometria.type;
-        denuncia.coordenadas = denuncia.geometria.coordinates;
-        //alert('denuncia ' + denuncia.tipo + ' ' + denuncia.coordenadas);
-        message += getDenunciaRow(denuncia, true);
-      });
-      message += '</div>';
-      dialog_td.setMessage(message);
-      $(btn_abrir).find('i').empty().append('<span style="background-color: #cc0000; font-size: 0.6em" class="badge">' + data.length + '</span>');
-      //dialog_td.open();
-    });
 
     // Solo haremos pan una vez por activación de control. Pa que el usuario no se raye.
     // En cambio sí que actualizamos la posición cuando tenga nuevas coords.
@@ -164,7 +158,76 @@ app.TrackingDenunciasCerca = function(opt_options) {
     }
   });
   
-  // Eventos Geolocation ******************************************************     
+  // Eventos Geolocation ******************************************************  
+  num_denuncias_io.on('si_que_tengo_denuncias_cerca', function(data){
+    clearDenunciasCerca();
+    message = '';
+    /* Mostrar las denuncias */
+    console.log(data);
+    if(!data || data == '') return;
+    message = '<div class="col-lg-12 text-center" style="color: #fff; background-color: #ffbb00; border-radius : 10px; font-weight : bold; margin-bottom : 10px;">' + 
+                  '<i class="fa fa-location-arrow"></i> ' + ol.coordinate.toStringHDMS(coordinates, 2) + '</div><div class="col-lg-12 text-center">';
+    data.forEach(function(denuncia){
+      denuncia.tipo = denuncia.geometria.type;
+      denuncia.coordenadas = denuncia.geometria.coordinates;
+      var distancia = denuncia.distancia_punto || denuncia.distancia_linea || denuncia.distancia_poligono;
+      //alert('denuncia ' + denuncia.tipo + ' ' + denuncia.coordenadas);
+      message += '<div class="col-lg-12 text-center" style="color: #fff; background-color: #00bbff; border-radius : 10px; font-weight : bold;">Distancia : ' + distancia.toFixed(3) + ' m</div>' + 
+        getDenunciaRow(denuncia, true) + '<div class="col-lg-12 space"></div>';
+
+      var feature, 
+      feature_marker,
+      type = denuncia.geometria.type, 
+      coordinates = denuncia.geometria.coordinates;
+      
+      if(type == 'Point'){
+          feature = new ol.Feature({
+              geometry: new ol.geom.Point(coordinates),
+              name: 'Denuncia - Punto'
+          });
+          
+        }
+        else if(type == 'LineString'){
+          feature = new ol.Feature({
+            geometry: new ol.geom.LineString(coordinates),
+            name: 'Denuncia - Polígono'
+          });
+        }
+        else if(type == 'Polygon'){
+          feature = new ol.Feature({
+            geometry: new ol.geom.Polygon(coordinates),
+            name: 'Denuncia - Polígono'
+          });
+        }
+
+        feature_marker = new ol.Feature({
+          geometry : new ol.geom.Point(ol.extent.getCenter(feature.getGeometry().getExtent())),
+          name : 'Denuncia Marker'
+        });
+
+        feature.attributes = {
+          type : 'denuncia',
+          from : 'query',
+          denuncia: denuncia
+        };
+        feature_marker.attributes = {
+          type : 'marker',
+          marker_type : 'cerca',
+          denuncia: denuncia
+        };
+
+        if(!features_cache[denuncia.gid]){
+          features_cache[denuncia.gid] = feature;
+          clusterSource.getSource().addFeature(feature_marker);
+        }
+
+
+    });
+    message += '</div>';
+    dialog_td.setMessage(message);
+    $(btn_abrir).find('i').empty().append('<span style="background-color: #cc0000; font-size: 0.6em" class="badge">' + data.length + '</span>');
+    //dialog_td.open();
+  });   
 
   button.innerHTML = '<i class="fa fa-globe" style="color: #fff"></i>';
   
@@ -183,6 +246,11 @@ app.TrackingDenunciasCerca = function(opt_options) {
         map.getControls().forEach(function(c){
           if(c instanceof app.Tracking) c.desactivar();
         });
+
+        distancia = 100;
+        coor_ant = null;
+        message = '';
+
       }
       else {
         this_.desactivar();

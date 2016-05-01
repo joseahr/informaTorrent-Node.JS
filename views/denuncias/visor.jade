@@ -11,6 +11,7 @@ block script
 	script(src="http://twitter.github.io/typeahead.js/releases/latest/typeahead.jquery.js")
 	script(src="http://twitter.github.io/typeahead.js/releases/latest/bloodhound.js")
 	script(src="/javascripts/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.js")
+	script(src="/javascripts/openlayers/controles/bitly.js")
 	script.
 		window.document.title += ' - Visor de denuncias';
 		var dialog_;
@@ -20,6 +21,7 @@ block script
 		
 		map.addControl(new app.QueryDenuncias());
 		map.addControl(new app.TrackingDenunciasCerca());
+		map.addControl(new app.Bitly());
 		
 		num_denuncias_io.on('new_denuncia', function(data){
 			var denuncia = data.denuncia;

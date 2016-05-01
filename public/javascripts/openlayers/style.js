@@ -106,6 +106,7 @@ styles_markers = {
       })
     })
   }),
+  'cerca' : marker('fa-globe', '#5caa60'),
   'visor' : marker('fa-asterisk', '#40cdeb'),
   'buscar' : marker('fa-search', '#91a043'),
   'nueva' : marker('fa-plus-circle', '#ef4428')

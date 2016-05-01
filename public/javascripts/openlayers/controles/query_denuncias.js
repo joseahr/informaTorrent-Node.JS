@@ -74,6 +74,14 @@ app.QueryDenuncias = function(opt_options) {
 		'</div>' +
 	'</div>',
 	html = '<div class="row">' +
+		'<div class="col-lg-12">' +
+			'<a id="limpiar_busquedas" href="javascript:void(0)">' +
+				'<span class="fa-stack fa-lg">' +
+  					'<i class="fa fa-search fa-stack-1x"></i>' +
+  					'<i class="fa fa-ban fa-stack-2x text-danger"></i>' +
+				'</span>' +
+			' Limpiar consultas del mapa</a>' +
+		'</div>' +
 		'<div class="col-lg-12">' + 
 			'<h4>Datos Básicos</h4>' + 
 			'<p>Buscar por título, tags (separados por coma) y nombre de usuario</p>' + 
@@ -162,10 +170,11 @@ app.QueryDenuncias = function(opt_options) {
             		data.bbox = undefined;
             	else
             		data.bbox = [$(dialog.getModalBody()).find('#lon_min').val(), $(dialog.getModalBody()).find('#lat_min').val(),
-            		$(dialog.getModalBody()).find('#lon_max').val(), $(dialog.getModalBody()).find('#lat_max').val()].join();
+            		$(dialog.getModalBody()).find('#lon_max').val(), $(dialog.getModalBody()).find('#lat_max').val()];
             	console.log(data.bbox,$(dialog.getModalBody()).find('#lon_min').val(),
             		$(dialog.getModalBody()).find('#lon_max').val(),$(dialog.getModalBody()).find('#lat_min').val(),
             		$(dialog.getModalBody()).find('#lat_max').val());
+
             	num_denuncias_io.emit('query', data);
 
             	this.disable();
@@ -186,6 +195,18 @@ app.QueryDenuncias = function(opt_options) {
 	        dialog.getModalBody().css('padding-top', '10px');
 	    },
 	  	onshown: function(dialog){
+
+	  		$('#limpiar_busquedas').click(function(){
+	  			console.log('limpiar');
+	  			clusterSource.getSource().getFeatures().forEach(function(f){
+	  				if(f.attributes.marker_type == 'buscar'){
+	  					console.log(f.attributes.denuncia.gid);
+	  					delete features_cache[f.attributes.denuncia.gid];
+	  					clusterSource.getSource().removeFeature(f);
+	  				}
+	  			});
+	  		});
+
 			var tags_servidor = new Bloodhound({
 			  datumTokenizer: Bloodhound.tokenizers.obj.whitespace('tag'),
 			  queryTokenizer: Bloodhound.tokenizers.whitespace,
@@ -266,6 +287,14 @@ app.QueryDenuncias = function(opt_options) {
 				control = map.on('click', function(e){
 					var coor = e.coordinate;
 					dialog.open();
+					var lonmax = $(dialog.getModalBody()).find('#lon_max').val();
+					var latmax = $(dialog.getModalBody()).find('#lat_max').val();
+
+					if(latmax != '' && latmax < coor[1] || 
+						lonmax != '' && lonmax < coor[0]){
+						BootstrapDialog.alert({ message : 'La latitud y la longitud máxima debe ser mayor que la latitud y la longitud mínima.'});
+						return;
+					}
 					$(dialog.getModalBody()).find('#lon_min').val(coor[0]);
 					$(dialog.getModalBody()).find('#lat_min').val(coor[1]);
 					
@@ -283,6 +312,14 @@ app.QueryDenuncias = function(opt_options) {
 				control = map.on('click', function(e){
 					var coor = e.coordinate;
 					dialog.open();
+					var lonmin = $(dialog.getModalBody()).find('#lon_min').val();
+					var latmin = $(dialog.getModalBody()).find('#lat_min').val();
+
+					if(latmin != '' && latmin > coor[1] || 
+						lonmin != '' && lonmin > coor[0]){
+						BootstrapDialog.alert({ message : 'La latitud y la longitud máxima debe ser mayor que la latitud y la longitud mínima.'});
+						return;
+					}
 					$(dialog.getModalBody()).find('#lon_max').val(coor[0]);
 					$(dialog.getModalBody()).find('#lat_max').val(coor[1]);
 					

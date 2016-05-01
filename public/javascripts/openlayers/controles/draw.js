@@ -26,7 +26,8 @@ app.Draw = function(opt_options, aux) {
 		wktFormat = new ol.format.WKT(),
 	vectorSource = new ol.source.Vector(),
 	vectorLayer = new ol.layer.Vector({
-		source: vectorSource
+		source: vectorSource,
+		displayInLayerSwitcher: false,
 	}),
 	loc_anterior,
 	denuncia = options.denuncia,

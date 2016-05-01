@@ -5,9 +5,8 @@
 	"al_menos_id": "Debe introducir al menos la id de la denuncia como parámetro en la consulta",
 	"accion_post": "La acción requiere ser enviada a través del método POST",
 	"apellidos_params": "Los apellidos deben tener entre 3 y 15 caracteres",
-	"aceptar" : "Aceptar",
-	"add_comentario" : "Añade un comentario",
-
+	"aceptar": "Aceptar",
+	"add_comentario": "Añade un comentario",
 	"cerrar_sesion": "Cerrar Sesión",
 	"crear_cuenta_usuario": "Crea una cuenta de usuario",
 	"contraseña": "Contraseña",
@@ -19,16 +18,15 @@
 	"cuenta_de": "Cuenta de",
 	"contraseña_parametros": "La contraseña debe tener entre 5 y 20 caracteres",
 	"cuenta_confirmada": "Tu cuenta se ha confirmado correctamente.",
-	"cancelar" : "Cancelar",
-	"comentarios" : "Comentarios",
-	"contiene" : "Contiene",
-	"comentarios_no_tiene" : "Esta denuncia no contiene comentarios",
-
+	"cancelar": "Cancelar",
+	"comentarios": "Comentarios",
+	"contiene": "Contiene",
+	"comentarios_no_tiene": "Esta denuncia no contiene comentarios",
 	"denuncias": "Denuncias",
 	"denuncias_fav": "Denuncias Favoritas",
 	"denuncia": "Denuncia",
 	"distancia": "Distancia",
-	"denuncia_añadida_ok" : "Denuncia añadida correctamente",
+	"denuncia_añadida_ok": "Denuncia añadida correctamente",
 	"denuncia_no_encontrada": "Denuncia no encontrada",
 	"denuncia_no_existe": "La denuncia solicitada no existe",
 	"denuncia_con_id": "Denuncia con id",
@@ -61,8 +59,7 @@
 	"error_subiendo_archivo": "Error subiendo archivo. ",
 	"eliminada_correctamente": "eliminada correctamente",
 	"error_servidor": "opps! Parece que ha habido un error...",
-	"en_una_conversacion" : "en una conversación",
-
+	"en_una_conversacion": "en una conversación",
 	"formato_no_permitido": "Formato no permitido",
 	"faltan_parametros": "Faltan parámetros",
 	"has_publicado": "Has publicado",
@@ -78,10 +75,8 @@
 	"imagen": "Imagen",
 	"imagen_perfil_actualizada": "Imagen de Perfil cambiada correctamente.",
 	"idioma": "Idioma",
-
 	"localizacion": "Localización",
-	"logeado_para_comentar" : "¡Debes estar loggeado para comentar!",
-
+	"logeado_para_comentar": "¡Debes estar loggeado para comentar!",
 	"mi_perfil": "Mi perfil",
 	"me_gusta_denuncia": "Te ha gustado la denuncia de",
 	"metros": "metros",
@@ -108,9 +103,8 @@
 	"ruta_no_encontrada": "Ruta no encontrada",
 	"slogan": "Tu portal de denuncias",
 	"subtitulo_app": "La app con la que podrás contribuir a la mejora de Torrent",
-	"seguro_eliminar_denuncia" : "¿Estás seguro de eliminar esta denuncia?",
-	"se_el_primero" : "¡Se el primero en opinar!",
-
+	"seguro_eliminar_denuncia": "¿Estás seguro de eliminar esta denuncia?",
+	"se_el_primero": "¡Se el primero en opinar!",
 	"te_han_gustado": "Te han gustado",
 	"titulo_app": "Informa Torrent",
 	"tienes": "Tienes",
@@ -126,7 +120,7 @@
 	"usuario_email_no_existe": "No existe ninguna cuenta con el nombre de usuario o correo electrónico ",
 	"usuario_valido": "El usuario ya es válido.",
 	"ubicacion_preferida_actualizada": "Ubicación preferida cambiada correctamente",
-	"usuarios_afectados" : "usuarios afectados",
-	"visor_tiempo_real": "Visor Tiempo Real"
-
+	"usuarios_afectados": "usuarios afectados",
+	"visor_tiempo_real": "Visor Tiempo Real",
+	"denuncia_geometria_poligonal": "denuncia_geometria_poligonal"
 }

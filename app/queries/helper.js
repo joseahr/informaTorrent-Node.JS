@@ -21,7 +21,8 @@ var mis_consultas = {
 			me_gusta : sql('select', 'denuncias/me_gusta.sql'),
 			visor : sql('select', 'denuncias/visor.sql'),
 			por_path_imagen : sql('select', 'denuncias/por_path_imagen.sql'),
-			is_equal : sql('select', 'denuncias/is_equal.sql')
+			is_equal : sql('select', 'denuncias/is_equal.sql'),
+			denuncias_cerca : sql('select', 'denuncias/denuncias_cerca.sql')
 		},
 		geoportal : {
 			info_tabla : sql('select', 'geoportal/info_tabla.sql')

@@ -42,7 +42,7 @@ app.use(flash()); // Flashear mensaje almacenados en la sesión
 });*/
 
 var os = require('os');
-console.log(os.networkInterfaces()['ens33'][0]['address']);
+console.log(os.networkInterfaces());
 //var IP = os.networkInterfaces()['ens33'][0]['address']; // IP desde donde ejecuto la aplicación
 //var IP = 'http://localhost:3000/'
 
@@ -101,7 +101,6 @@ app.use(function(err, req, res, next){
 
 // Tarea de limpieza del directorio temporal
 require('./app/jobs/clean.js');
-
 /*
 ======================================
 ===      INICIO DEL SERVIDOR       ===

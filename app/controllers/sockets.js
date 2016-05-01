@@ -156,6 +156,13 @@ module.exports = function(io){
 				return socket.emit('error_query', {msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros'});
 			else if(!(filtro.lat || filtro.lon) && filtro.buffer_radio) 
 				return socket.emit('error_query', {msg: 'Debes introducir el centro del buffer y el radio. Ambos parámetros'});
+			else if(filtro.bbox){
+				var bbox = filtro.bbox;
+				console.log(bbox.length);
+				if(bbox.length != 4) return socket.emit('error_query', {msg: 'Faltan parámetros en el bbox'});
+				if(parseFloat(bbox[0]) >= parseFloat(bbox[2])) return socket.emit('error_query', {msg: 'La longitud mínima del bbox debe ser menor que la longitud máxima'});
+				if(parseFloat(bbox[1]) >= parseFloat(bbox[3])) return socket.emit('error_query', {msg: 'La latitud mínima del bbox debe ser menor que la latitud máxima'});
+			}
 			// Ejecutamos consulta
 			denunciaModel.find(filtro, false, function(error, result){
 				if(error)
