@@ -10,6 +10,10 @@ block link
 		.label {
 		    line-height: 2 !important;
 		}
+		.ayuda {
+			bottom: 10.625em !important;
+			right: 0.5em; 
+		}
 	// CSS DROPZONE
 // block script
 block script
@@ -25,5 +29,6 @@ block script
 		window.document.title += ' - Añadir nueva denuncia';
 		map.addControl(new app.Draw());
 		map.addControl(new app.Lateral({titulo: 'Añadir nueva denuncia'}));
+		map.addControl(new app.Ayuda({tipo: 'nueva'}));
 		var random = '#{random}';
 		//alert(random);

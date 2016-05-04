@@ -8,11 +8,13 @@ var resolutions = new Array(22),
 matrixIds = new Array(22),
 resInicial = 0.703125,
 layerVectorVacia = new ol.layer.Vector({
+	noSwitcherDelete : true,
 	title:'Vacía',
 	type: 'base'
 }),
 Tile = function(opciones){
 	return new ol.layer.Tile({
+		noSwitcherDelete : true,
 		legend : opciones.legend,
 		name: opciones.titulo,
 		visible: true,
@@ -31,6 +33,7 @@ Tile = function(opciones){
 },
 TileWMST = function(opciones){
 	return new ol.layer.Tile({
+		noSwitcherDelete : true,
 		legend : opciones.legend,
 		name: opciones.titulo,
 		visible: false,
@@ -59,7 +62,7 @@ for (var i=0; i < 22; i++){
  *  Capa de nuestro servidor WMS
  */
 function leyenda_servidor(capa){
-	return 'http://84.126.219.128:8001/geoserver/jahr/ows?service=WMS&request=GetLegendGraphic&format=image%2Fpng&width=20&height=20&layer=' + capa;
+	return ip + '/geoserver/jahr/ows?service=WMS&request=GetLegendGraphic&format=image%2Fpng&width=20&height=20&layer=' + capa;
 };
 
 // Ortofoto
@@ -141,6 +144,7 @@ var denuncias_poligonos = Tile({
 
 //Denuncias Heat Map
 var denunciasHeatMap = new ol.layer.Heatmap({
+  noSwitcherDelete : true,
   title: 'Zonas más conflictivas',
   source: new ol.source.Vector({
   	crossOrigin: 'anonymous',
@@ -410,6 +414,7 @@ var denuncias_poligonos_WMST = TileWMST({
 
 //Mapa base del IGN
 var ignBase = new ol.layer.Tile({
+	noSwitcherDelete : true,
 	name: 'IGN Base',
 	visible: true,
 	source: new ol.source.TileWMS({
@@ -426,6 +431,7 @@ var ignBase = new ol.layer.Tile({
 
 //Ortofoto PNOA
 var ortoPNOA = new ol.layer.Tile({
+	noSwitcherDelete : true,
 	name: 'Ortofoto PNOA',
 	visible: false,
 	source: new ol.source.TileWMS({
@@ -443,18 +449,21 @@ var ortoPNOA = new ol.layer.Tile({
 // Grupo de Capas 1.--> Mapas base
 // Capa vacía, mapa base ign, ortofoto PNOA
 var groupCapasBase = new ol.layer.Group({
+	noSwitcherDelete : true,
 	name: 'Capas Base',
 	layers: [layerVectorVacia, ignBase, ortoPNOA]
 });
 
 var groupCartoTorrentWMS = new ol.layer.Group({
+	noSwitcherDelete : true,
 	name : 'Cartografía de Torrent WMS',
 	layers: [orto, municipio, manzanas, viales, caminos, /*nom_viales,*/ portales, 
-	    denuncias_puntos, denuncias_lineas, denuncias_poligonos, denunciasHeatMap,
-	    ]
+	    denuncias_puntos, denuncias_lineas, denuncias_poligonos, denunciasHeatMap
+	]
 });
 
 var torrent_cascada = new ol.layer.Group({
+	noSwitcherDelete : true,
 	name : 'WMS de Torrent en cascada',
 	layers : [	    // Carto Oficial
 	    arboles, areas_recreativas, nom_ejes, nom_ejes_valenciano, carpas,
@@ -467,6 +476,7 @@ var torrent_cascada = new ol.layer.Group({
 });
 
 var groupCartoTorrentWMST = new ol.layer.Group({
+	noSwitcherDelete : true,
 	name: 'Cartografía de Torrent WMS Teselado',
 	layers: [ortoWMST, municipioWMST, manzanasWMST, vialesWMST, 
 	    caminosWMST, /*nom_vialesWMST,*/ portalesWMST, 

@@ -53,6 +53,10 @@ app.Draw = function(opt_options, aux) {
         }
       
       	var output;
+
+      	if(length > 150) $(measureTooltipElement).css('color', '#d54339');
+      	else $(measureTooltipElement).css('color', '#fff');
+
       	if (length > 100) {
         	output = (Math.round(length / 1000 * 100) / 100) + ' ' + 'km';
       	} else {
@@ -68,6 +72,10 @@ app.Draw = function(opt_options, aux) {
       	var area = Math.abs(grs80.geodesicArea(coordinates));
       
       	var output;
+
+      	if(area > 1200) $(measureTooltipElement).css('color', '#d54339');
+      	else $(measureTooltipElement).css('color', '#fff');
+
       	if (area > 10000) {
         	output = (Math.round(area / 1000000 * 100) / 100) + ' ' + 'km<sup>2</sup>';
       	} else {

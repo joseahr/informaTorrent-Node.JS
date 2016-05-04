@@ -76,20 +76,6 @@ app.TrackingDenunciasCerca = function(opt_options) {
     });
   }
 
-  // Estilamos el feature
-  positionFeature.setStyle(new ol.style.Style({
-    image: new ol.style.Circle({
-      radius: 6,
-      fill: new ol.style.Fill({
-        color: '#3399CC'
-      }),
-      stroke: new ol.style.Stroke({
-        color: '#fff',
-        width: 2
-      })
-    })
-  })); 
-
   // Eventos Geolocation ******************************************************
   geolocation.on('error', function(e){
     this_.desactivar();
@@ -121,7 +107,7 @@ app.TrackingDenunciasCerca = function(opt_options) {
     positionFeature.setGeometry(coordinates ? new ol.geom.Point(coordinates) : null);
     console.log('distancia', distancia, 'actual', coordinates, 'anterior', coor_ant);
 
-    alert(distancia);
+    //alert(distancia);
     if(distancia > 20){
       console.log('distancia recorrida respecto a la ultima rev 20 metros');
       coor_ant = positionFeature.getGeometry().getCoordinates();
@@ -237,6 +223,7 @@ app.TrackingDenunciasCerca = function(opt_options) {
       //alert(show_position);
       
       if(show_position){
+        positionFeature.setStyle(styles_markers['posicion']);
         $(button).empty();
         $(button).append('<i class="fa fa-globe" style="color: #60b644"></i>');
         panTo = 0;

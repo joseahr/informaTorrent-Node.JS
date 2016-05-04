@@ -76,7 +76,7 @@ num_denuncias_io.on('noti_vista_cb', function(data){
 	var nuevas = parseInt($('.noti_up:eq(1)').text()) - 1;
 	$('.noti_up').empty();
 	$('.noti_up').append(nuevas);
-	$('#nuevas').replaceWith(' ' + nuevas + ' ');
+	$('#nuevas').empty().append(' ' + nuevas + ' ');
 
 	// POnemos como vista la notificación en la lista
 	if(notificaciones)

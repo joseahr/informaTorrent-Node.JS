@@ -151,11 +151,11 @@ router.route('/nueva')
 			return res.status(500).json(error);
 		if (geom_check.st_contains == false)
 			return res.status(500).json({type : 'error', msg : req.i18n.__('denuncia_geometria_dentro')});
-		// Si la geometría lineal supera los 200 metros
-		else if(wkt.match(/LINESTRING/g) && geom_check.st_length > 200)
+		// Si la geometría lineal supera los 150 metros
+		else if(wkt.match(/LINESTRING/g) && geom_check.st_length > 150)
 			return res.status(500).json({type : 'error', msg : req.i18n.__('denuncia_geometria_lineal')});
-		// Si la geometría poligonal supera los 5000 metros cuadrados
-		else if(wkt.match(/POLYGON/g) && geom_check.st_area > 5000)
+		// Si la geometría poligonal supera los 1200 metros cuadrados
+		else if(wkt.match(/POLYGON/g) && geom_check.st_area > 1200)
 			return res.status(500).json({type : 'error', msg : req.i18n.__('denuncia_geometria_poligonal')});
 		// Asignamos id usuario al body
 		req.body.id_usuario = req.user._id;
@@ -276,10 +276,10 @@ router.route('/:id_denuncia')
 			if (geom_check.st_contains == false)
 				return res.status(500).json({type : 'error', msg : req.i18n.__('denuncia_geometria_dentro')});
 			// Si la geometría lineal supera los 200 metros
-			else if(wkt.match(/LINESTRING/g) && geom_check.st_length > 200)
+			else if(wkt.match(/LINESTRING/g) && geom_check.st_length > 150)
 				return res.status(500).json({type : 'error', msg : req.i18n.__('denuncia_geometria_lineal')});
 			// Si la geometría poligonal supera los 5000 metros cuadrados
-			else if(wkt.match(/POLYGON/g) && geom_check.st_area > 5000)
+			else if(wkt.match(/POLYGON/g) && geom_check.st_area > 1200)
 				return res.status(500).json({type : 'error', msg : req.i18n.__('denuncia_geometria_poligonal')});
 			// Guardamos los cambios
 			denunciaModel.editar(req.body, function(error, result){
@@ -370,6 +370,9 @@ router.get('/:id_denuncia/:titulo', function(req, res){
 	if(req.query.id_noti){
 		usuarioModel.get_accion_by_id(req.query.id_noti, function(error, noti){
 			console.log(error, noti);
+			if(error || !noti)
+				return res.render('denuncias/denuncia', {denuncia: req.denuncia});
+			
 			if(noti.id_usuario_to != req.user._id && noti.id_usuario_from != req.user._id)
 				return res.render('denuncias/denuncia', {denuncia: req.denuncia});
 			else if(noti.id_denuncia != req.denuncia.gid)

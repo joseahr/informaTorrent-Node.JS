@@ -3,6 +3,11 @@ block meta
 	meta(property='og:title' content='#{denuncia.titulo}')
 	meta(property='og:description' content='#{desc}')
 	meta(property='og:image' content='http://3.bp.blogspot.com/-MGedRBgtcQY/VWZTWWKEfGI/AAAAAAAAABQ/um8W-TDSTnw/s1600/www.BancodeImagenesGratuitas.com-Fantasticas-20.jpg')
+	style.
+		.ayuda {
+			bottom: 7.75em !important;
+			right: 0.5em; 
+		}
 block link
 	link(rel="stylesheet" href="/javascripts/plugins/share/share-button.css")
 block content
@@ -88,6 +93,7 @@ block script
 		map.addControl(new app.ImagenesDenuncia({},denuncia));
 		map.addControl(new app.ComentariosDenuncia({}, denuncia, user));
 		map.addControl(new app.LikeDenuncia());
+		map.addControl(new app.Ayuda({tipo : 'denuncia'}));
 
 		function parseNoti(noti){
 			console.log(noti.tipo);

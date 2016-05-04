@@ -130,6 +130,13 @@ animacionDenuncia = function(data){
     })
   });
 
+  var listenerKey = sourcehm.on('change', function(e) {
+    if (sourcehm.getState() == 'ready') {
+      sourcehm.unByKey(listenerKey);
+      setTimeout(interval, 500);
+    }
+  });
+
   denunciasHeatMap.setSource(sourcehm);
   if(!denunciasHeatMap.getVisible())
     denunciasHeatMap.setVisible(true);
@@ -171,7 +178,6 @@ interval = function(){
     $("#slider_date").dateRangeSlider("values", min, max);
     animacionDenuncia({fecha_min: formatDate(min), fecha_max: formatDate(max)});
     $('#fecha_max').show();
-    setTimeout(interval, 500);
   }
   else{
     playing = false;
@@ -297,6 +303,7 @@ map.addControl(new ol.control.OverviewMap({
 }));
 
 groupCartoTorrentWMS = new ol.layer.Group({
+  noSwitcherDelete : true,
   title: 'Cartografía de Torrent WMS',
   layers: [municipio, manzanas, viales, caminos, nom_viales, portales, denunciasHeatMap]
 });

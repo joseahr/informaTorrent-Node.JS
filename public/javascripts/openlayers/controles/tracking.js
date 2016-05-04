@@ -32,18 +32,7 @@ app.Tracking = function(opt_options) {
   };
 
   // Estilamos el feature
-  positionFeature.setStyle(new ol.style.Style({
-    image: new ol.style.Circle({
-      radius: 6,
-      fill: new ol.style.Fill({
-        color: '#3399CC'
-      }),
-      stroke: new ol.style.Stroke({
-        color: '#fff',
-        width: 2
-      })
-    })
-  }));
+  positionFeature.setStyle(styles_markers['posicion']);
 
   // Eventos Geolocation ******************************************************
   geolocation.on('error', function(e){

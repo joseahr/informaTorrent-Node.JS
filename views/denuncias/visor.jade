@@ -1,5 +1,6 @@
 extends ../base/map_layout
 block link
+	link(rel="stylesheet" href="/javascripts/plugins/share/share-button.css")
 	link(rel="stylesheet" href="/javascripts/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.css")
 block script
 	script(src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.1/js/bootstrap-datepicker.js")
@@ -8,6 +9,7 @@ block script
 	script(src="/javascripts/plugins/OL3-AnimatedCluster/interaction/selectclusterinteraction.js")
 	script(src='/javascripts/plugins/ol3-ext/style/photostyle.js')
 	
+	script(src="/javascripts/plugins/share/share-button.js")
 	script(src="http://twitter.github.io/typeahead.js/releases/latest/typeahead.jquery.js")
 	script(src="http://twitter.github.io/typeahead.js/releases/latest/bloodhound.js")
 	script(src="/javascripts/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.js")
@@ -22,6 +24,7 @@ block script
 		map.addControl(new app.QueryDenuncias());
 		map.addControl(new app.TrackingDenunciasCerca());
 		map.addControl(new app.Bitly());
+		map.addControl(new app.Ayuda({tipo:'visor'}));
 		
 		num_denuncias_io.on('new_denuncia', function(data){
 			var denuncia = data.denuncia;
@@ -53,6 +56,4 @@ block script
 			
 		});
 		
-		ayuda_visor_app();
-
 	script(src="/javascripts/openlayers/olvisorapp.js")

@@ -243,7 +243,7 @@ Denuncia.prototype.añadir_comentario = function(opciones, callback){
 				clients[denuncia.id_usuario][socketId].emit('denuncia_comentada', 
 					{denuncia: denuncia, from: usuario_from, noti: notificacion});
 			}
-			callback(null, notificacion);
+			callback(null, notificacion.id_noti);
 		}
 		else {
 			console.log('el usuario de la denuncia comentada está desconectado');
