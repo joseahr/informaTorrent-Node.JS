@@ -7,22 +7,6 @@ map = new ol.Map({
     attribution: false // No atribución
   }).extend([mousePositionControl, // MousePosition
     //new ol.control.FullScreen(), // FullScreen
-    new ol.control.LayerSwitcher({
-      target:$(".layer_switcher").get(0), 
-      show_progress:true,
-      extent: true,
-      trash: true,
-      oninfo: function (l) {
-        var imagen = '<div style"position : absolute; bottom : 0px; width : 100%"><img src="' + l.get('legend') + '"></img></div>';
-        BootstrapDialog.show({
-          title : 'Leyenda de la capa "' + l.get('name') + '"',
-          message : l.get('legend') ? imagen : 'No hay leyenda disponible',
-          draggable : true
-        });
-      }
-    }), // LayerSwitcher
-    new ol.control.ScaleLine(), // ScaleLine
-    //new ol.control.ZoomSlider(), // ZoomSlider
   ]),
   target: 'map',
   view: new ol.View({
@@ -294,13 +278,48 @@ geocoder.on('addresschosen', function(e){
 });
 
 map.addControl(contextmenu);
+
 map.addControl(geocoder);
+
+map.addControl(new ol.control.LayerSwitcher({
+  target:$(".layer_switcher").get(0), 
+  show_progress:true,
+  extent: true,
+  trash: true,
+  oninfo: function (l) {
+    var imagen = '<div style"position : absolute; bottom : 0px; width : 100%"><img src="' + l.get('legend') + '"></img></div>';
+    BootstrapDialog.show({
+      title : 'Leyenda de la capa "' + l.get('name') + '"',
+      message : l.get('legend') ? imagen : 'No hay leyenda disponible',
+      draggable : true,
+      onshow : function(dialog){
+          dialog.getModalHeader().replaceWith($('<div class="row" style="margin: 0px; padding-top: 5px; border-top-left-radius: 10px; border-top-right-radius: 10px; background: url(&#39;http://www.batlleiroig.com/wp-content/uploads/247_parc_central_st_cugat_8.jpg&#39;); background-size: cover; background-repeat: no-repeat;">' + 
+            '<div class="bootstrap-dialog-close-button">' + 
+              '<button class="close" style="color : #fff; margin-right : 10px;">X</button>' +
+            '</div>' +
+            '<div class="col-xs-6" style="text-align: center; color: #fff; font-weight : bold;">' +
+            '<i class="fa fa-info-circle" style="font-size : 60px; color : #00bbff; text-shadow: 2px 2px #fff;"></i>' + 
+              '<h4 style="padding : 2px; color : #00bbff; background : rgba(0,0,0,0.7); border-radius : 15px;"> Leyenda de la capa ' + l.get('name') + '</h4>' +
+            '</div>' +
+          '</div>'));
+          dialog.getModalDialog().find('.close').click(function(){dialog.close()});
+          dialog.getModalBody().parent().css('border-radius', '15px');
+          dialog.getModalBody().css('padding-top', '10px');
+      },
+      onhidden : function(dialog){ $('[data-target=".sidebar-right"]').click(); console.log('abrir dialog capas');}
+    });
+  }
+})); // LayerSwitcher
+
+ignBase.setVisible(true);
 map.addControl(new ol.control.OverviewMap({
   layers: [new ol.layer.Tile(ignBase.getProperties())],
   view: new ol.View({ // Importante añadir la View con nuestra proyección
     projection: proj
   })
 }));
+ignBase.setVisible(false);
+
 
 groupCartoTorrentWMS = new ol.layer.Group({
   noSwitcherDelete : true,
@@ -324,4 +343,36 @@ ignBase.setVisible(false);
 $('#map').click(function(e){
   //alert('hideee');
   $('[data-toggle="right"], [data-toggle="left"]').popover('hide');
+});
+
+if(!window.location.href.match(/\/app/g)){
+  console.log('no match');
+  manzanas.setVisible(true);
+  viales.setVisible(true);
+  torrent_bici.setVisible(true);
+  ropa_amiga.setVisible(true);
+  comisarias.setVisible(true);
+  arboles.setVisible(true);
+  areas_recreativas.setVisible(true);
+  nom_ejes.setVisible(true);
+  centros_educativos.setVisible(true);
+  centros_municipales.setVisible(true);
+  centros_de_salud.setVisible(true);
+  centros_deportivos.setVisible(true);
+  cultura_museos.setVisible(true);
+  farmacias.setVisible(true);
+  gasolineras.setVisible(true);
+  lugares_interes.setVisible(true);
+  musica.setVisible(true);
+  org_y_empresas.setVisible(true);
+  nom_parajes.setVisible(true);
+  parques_y_jardines.setVisible(true);
+  piscinas.setVisible(true);
+  wifi_torrent.setVisible(true);
+  tercera_edad.setVisible(true);
+
+}
+
+map.getView().on('change:resolution', function(e){
+  console.log('resulution', map.getView().getResolution()*1000000);
 });

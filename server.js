@@ -85,6 +85,7 @@ app.use(function(req, res, next){
 	});
 });
 
+
 /* Ruta para manejar errores */
 app.use(function(err, req, res, next){
 	//if(!err) return next();

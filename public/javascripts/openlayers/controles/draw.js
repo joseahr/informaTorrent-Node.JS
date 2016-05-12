@@ -33,6 +33,7 @@ app.Draw = function(opt_options, aux) {
 	denuncia = options.denuncia,
 	this_ = this,
 	select = new ol.interaction.Select(),
+	snap = new ol.interaction.Snap({ source : vectorSource});
 	addInteraction = function(tipo) {
 		draw = new ol.interaction.Draw({
 			source: vectorSource,
@@ -139,10 +140,12 @@ app.Draw = function(opt_options, aux) {
 
   	this.removeDraw = function(){
 		map.removeInteraction(draw);
+		map.removeInteraction(snap);
   	};
   
   	this.removeModify = function(){
 		map.removeInteraction(modify);
+		map.removeInteraction(snap);
   	};
 
   	this.getSource = function(){
@@ -167,6 +170,7 @@ app.Draw = function(opt_options, aux) {
 	  		button.innerHTML = '<i class="fa fa-pencil"></i>';
 	  		map.removeInteraction(draw);
 	  		map.removeInteraction(modify);
+	  		map.removeInteraction(snap);
 	  		$(helpTooltipElement).css('display', 'none');
 	  	}
 	  	else {
@@ -439,6 +443,7 @@ app.Draw = function(opt_options, aux) {
 					  	else if(opcion == 'linea'){
 						  	if(draw) map.removeInteraction(draw);
 						  	map.removeInteraction(modify);
+						  	map.addInteraction(snap);
 						  	addInteraction('LineString');
 						  	active = true;
 						  	button.innerHTML = '<i class="fa fa-pencil" style="color:#ffbb00"></i>';
@@ -446,12 +451,14 @@ app.Draw = function(opt_options, aux) {
 					  	else if(opcion == 'poligono'){
 						  	if(draw) map.removeInteraction(draw);
 						  	map.removeInteraction(modify);
+						  	map.addInteraction(snap);
 						  	addInteraction('Polygon');
 						  	active = true;
 						  	button.innerHTML = '<i class="fa fa-pencil" style="color:#ffbb00"></i>';
 					  	}
 					  	else if(opcion == 'editar'){
 						  	if(draw) map.removeInteraction(draw);
+						  	map.addInteraction(snap);
 						  	map.addInteraction(modify);
 						  	active = true;
 						  	button.innerHTML = '<i class="fa fa-pencil" style="color:#ffbb00"></i>';
@@ -466,6 +473,7 @@ app.Draw = function(opt_options, aux) {
 							  		{label: 'Cancelar', action: function(dialog_){dialog_.close();dialog.close();}},
 								  	{label: 'Aceptar', action: function(dialog_){
 										map.removeInteraction(modify);
+										map.removeInteraction(snap);
 										vectorSource.clear();
 										map.removeOverlay(lastTooltip);
 										$(measureTooltipElement).css('display', 'none');
@@ -478,6 +486,7 @@ app.Draw = function(opt_options, aux) {
 					  	  	button.innerHTML = '<i class="fa fa-pencil"></i>';
 						  	map.removeInteraction(modify);
 						  	map.removeInteraction(draw);
+						  	map.removeInteraction(snap);
 						  	active = false;
 					  	}
 					  

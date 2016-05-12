@@ -156,9 +156,9 @@ app.TrackingDenunciasCerca = function(opt_options) {
     data.forEach(function(denuncia){
       denuncia.tipo = denuncia.geometria.type;
       denuncia.coordenadas = denuncia.geometria.coordinates;
-      var distancia = denuncia.distancia_punto || denuncia.distancia_linea || denuncia.distancia_poligono;
+      var distancia_ = denuncia.distancia;
       //alert('denuncia ' + denuncia.tipo + ' ' + denuncia.coordenadas);
-      message += '<div class="col-lg-12 text-center" style="color: #fff; background-color: #00bbff; border-radius : 10px; font-weight : bold;">Distancia : ' + distancia.toFixed(3) + ' m</div>' + 
+      message += '<div class="col-lg-12 text-center" style="color: #fff; background-color: #00bbff; border-radius : 10px; font-weight : bold;">Distancia : ' + distancia_.toFixed(3) + ' m</div>' + 
         getDenunciaRow(denuncia, true) + '<div class="col-lg-12 space"></div>';
 
       var feature, 
@@ -187,7 +187,7 @@ app.TrackingDenunciasCerca = function(opt_options) {
         }
 
         feature_marker = new ol.Feature({
-          geometry : new ol.geom.Point(ol.extent.getCenter(feature.getGeometry().getExtent())),
+          geometry : new ol.geom.Point(denuncia.centro.coordinates),
           name : 'Denuncia Marker'
         });
 

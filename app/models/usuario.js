@@ -307,9 +307,6 @@ Usuario.prototype.get_denuncias = function(id_usuario, callback){
 	console.log('get_denuncias');
 	db.any(consultas.obtener_denuncias_usuario, id_usuario)
 	.then (function(denuncias_user){
-		denuncias_user.forEach(function(denuncia){
-			denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-		});
 		callback(null, denuncias_user);
 	})
 	.catch(function(error){
@@ -324,9 +321,6 @@ Obtener las denuncias del usuario
 Usuario.prototype.get_denuncias_fav = function(id_usuario, callback){
 	db.any(consultas.usuario_denuncias_favoritas, id_usuario)
 	.then(function(denuncias_fav){
-		denuncias_fav.forEach(function(denuncia){
-			denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-		});
 		callback(null, denuncias_fav);
 	})
 	.catch(function(error){
@@ -348,7 +342,6 @@ Usuario.prototype.get_notificaciones = function(id_usuario, callback){
 			notificaciones = [];
 		notificaciones.forEach(function(n){
 			n.denuncia = n.denuncia[0];
-			n.denuncia.geometria = n.denuncia.geometria_pu || n.denuncia.geometria_li || n.denuncia.geometria_po;
 			//console.log(n.denuncia, 'tipossss');
 		});
 		callback(null, notificaciones);
@@ -369,7 +362,6 @@ Usuario.prototype.get_acciones = function(id_usuario, callback){
 		// obtenemos notificaciones
 		acciones.forEach(function(n){
 			n.denuncia = n.denuncia[0];
-			n.denuncia.geometria = n.denuncia.geometria_pu || n.denuncia.geometria_li || n.denuncia.geometria_po;
 			//console.log(n.denuncia, 'tipossss');
 		});
 		callback(null, acciones);

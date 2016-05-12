@@ -53,7 +53,7 @@ Denuncia.prototype.find = function(filtro, gjson_format, callback){
 				var tags = [];
 				if(denuncia.tags_) denuncia.tags_.forEach(function(tag){tags.push('#' + tag.tag)});
 				denuncias.push({
-					geometry : denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po,
+					geometry : denuncia.geometria,
 					type : 'Feature',
 					properties : {
 						id : denuncia.gid,
@@ -71,7 +71,6 @@ Denuncia.prototype.find = function(filtro, gjson_format, callback){
 				});
 			}
 			else {
-				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
 				denuncias.push(denuncia);
 			}
 
@@ -88,9 +87,7 @@ Denuncia.prototype.find = function(filtro, gjson_format, callback){
 Denuncia.prototype.find_by_id = function(id_denuncia, callback){
 	db.one(consultas.denuncia_por_id, id_denuncia)
 	.then(function(denuncia){
-		// Asignamos geometría
-		denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-		
+		// Asignamos geometría		
 		callback(null, denuncia);
 	})
 	.catch(function(error){
@@ -219,7 +216,6 @@ Denuncia.prototype.añadir_comentario = function(opciones, callback){
 	})
 	.then(function(denuncia_){
 		denuncia = denuncia_;
-		denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
 		var datos = JSON.stringify({
 			contenido : contenido,
 			id_comentario : id_comentario
@@ -294,7 +290,6 @@ Denuncia.prototype.añadir_replica = function(opciones, callback){
 	})
 	.then(function(denuncia_){
 		denuncia = denuncia_;
-		denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
 		var datos = JSON.stringify({
 			contenido : contenido,
 			id_replica : id_replica,
@@ -444,7 +439,6 @@ Denuncia.prototype.guardar = function(opciones, callback){
 	})
 	.then(function(denuncia){
 		// Asignamos
-		denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
 		denuncia_io = denuncia;
 		denuncia_io.wkt = wkt;
 		denuncia_io.usuario = [usu_from];
@@ -530,7 +524,6 @@ Denuncia.prototype.find_by_pagina = function(page, callback){
 		// Obtenemos las denuncias y las recorremos
 		denuncias.forEach(function(d){
 			// Asignamos la geometría a la denuncia
-			d.geometria = d.geometria_pt || d.geometria_li || d.geometria_po;
 		});
 		//console.log(denuncias);
 		// Respondemos renderizando la página con las denuncias
@@ -716,17 +709,6 @@ Denuncia.prototype.denuncias_visor = function(callback){
 	// Ejecutamos consulta para obtener denuncias del visor
 	db.query(consultas.denuncias_visor)
 	.then(function(denuncias){
-		// Recorremos las denuncias
-		denuncias.forEach(function(denuncia){
-			// Asignamos geometría a la denuncia
-			denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-			denuncia.geometria_pt = undefined;
-			denuncia.geometria_li = undefined;
-			denuncia.geometria_po = undefined;
-			denuncia.geom_pt = undefined;
-			denuncia.geom_li = undefined;
-			denuncia.geom_po = undefined;
-		});
 		// Renderizamos la página con las denuncias
 		callback(null, {denuncias: denuncias});
 	})
@@ -743,17 +725,6 @@ Denuncia.prototype.denuncias_cerca = function(posicion, callback){
 	.then(function(denuncias){
 		if(denuncias){
 			// Obtenemos las denuncias cercanas
-			denuncias.forEach(function(denuncia){
-				// Asignamos geometría a la denuncia
-				denuncia.geometria = denuncia.geometria_pt || denuncia.geometria_li || denuncia.geometria_po;
-				denuncia.geometria_pt = undefined;
-				denuncia.geometria_li = undefined;
-				denuncia.geometria_po = undefined;
-				denuncia.geom_pt = undefined;
-				denuncia.geom_li = undefined;
-				denuncia.geom_po = undefined;
-			});
-			// Emitimos el evento con las denuncias cerca
 			callback(null, denuncias);
 		}
 		else
@@ -789,25 +760,14 @@ function filtro_denuncias(filter){
 
     // Buffer
     if(filter.lat && filter.lon && filter.buffer_radio){
-    	cnd.push(pgp.as.format("(st_distance(st_transform(x.geom_pt, 25830), st_transform(st_geomfromtext('POINT(" + 
+    	cnd.push(pgp.as.format("st_distance(st_transform(ST_SetSRID(ST_GeomFromGeoJSON(x.geometria::text), 4258), 25830), st_transform(st_geomfromtext('POINT(" + 
     		filter.lon.replace(',', '.') + ' ' + 
     		filter.lat.replace(',', '.') + ")', 4258), 25830)) < " + 
-    		filter.buffer_radio + " or " + 
-    		"st_distance(st_transform(x.geom_li, 25830), st_transform(st_geomfromtext('POINT(" + 
-    		filter.lon.replace(',', '.') + ' ' + 
-    		filter.lat.replace(',', '.') + ")', 4258), 25830)) < " + 
-    		filter.buffer_radio + " or " +
-    		"st_distance(st_transform(x.geom_po, 25830), st_transform(st_geomfromtext('POINT(" + 
-    		filter.lon.replace(',', '.') + ' ' + 
-    		filter.lat.replace(',', '.') + ")', 4258), 25830)) < " + 
-    		filter.buffer_radio + ")")
-    	);
+    		filter.buffer_radio));
     }
     // BBOX
     if(filter.bbox){
-    	cnd.push('(x.geom_pt && st_makeEnvelope(' + filter.bbox + ') or ' + 
-    		'x.geom_li && st_makeEnvelope(' + filter.bbox + ') or ' + 
-    		'x.geom_po && st_makeEnvelope(' + filter.bbox + '))');
+    	cnd.push('ST_SetSRID(ST_GeomFromGeoJSON(x.geometria::text), 4258) && st_makeEnvelope(' + filter.bbox + ')');
     }    
 
     // ID denuncia -- Si se pasa la id de la denuncia los parámetros más abajo no se tienen en cuente para la búsqueda

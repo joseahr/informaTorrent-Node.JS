@@ -41,6 +41,8 @@ function eliminar(id){
 
 // Obtener Imagen miniatura de geoserver
 function getGeoserverMiniatura(denuncia, width){
+
+	console.log(denuncia);
 	
 	tipo = denuncia.geometria.type;
 	coords = denuncia.geometria.coordinates;

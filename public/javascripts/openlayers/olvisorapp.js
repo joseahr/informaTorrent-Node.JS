@@ -143,8 +143,8 @@ denuncias.forEach(function(denuncia){
     	});
     }
 
-    var centro = ol.extent.getCenter(feature.getGeometry().getExtent());
-    centro[1] += 0.00001;
+    var centro = denuncia.centro.coordinates;
+    //centro[1] += 0.00001;
     feature_marker = new ol.Feature({
     	geometry : new ol.geom.Point(centro),
     	name : 'Denuncia Marker'

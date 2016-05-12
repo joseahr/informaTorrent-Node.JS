@@ -1,22 +1,4 @@
 SELECT * FROM (SELECT *,
-	(
-		SELECT st_distance(
-			(SELECT st_transform(st_geomfromtext($1,4258),25830)::geometry  from usuarios WHERE _id = d.id_usuario),
-			(SELECT st_transform(the_geom, 25830)::geometry from denuncias_puntos WHERE gid = d.gid)
-		) as distancia_punto
-	),
-	(
-		SELECT st_distance(
-			(SELECT st_transform(st_geomfromtext($1,4258),25830)::geometry from usuarios WHERE _id = d.id_usuario),
-			(SELECT st_transform(the_geom, 25830)::geometry from denuncias_lineas WHERE gid = d.gid)
-		) as distancia_linea
-	),
-	(
-		SELECT st_distance(
-			(SELECT st_transform(st_geomfromtext($1,4258),25830)::geometry from usuarios WHERE _id = d.id_usuario),
-			(SELECT st_transform(the_geom, 25830)::geometry from denuncias_poligonos WHERE gid = d.gid)
-		) as distancia_poligono
-	),
 	(SELECT json_agg(u) FROM (
 		SELECT _id, 
 			local, 
@@ -52,15 +34,40 @@ SELECT * FROM (SELECT *,
 		WHERE c.id_usuario = u._id and c.id_denuncia = d.gid ORDER BY fecha DESC) com
 	),
 	(SELECT json_agg(img) AS imagenes FROM  (SELECT * FROM imagenes WHERE id_denuncia = d.gid) img),
-	ST_AsGeoJSON(dpu.geom_pt)::json AS geometria_pt,
-	ST_AsGeoJSON(dli.geom_li)::json AS geometria_li,
-	ST_AsGeoJSON(dpo.geom_po)::json AS geometria_po
-FROM denuncias d
-LEFT JOIN LATERAL (SELECT the_geom as geom_pt FROM denuncias_puntos where gid = d.gid) dpu ON true
-LEFT JOIN LATERAL (SELECT the_geom as geom_li FROM denuncias_lineas where gid = d.gid) dli ON true
-LEFT JOIN LATERAL (SELECT the_geom as geom_po FROM denuncias_poligonos where gid = d.gid) dpo ON true
-)x WHERE
-(st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(x.geom_pt,25830)) < 100 or 
-st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(x.geom_li,25830)) < 100 or
-st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(x.geom_po,25830)) < 100)
-order by fecha desc, distancia_punto asc, distancia_linea asc, distancia_poligono asc
+
+	CASE WHEN (SELECT the_geom FROM denuncias_puntos WHERE gid = d.gid) IS NOT NULL
+	THEN ST_AsGeoJSON((SELECT the_geom FROM denuncias_puntos WHERE gid = d.gid))::json
+	WHEN (SELECT the_geom FROM denuncias_lineas WHERE gid = d.gid) IS NOT NULL
+	THEN ST_AsGeoJSON((SELECT the_geom FROM denuncias_lineas WHERE gid = d.gid))::json
+	WHEN (SELECT the_geom FROM denuncias_poligonos WHERE gid = d.gid) IS NOT NULL
+	THEN ST_AsGeoJSON((SELECT the_geom FROM denuncias_poligonos WHERE gid = d.gid))::json
+	END AS geometria,
+
+	CASE WHEN (SELECT the_geom FROM denuncias_puntos WHERE gid = d.gid) IS NOT NULL
+	THEN st_distance(
+		(st_transform(st_geomfromtext($1,4258),25830)::geometry),
+		(SELECT st_transform(the_geom, 25830)::geometry from denuncias_puntos WHERE gid = d.gid)
+	)
+	WHEN (SELECT the_geom FROM denuncias_lineas WHERE gid = d.gid) IS NOT NULL
+	THEN st_distance(
+		(st_transform(st_geomfromtext($1,4258),25830)::geometry),
+		(SELECT st_transform(the_geom, 25830)::geometry from denuncias_lineas WHERE gid = d.gid)
+	)	
+	WHEN (SELECT the_geom FROM denuncias_poligonos WHERE gid = d.gid) IS NOT NULL
+	THEN st_distance(
+		(st_transform(st_geomfromtext($1,4258),25830)::geometry),
+		(SELECT st_transform(the_geom, 25830)::geometry from denuncias_poligonos WHERE gid = d.gid)
+	)	
+	END AS distancia,
+
+	CASE WHEN (SELECT the_geom FROM denuncias_puntos WHERE gid = d.gid) IS NOT NULL
+	THEN ST_AsGeoJSON((SELECT the_geom FROM denuncias_puntos WHERE gid = d.gid))::json
+	WHEN (SELECT the_geom FROM denuncias_lineas WHERE gid = d.gid) IS NOT NULL
+	THEN ST_AsGeoJSON(ST_LineInterpolatePoint((SELECT the_geom FROM denuncias_lineas WHERE gid = d.gid), 0.5))::json
+	WHEN (SELECT the_geom FROM denuncias_poligonos WHERE gid = d.gid AND ST_Intersects(ST_Centroid(the_geom),the_geom)) IS NOT NULL
+	THEN ST_AsGeoJSON(ST_Centroid((SELECT the_geom FROM denuncias_poligonos WHERE gid = d.gid)))::json
+	ELSE ST_AsGeoJSON(ST_PointOnSurface((SELECT the_geom FROM denuncias_poligonos WHERE gid = d.gid)))::json
+	END AS centro
+FROM denuncias d)x WHERE
+st_distance(st_transform(st_geomfromtext($1,4258),25830) , st_transform(ST_SetSRID(ST_GeomFromGeoJSON(x.geometria::text), 4258),25830)) < 100
+ORDER BY fecha DESC, distancia ASC

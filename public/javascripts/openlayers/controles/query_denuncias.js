@@ -435,7 +435,7 @@ app.QueryDenuncias = function(opt_options) {
 		    }
 
 		    feature_marker = new ol.Feature({
-		    	geometry : new ol.geom.Point(ol.extent.getCenter(feature.getGeometry().getExtent())),
+		    	geometry : new ol.geom.Point(denuncia.centro.coordinates),
 		    	name : 'Denuncia Marker'
 		    });
 

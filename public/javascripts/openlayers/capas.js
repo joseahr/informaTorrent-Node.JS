@@ -14,6 +14,7 @@ layerVectorVacia = new ol.layer.Vector({
 }),
 Tile = function(opciones){
 	return new ol.layer.Tile({
+		maxResolution : opciones.maxResolution || 1000000,
 		noSwitcherDelete : true,
 		legend : opciones.legend,
 		name: opciones.titulo,
@@ -21,10 +22,11 @@ Tile = function(opciones){
 		source: new ol.source.TileWMS({
 			crossOrigin: 'anonymous', // So important maniguiiiiii
 			url: opciones.url,
+			gutter : opciones.gutter || 0,
 			params: {
 				'FORMAT': format, 
 	            'VERSION': '1.1.0',
-	            tiled: true,
+	            tiled: opciones.tile === false ? false : true,
 	            LAYERS: opciones.capa,
 	            STYLES: '',
 			}
@@ -33,12 +35,14 @@ Tile = function(opciones){
 },
 TileWMST = function(opciones){
 	return new ol.layer.Tile({
+		maxResolution : opciones.maxResolution || 1000000,
 		noSwitcherDelete : true,
 		legend : opciones.legend,
 		name: opciones.titulo,
 		visible: false,
 		source: new ol.source.WMTS({
 			crossOrigin: 'anonymous',
+			gutter : opciones.gutter || 0,
 			url: opciones.url,
 			layer:opciones.capa,
 			matrixSet: 'EPSG:4326',
@@ -167,162 +171,189 @@ var arboles = Tile({
 	titulo : 'Árboles Sueltos',
 	capa : 'jahr:Arbol_Aislado',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 3/1000000,
 });
 arboles.setVisible(false);
 var areas_recreativas = Tile({
 	titulo : 'Áreas Recreativas',
 	capa : 'jahr:Areas_Recreativas',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 areas_recreativas.setVisible(false);
 var nom_ejes = Tile({
 	titulo : 'Nombre Ejes',
 	capa : 'jahr:B_EJES_4326',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 3/1000000,
 });
 nom_ejes.setVisible(false);
 var nom_ejes_valenciano = Tile({
 	titulo : 'Nombre Ejes Valencià',
 	capa : 'jahr:B_EJES_4326_valenciano',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 3/1000000,
 });
 nom_ejes_valenciano.setVisible(false);
 var carpas = Tile({
 	titulo : 'Carpas Falleras',
 	capa : 'jahr:Carpes',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 carpas.setVisible(false);
 var centros_educativos = Tile({
 	titulo : 'Centros Educativos',
 	capa : 'jahr:Centros_Educativos',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 centros_educativos.setVisible(false);
 var centros_municipales = Tile({
 	titulo : 'Centros Municipales',
 	capa : 'jahr:Centros_Municipales',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 centros_municipales.setVisible(false);
 var centros_de_culto = Tile({
 	titulo : 'Centros de Culto',
 	capa : 'jahr:Centros_de_Culto',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 centros_de_culto.setVisible(false);
 var centros_de_salud = Tile({
 	titulo : 'Centros de Salud',
 	capa : 'jahr:Centros_de_Salud',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 centros_de_salud.setVisible(false);
 var centros_deportivos = Tile({
 	titulo : 'Centros Deportivos',
 	capa : 'jahr:Deportes',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 centros_deportivos.setVisible(false);
 var cultura_museos = Tile({
 	titulo : 'Entidades Culturales y Museos',
 	capa : 'jahr:Entidades_Culturales_y_Museos',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 cultura_museos.setVisible(false);
 var fallas = Tile({
 	titulo : 'Entidades Falleras',
 	capa : 'jahr:Falles',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 fallas.setVisible(false);
 var farmacias = Tile({
 	titulo : 'Farmacias',
 	capa : 'jahr:Farmacias',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 farmacias.setVisible(false);
 var gasolineras = Tile({
 	titulo : 'Gasolineras',
 	capa : 'jahr:Gasolineras',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 gasolineras.setVisible(false);
 var lugares_interes = Tile({
 	titulo : 'Lugares de Interés',
 	capa : 'jahr:Lugares_Interes',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 lugares_interes.setVisible(false);
 var musica = Tile({
 	titulo : 'Música',
 	capa : 'jahr:Musica',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 musica.setVisible(false);
 var org_y_empresas = Tile({
 	titulo : 'Organismos Autónomos y Empresas Municipales',
 	capa : 'jahr:Organismos_Autonomos_y_Empresas_Municipales',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 org_y_empresas.setVisible(false);
 var nom_parajes = Tile({
 	titulo : 'Nombres de Parajes',
 	capa : 'jahr:Nombres_Parajes_',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 nom_parajes.setVisible(false);
 var parques_y_jardines = Tile({
 	titulo : 'Parques y Jardines',
 	capa : 'jahr:Parques_y_Jardines',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 parques_y_jardines.setVisible(false);
 var piscinas = Tile({
 	titulo : 'Piscinas',
 	capa : 'jahr:Piscina',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 piscinas.setVisible(false);
 var comisarias = Tile({
 	titulo : 'Comisarías de Policía',
 	capa : 'jahr:Policia',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 comisarias.setVisible(false);
 var ropa_amiga = Tile({
 	titulo : 'Ropa Amiga',
 	capa : 'jahr:ROPA_AMIGA',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 ropa_amiga.setVisible(false);
 var referencias_cat = Tile({
 	titulo : 'Referencias Catastrales',
 	capa : 'jahr:Referencia_Catastral',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 referencias_cat.setVisible(false);
 var torrent_bici = Tile({
 	titulo : 'Torrent Bici',
 	capa : 'jahr:TorrentBici',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 torrent_bici.setVisible(false);
 var vados = Tile({
 	titulo : 'Vados',
 	capa : 'jahr:Vados',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 3/1000000,
 });
 vados.setVisible(false);
 var tercera_edad = Tile({
 	titulo : 'Tercera Edad',
 	capa : 'jahr:tercera_Edat',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 tercera_edad.setVisible(false);
 var wifi_torrent = Tile({
 	titulo : 'Wifi Torrent',
 	capa : 'jahr:wifiTORRENT',
 	url : ip + '/geoserver/jahr/wms',
+	maxResolution : 35/1000000,
 });
 wifi_torrent.setVisible(false);
 
@@ -419,10 +450,11 @@ var ignBase = new ol.layer.Tile({
 	visible: true,
 	source: new ol.source.TileWMS({
 		url: 'http://www.ign.es/wms-inspire/ign-base',
-		crossOrigin: 'anonymous',
+		//crossOrigin: 'anonymous',
 		params: {'FORMAT': format, 
              	 'VERSION': '1.1.1',
-             	 tiled: true,
+             	 transparent : false,
+             	 tiled : true, 
              	 LAYERS: 'IGNBaseTodo',
              	 STYLES: '',
 		}
@@ -477,6 +509,7 @@ var torrent_cascada = new ol.layer.Group({
 
 var groupCartoTorrentWMST = new ol.layer.Group({
 	noSwitcherDelete : true,
+	visible : false,
 	name: 'Cartografía de Torrent WMS Teselado',
 	layers: [ortoWMST, municipioWMST, manzanasWMST, vialesWMST, 
 	    caminosWMST, /*nom_vialesWMST,*/ portalesWMST, 
