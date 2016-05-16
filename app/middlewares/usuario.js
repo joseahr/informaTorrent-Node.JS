@@ -17,9 +17,12 @@ module.exports = function(req, res, next){
 				res.locals['mis_acciones'] = [];
 			else
 				res.locals['mis_acciones'] = acciones;
-			console.log(acciones);
+			//console.log(acciones);
 			console.log(acciones.length, 'ACCIONEEEES');
-			return next();
+
+			usuarioModel.getNumLikesEnMisDenuncias(req.user._id)
+			.then(function(likesEnDenuncias){ console.log('likesEnDenuncias', likesEnDenuncias); res.locals['likes_en_denuncias'] = likesEnDenuncias.count; next(); })
+			.catch(function(error){ next(); });
 		});
 	});
 };

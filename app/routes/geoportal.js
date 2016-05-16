@@ -45,6 +45,17 @@ router.get('/descargas', function(req, res, next){
     });
 });
 
+router.get('/proyecto', function(req, res, next){
+	res.writeHead(200, {
+        "Content-Type": "text/html"
+    });
+    fs.readFile('./geoportal/tree.html', "utf-8", function(err, data) {
+        if (err) return next(err);
+        res.write(data.toString());
+        res.end();
+    });
+});
+
 router.get('/xhr', function(req, res){
 	var url = req.query.url;
 	console.log(url);

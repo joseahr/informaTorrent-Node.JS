@@ -129,6 +129,8 @@ num_denuncias_io.on('denuncia_no_likeada', function(data){
 	// Insertamos la notificación al principio de nuestro
 	// array de notificaciones
 	if(notificaciones) notificaciones.unshift(data.noti);
+
+	notificar('Replica', data.from.profile.username + ' ha indicado que ya no le gusta tu denuncia : ');
 	
 	/*BootstrapDialog.show({
 		title: 'Nueva notificación - Denuncia Dislike',
@@ -170,6 +172,7 @@ num_denuncias_io.on('denuncia_likeada', function(data){
 	// de notificaciones
 	if(notificaciones) notificaciones.unshift(data.noti);
 
+	notificar('Replica', data.from.profile.username + ' ha indicado que le gusta tu denuncia : ');
 	/*BootstrapDialog.show({
 		title: 'Nueva notificación - Denuncia Like',
 		message: $(html),
@@ -205,6 +208,8 @@ num_denuncias_io.on('denuncia_cerca', function(data){
 	
 	// Insertamos la notificación en el array de notificaciones
 	if(notificaciones) notificaciones.unshift(data.noti);
+
+	notificar('Replica', data.from.profile.username + ' ha publicado una denuncia cerca de tu ubicación : ');
 	
 	/*BootstrapDialog.show({
 		title: 'Nueva notificación - Denuncia Cerca',
@@ -241,6 +246,8 @@ num_denuncias_io.on('denuncia_comentada', function(data){
 	
 	// Insertamos la notificacion al principio del array de notificaciones
 	if(notificaciones) notificaciones.unshift(data.noti);
+
+	notificar('Replica', data.from.profile.username + ' ha comentado en tu denuncia : ');
 	/*BootstrapDialog.show({
 		title: 'Nueva notificación - Denuncia Comentada',
 		message: $(html),
@@ -276,6 +283,8 @@ num_denuncias_io.on('replica', function(data){
 	
 	// Insertamos la notificacion al principio del array de notificaciones
 	if(notificaciones) notificaciones.unshift(data.noti);
+
+	notificar('Replica', data.from.profile.username + ' ha contestado a un comentario : ');
 	/*BootstrapDialog.show({
 		title: 'Nueva notificación - Denuncia Comentada',
 		message: $(html),
@@ -298,3 +307,33 @@ num_denuncias_io.on('new_denuncia', function(data){
 	$('#numdenunhoy').empty();
 	$('#numdenunhoy').append(' ' + (numhoy + 1));
 });
+
+function notificar (titulo = 'Notificación', body = 'cuerpo') {
+	if (!Notify.needsPermission) {
+	    notificar();
+	} else if (Notify.isSupported()) {
+	    Notify.requestPermission(onPermissionGranted, onPermissionDenied);
+	}
+
+	function onPermissionGranted() {
+	    console.log('Permission has been granted by the user');
+	    notificar();
+	}
+
+	function onPermissionDenied() {
+	    console.warn('Permission has been denied by the user');
+	}
+
+	function notificar () {
+		var noti = new Notify(titulo, {
+		    body: body,
+		    notifyShow: onNotifyShow
+		});
+
+		noti.show();
+
+		function onNotifyShow() {
+		    console.log('notification was shown!');
+		}
+	}
+}

@@ -290,11 +290,14 @@ Perfil visible para los demás usuarios
 ================================================================
 */
 Usuario.prototype.perfil_visible = function(id_usuario, callback){
-	db.one(consultas.perfil_otro_usuario, id_usuario)
-	.then(function(usuario){
+	Promise.all([db.one(consultas.perfil_otro_usuario, id_usuario), this_.getNumLikesEnMisDenuncias(id_usuario)])
+	.then(function(result){
+		var usuario = result[0];
+		usuario.likes_en_denuncias = result[1].count;
 		callback(null, usuario);
 	})
 	.catch(function(error){
+		console.log(error);
 		callback({type : 'error', msg : error.toString()});
 	});
 };
@@ -568,6 +571,10 @@ Usuario.prototype.get_accion_by_id = function(id_noti, callback){
 		callback({type : 'error', msg : error.toString()});
 	});
 };
+
+Usuario.prototype.getNumLikesEnMisDenuncias = function(id_usuario){
+	return db.one('SELECT COUNT(*) FROM LIKES WHERE id_denuncia IN (SELECT gid from denuncias WHERE id_usuario = $1)', id_usuario);
+}
 
 /*
 =============================================================

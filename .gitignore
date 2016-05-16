@@ -1,5 +1,5 @@
 node_modules
-config
+config/mailer.js
 public/files/*
 public/files/denuncias/*
 public/files/images/*
