@@ -110,14 +110,14 @@ block content
               .space
               .row
                 form#form_olvidaste(action="/app/usuarios/olvidaste" method="POST" style={padding: '5%', background: 'rgba(0,50,187, 0.1)', margin: '0 auto',  width: '80%'}).form-horizontal.container-fluid
-                  .col-md-12.text-center
+                  .col-lg-12.text-center
                     i.fa.fa-send(style="font-size: 100px;color: #00bbff")
-                  .col-md-12
+                  .col-lg-12
                     .input-group(style={'margin-top':'5px'})
                       span.input-group-addon
                         i.fa.fa-envelope-o.fa-fw
                       input#form_olvidaste_email.form-control.btn-default(requires = '', type='text', name="email", placeholder='#{contenido.usuario_o_email}')
-                  .col-lg-12(style={clear : both, margin: '0 auto'})
+                  .col-lg-12.container-fluid(style={margin: '0 auto', float: 'none'})
                     .input-group(style={'padding-top':'5px'})
                       span.input-group-addon
                         i.fa.fa-send.fa-fw

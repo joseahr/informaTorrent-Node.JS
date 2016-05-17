@@ -18,7 +18,7 @@ var favicon = require('serve-favicon');
 //http.globalAgent.maxSockets = Infinity;
 
 // Express
-app.use(favicon(path.join(__dirname,'public','files','images','logo-ayunt.png')));
+app.use(favicon(path.join(__dirname,'public','files','images','favicon.ico')));
 app.use(morgan('dev')); // Log cada request en la consola
 app.use(cookieParser()); // Usa el cookie parser de express
 app.use(bodyParser.json()); // Body JSON

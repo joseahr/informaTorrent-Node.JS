@@ -210,7 +210,8 @@ html
 
     var id_usuario = '#{id_usuario}';
     if(id_usuario != 'undefined')
-      var notificaciones = JSON.parse('!{JSON.stringify(mis_notificaciones)}');
+      var notificaciones;
+      if('!{mis_notificaciones}' != '') JSON.parse('!{JSON.stringify(mis_notificaciones)}');
     $('#notificaciones').click(function(e){
       var d = new BootstrapDialog({
         title : 'Mis notificaciones',

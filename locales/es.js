@@ -48,7 +48,7 @@
 	"email_actualizar_contraseña_aviso_contenido_2": "Si por el contrario usted no solicitó esta acción, ignore el mensaje y su contraseña seguirá siendo la misma.",
 	"email_enviado": "Se ha enviado un correo a ",
 	"email_instrucciones": " con las instrucciones convenientes.",
-	"enviar_email": "Enviar Correo electrónico",
+	"enviar_email": "Enviar email",
 	"editar": "Editar",
 	"en_tu_denuncia": "en tu denuncia",
 	"en_la_denuncia_de": "en la denuncia de",

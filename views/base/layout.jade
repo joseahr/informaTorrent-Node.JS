@@ -22,6 +22,21 @@ html
     // Prefix free
     script(src='https://raw.githubusercontent.com/LeaVerou/prefixfree/gh-pages/prefixfree.min.js')
     block link
+    style.
+      .banner_anim{
+        animation-name: test;
+        animation-duration: 5s;
+      }
+      @keyframes test {
+        0% {
+            opacity: 0;
+        }
+        50% {
+            opacity: 1;
+        }
+        100% {
+        }
+      }
   body.no-trans
     // header start
     // ================
@@ -118,7 +133,7 @@ html
     // header end
     // banner start
     // ================ 
-    #banner.banner(style="background: url('https://images.unsplash.com/photo-1445964047600-cdbdb873673d?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&w=1800&fit=max&s=e590407728cc89ef57f248ebec481dd5'); background-size: cover; background-position: center center; background-repeat: no-repeat;")
+    #banner.banner.banner_anim(style="background: url('/files/images/fondos/1.jpg'); background-size: cover; background-position: center center; background-repeat: no-repeat;")
       .banner-image
       .banner-caption
         .container
@@ -129,6 +144,13 @@ html
                 span Torrent
               p.lead.text-center
                 | !{contenido.subtitulo}
+          .row
+            .col-xs-4.text-center(style="background : rgba(0,0,0,0.4); border-top-left-radius : 10px; border-bottom-left-radius : 10px; padding : 5px; min-height : 90px;")
+              i.fa.fa-map-marker(style="font-size : 5em")
+            .col-xs-4.text-center(style="background : rgba(0,0,0,0.4); padding : 5px; min-height : 90px;")
+              i.fa.fa-bell(style="font-size : 5em;")
+            .col-xs-4.text-center(style="background : rgba(0,0,0,0.4); border-top-right-radius : 10px; border-bottom-right-radius : 10px; padding : 5px; min-height : 90px;")
+              i.fa.fa-bullhorn(style="font-size : 5em")
     // banner end
 
     // Contenido
@@ -175,9 +197,10 @@ html
 
       var traducciones = JSON.parse('!{JSON.stringify(contenido)}');
 
-      var notificaciones = JSON.parse('!{JSON.stringify(mis_notificaciones)}');
+      var notificaciones;
+      if('!{mis_notificaciones}' != '') JSON.parse('!{JSON.stringify(mis_notificaciones)}');
 
-      $("h1, h2").each(function(){
+      $("h1, h2, p.cap").each(function(){
         var fontSize = $(this).css('font-size');
         console.log(fontSize);
         $(this).fitText(1.1, {maxFontSize: fontSize});
@@ -206,4 +229,44 @@ html
                 action: function(dialog){dialog.close()}
             }]
         });
+      var imagenes_fondo = [];
+      /*Promise.all([
+        $.get('/files/images/fondos/1.jpg'),
+        $.get('/files/images/fondos/2.jpg'),
+        $.get('/files/images/fondos/3.jpg'),
+        $.get('/files/images/fondos/4.jpg'),
+        $.get('/files/images/fondos/5.jpg'),
+        $.get('/files/images/fondos/6.jpg'),
+        $.get('/files/images/fondos/7.jpg') 
+      ])
+      .then(function(imagenes){
+        for(var i = 0 ; i< imagenes.length; i++){
+          var img = new Image();
+          img.src = imagenes[i];
+          imagenes_fondo[i] = img;
+        }
+      })
+      .catch(function(e){
+        
+      });*/
+      // Preload Imágenes
+      for(var i = 1; i < 7; i++){
+        console.log('preload' + i);
+        $("<img />").attr("src", '/files/images/fondos/' + i + '.jpg');
+      }
+
+      var i = 2;
+      setInterval(function(){
+        console.log('bg');
+        if(i > 7) i = 1;
+        $('#banner').addClass('banner_anim');
+        setTimeout(function(){
+          $('#banner').css('background', "url(/files/images/fondos/" + i + ".jpg)");
+          $('#banner').css('background-size', "cover");
+          $('#banner').css('background-repeat', "no-repeat");
+          $('#banner').css('background-position', "center center");
+          setTimeout(function(){$('#banner').removeClass('banner_anim');},2000);
+          i++;
+        }, 200);
+      }, 10000);
     block script

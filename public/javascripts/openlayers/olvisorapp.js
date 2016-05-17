@@ -18,7 +18,7 @@ vector_denuncias = new ol.layer.Vector({
 }),// Vector donde añadiremos las denuncias*/
 // Cluster Source
 clusterSource = new ol.source.Cluster({
-	distance: 7,
+	distance: 3,
 	source: new ol.source.Vector()
 }),
 // Animated cluster layer

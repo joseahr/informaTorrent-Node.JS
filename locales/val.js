@@ -51,7 +51,7 @@
 	"email_actualizar_contraseña_aviso_contenido_2" : "Si pel contrari vosté no ha solicitat aquesta acció, ignore aquest missatge i la seua contrasenya serà la mateixa.",	
 	"email_enviado" : "S&#39;ha enviat un correu a ",
 	"email_instrucciones" : " amb les instruccions convenients.",
-	"enviar_email": "Enviar Correu electrònic",
+	"enviar_email": "Enviar email",
 	"editar" : "Editar",
 	"en_tu_denuncia" : "a la teua denúncia", 
 	"en_la_denuncia_de" : "a la denúncia de",

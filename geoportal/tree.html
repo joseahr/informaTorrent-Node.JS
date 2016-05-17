@@ -24,10 +24,87 @@
 <link rel="stylesheet" href="/stylesheets/animations.css">
 
 <!-- Highlight CSS -->
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/styles/default.min.css">
 
+  <link rel="stylesheet" title="Default" href="/javascripts/plugins/highlight.js/src/styles/default.css">
+  <link rel="alternate /javascripts/plugins/highlight.js/src/stylesheet" title="Dark" href="/javascripts/plugins/highlight.js/src/styles/dark.css">
+  <link rel="alternate stylesheet" title="FAR" href="/javascripts/plugins/highlight.js/src/styles/far.css">
+  <link rel="alternate stylesheet" title="IDEA" href="/javascripts/plugins/highlight.js/src/styles/idea.css">
+  <link rel="alternate stylesheet" title="Sunburst" href="/javascripts/plugins/highlight.js/src/styles/sunburst.css">
+  <link rel="alternate stylesheet" title="Zenburn" href="/javascripts/plugins/highlight.js/src/styles/zenburn.css">
+  <link rel="alternate stylesheet" title="Visual Studio" href="/javascripts/plugins/highlight.js/src/styles/vs.css">
+  <link rel="alternate stylesheet" title="Ascetic" href="/javascripts/plugins/highlight.js/src/styles/ascetic.css">
+  <link rel="alternate stylesheet" title="Magula" href="/javascripts/plugins/highlight.js/src/styles/magula.css">
+  <link rel="alternate stylesheet" title="GitHub" href="/javascripts/plugins/highlight.js/src/styles/github.css">
+  <link rel="alternate stylesheet" title="Google Code" href="/javascripts/plugins/highlight.js/src/styles/googlecode.css">
+  <link rel="alternate stylesheet" title="Brown Paper" href="/javascripts/plugins/highlight.js/src/styles/brown_paper.css">
+  <link rel="alternate stylesheet" title="School Book" href="/javascripts/plugins/highlight.js/src/styles/school_book.css">
+  <link rel="alternate stylesheet" title="IR Black" href="/javascripts/plugins/highlight.js/src/styles/ir_black.css">
+  <link rel="alternate stylesheet" title="Solarized - Dark" href="/javascripts/plugins/highlight.js/src/styles/solarized_dark.css">
+  <link rel="alternate stylesheet" title="Solarized - Light" href="/javascripts/plugins/highlight.js/src/styles/solarized_light.css">
+  <link rel="alternate stylesheet" title="Arta" href="/javascripts/plugins/highlight.js/src/styles/arta.css">
+  <link rel="alternate stylesheet" title="Monokai" href="/javascripts/plugins/highlight.js/src/styles/monokai.css">
+  <link rel="alternate stylesheet" title="Monokai Sublime" href="/javascripts/plugins/highlight.js/src/styles/monokai_sublime.css">
+  <link rel="alternate stylesheet" title="XCode" href="/javascripts/plugins/highlight.js/src/styles/xcode.css">
+  <link rel="alternate stylesheet" title="Pojoaque" href="/javascripts/plugins/highlight.js/src/styles/pojoaque.css">
+  <link rel="alternate stylesheet" title="Rainbow" href="/javascripts/plugins/highlight.js/src/styles/rainbow.css">
+  <link rel="alternate stylesheet" title="Tomorrow" href="/javascripts/plugins/highlight.js/src/styles/tomorrow.css">
+  <link rel="alternate stylesheet" title="Tomorrow Night" href="/javascripts/plugins/highlight.js/src/styles/tomorrow-night.css">
+  <link rel="alternate stylesheet" title="Tomorrow Night Bright" href="/javascripts/plugins/highlight.js/src/styles/tomorrow-night-bright.css">
+  <link rel="alternate stylesheet" title="Tomorrow Night Blue" href="/javascripts/plugins/highlight.js/src/styles/tomorrow-night-blue.css">
+  <link rel="alternate stylesheet" title="Tomorrow Night Eighties" href="/javascripts/plugins/highlight.js/src/styles/tomorrow-night-eighties.css">
+  <link rel="alternate stylesheet" title="Railscasts" href="/javascripts/plugins/highlight.js/src/styles/railscasts.css">
+  <link rel="alternate stylesheet" title="Obsidian" href="/javascripts/plugins/highlight.js/src/styles/obsidian.css">
+  <link rel="alternate stylesheet" title="Docco" href="/javascripts/plugins/highlight.js/src/styles/docco.css">
+  <link rel="alternate stylesheet" title="Mono Blue" href="/javascripts/plugins/highlight.js/src/styles/mono-blue.css">
+  <link rel="alternate stylesheet" title="Foundation" href="/javascripts/plugins/highlight.js/src/styles/foundation.css">
 <link rel="stylesheet" href="/javascripts/plugins/tree/dist/themes/default/style.css"></link>
+<style type="text/css">
+	@keyframes mymove {
+	  0% {
+	  	opacity : 0;
+	    -webkit-transform: translateX(200%);
+	    transform: translateX(200%); 
+	  }
+	  100% {
+	    -webkit-transform: translateX(0%);
+	    transform: translateX(0%); 
+	    opacity: 1;
+	  }    
+	}
+	@keyframes disapear{
+	  
+	  50% {
+	    
+	    -webkit-transform: translateX(-5%);
+	    transform: translateX(-5%);
+	  }
+	  
+	  100% {
+	    -webkit-transform: translateX(200%);
+	    transform: translateX(200%); 
+	  }    
+	}
+	pre {
+	    -webkit-animation: mymove 1s; /* Chrome, Safari, Opera */
+	    animation: mymove 1s;
+	    counter-reset: lines;
+	}
+	.removed {
+	  
+	  -webkit-animation: disapear 1s;
+	  animation: disapear 1s;
+	}
 
+    pre .line {
+      counter-increment: lines;
+    }
+    pre .line::before {
+      content: counter(lines); text-align: right;
+      display: inline-block; width: 2em;
+      padding-right: 0.5em; margin-right: 0.5em;
+      color: #BBB; border-right: solid 1px;
+    }
+</style>
 <!-- Título -->
 <title>Visor de archivos del proyecto</title>
 
@@ -38,7 +115,8 @@
 	<!-- section start -->
 	<!-- ================ -->
 	<div class="section clearfix object-non-visible" data-animation-effect="fadeInRightBig" style="padding: 0px;">
-		<div class="col-xs-2 object-non-visible" data-animation-effect="bounce" style="height: 100%; overflow: auto; padding : 0px; max-height: 100%;">
+		<div class="col-xs-3 object-non-visible" data-animation-effect="bounce" style="overflow : auto; height: 100%; padding : 0px; max-height: 100%;">
+		<code style="color: #000">
 			<div id="jstree" style="margin-left : 10px;">
 				<!-- in this example the tree is populated from inline HTML -->
 				<ul>
@@ -219,7 +297,7 @@
 							      <li source = 'https://raw.githubusercontent.com/joseahr/informaTorrent-Node.JS/master/app/queries/update/usuarios/notificacion_vista.sql' data-jstree='{"icon":"fa fa-file-code-o"}'>notificacion_vista.sql</li>
 							      <li source = 'https://raw.githubusercontent.com/joseahr/informaTorrent-Node.JS/master/app/queries/update/usuarios/perfil.sql' data-jstree='{"icon":"fa fa-file-code-o"}'>perfil.sql</li>
 
-							      <li source = 'https://raw.githubusercontent.com/joseahr/informaTorrent-Node.JS/master/app/queries/update/usuarios/creset_token.sql' data-jstree='{"icon":"fa fa-file-code-o"}'>reset_token.sql</li>
+							      <li source = 'https://raw.githubusercontent.com/joseahr/informaTorrent-Node.JS/master/app/queries/update/usuarios/reset_token.sql' data-jstree='{"icon":"fa fa-file-code-o"}'>reset_token.sql</li>
 							      <li source = 'https://raw.githubusercontent.com/joseahr/informaTorrent-Node.JS/master/app/queries/update/usuarios/token_hora.sql' data-jstree='{"icon":"fa fa-file-code-o"}'>token_hora.sql</li>
 							      <li source = 'https://raw.githubusercontent.com/joseahr/informaTorrent-Node.JS/master/app/queries/update/usuarios/twitter.sql' data-jstree='{"icon":"fa fa-file-code-o"}'>twitter.sql</li>
 							    </ul>
@@ -414,8 +492,20 @@
 				  <li source = 'https://raw.githubusercontent.com/joseahr/informaTorrent-Node.JS/master/server.js' data-jstree='{"icon":"fa fa-file-code-o"}'>server.js</li>
 				</ul>
 			</div>
+			</code>
 		</div>
-		<div id="codigo-holder" class="col-xs-10 object-non-visible" data-animation-effect="bounce" style="height: 100%; overflow: auto; padding : 0px; max-height: 100%;">Visor de documentos
+		<div class="col-xs-9 object-non-visible" data-animation-effect="bounce" style="height: 100%; overflow: auto; padding : 0%; max-height: 100%;">
+			<div id="codigo-holder" style="height: 100%; overflow: auto; padding : 2%; max-height: 100%; background : url('http://torrent.es/torrentPublic/docroot/repositorio/Coneixer%20Torrent/Imatges%20de%20Torrent/04_Paisatge%20urba/Avinguda%20Font%20granotes2.JPG'); background-size : 100% 100%;">
+			</div>
+			<div class="cap" style="position : absolute ; top : 20px; bottom : 20px; left : 3em; right : 3em; text-align : center; background : rgba(5, 5, 5, 0.3); color : #fff; font-weight : bold; padding : 20px; border-radius: 20px;">
+				<p>Proyecto basado en Node.js y Express.js, además de otros módulos disponibles en NPM para 
+				el proyecto de final de grado : 
+				<p style="color : #00bbff">"DESARROLLO DE UNA IDE, GEOPORTAL Y APLICACIÓN WEB DE DENUNCIAS ADAPTADA A DISPOSITIVOS MÓVILES"</p>
+				<p>Desarrollado por <span style="color : #000">Jose Ángel Hermosilla Rodrigo</span> durante los meses de Septiembre (2015) a Junio (2016).</p>
+				<p>En esta sección podrás visualizar el árbol de documentos del proyecto, así como visualizar los archivos del proyecto <p style="color : red;">(No se muestra el proceso desarrollado con Geoserver y Geonetwork)</p></p>
+				</p>
+				<h1 style="color : #fff">Puedes seguir el proyecto en el repositorio GitHub <i class="fa fa-github" style="color : #000"></i> <a href="//github.com/joseahr/informaTorrent-Node.JS">informaTorrent-Node.JS</a></h1>
+			</div>
 		</div>
 	</div>
 	<!-- section end -->
@@ -437,33 +527,89 @@
 <script type="text/javascript" src="/javascripts/template.js"></script>
 
 <!-- Highlight JS -->
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/highlight.min.js"></script>
+<script src="/javascripts/plugins/highlight.js/build/highlight.pack.js"></script>
 
 <!-- Bootstrap Select JS -->
 <script src="/javascripts/plugins/tree/dist/jstree.min.js"></script>
 
+<!-- FitText.js  -->
+<script type="text/javascript" src="/javascripts/plugins/jquery.fittext.js"></script>
+
 <script type="text/javascript">
+
+	$("p, h1").each(function(){
+		var fontSize = $(this).css('font-size');
+		console.log(fontSize);
+		$(this).fitText(1.5, {maxFontSize: fontSize});
+	});
+
+	$(function(){
+	    hljs.tabReplace = '    ';
+	    hljs.initHighlightingOnLoad();
+	});
+
 	$('#jstree')
 	.on('changed.jstree', function (e, data) {
 		var url = $('#' +  data.selected[0]).attr('source');
 		if(url){
+			$('.cap').hide();
 			// http://stackoverflow.com/questions/190852/how-can-i-get-file-extensions-with-javascript
 			var clase = url.split('.').pop();
 
 			if (clase === 'jade') clase = 'html';
+			if($('#codigo-holder').find('[class="fa fa-close"]').length){
+				$('#codigo-holder').find('pre').addClass('removed');
+				setTimeout(function(){
+					$('#codigo-holder').empty();
+					$.get(url, function(res){
+						var pre = $('<pre style="min-height : 100%; background : rgba(245, 245, 245, 0.5); z-index : 3;"></pre>');
+						var code = $('<code class="' + clase + ' lineNumbers" style="overflow-x : auto; word-break : normal; word-wrap : normal; white-space : pre;"></code>').text(res);
+											
+						pre.append(code);
+						
+						$('#codigo-holder').html(pre);
+						console.log('recibido');
 
-			$.get(url, function(res){
-				var pre = $('<pre></pre>');
-				var code = $('<code class="' + clase + '"></code>').text(res);
-									
-				pre.append(code);
-				
-				$('#codigo-holder').html(pre);
-				console.log('recibido');
-				
-				hljs.highlightBlock($('#codigo-holder').find('code').get(0));
-			})
-			.fail();
+						$('#codigo-holder').find('code').before('<a href="javascript:void(0);" style="color : red; font-size : 1.5em;"><span class="fa fa-close"></span></a>');
+						
+						$('#codigo-holder').find('[class="fa fa-close"]').click(function(){
+							$('#codigo-holder').find('pre').addClass('removed');
+							setTimeout(function(){
+								$('#codigo-holder').empty();
+								$('.cap').show();
+							}, 1000);
+						});
+
+						hljs.highlightBlock($('#codigo-holder').find('code').get(0));
+					})
+					.fail();
+
+				}, 1000);
+			}
+			else {
+				$.get(url, function(res){
+					var pre = $('<pre style="min-height : 100%; background : rgba(245, 245, 245, 0.5);"></pre>');
+					var code = $('<code class="' + clase + ' lineNumbers" style="overflow-x : auto; word-break : normal; word-wrap : normal; white-space : pre;"></code>').text(res);
+										
+					pre.append(code);
+					
+					$('#codigo-holder').html(pre);
+					console.log('recibido');
+
+					$('#codigo-holder').find('code').before('<a href="javascript:void(0);" style="color : red; font-size : 1.5em;"><span class="fa fa-close"></span></a>');
+					
+					$('#codigo-holder').find('[class="fa fa-close"]').click(function(){
+						$('#codigo-holder').find('pre').addClass('removed');
+						setTimeout(function(){
+							$('#codigo-holder').empty();
+							$('.cap').show();
+						}, 1000);
+					});
+
+					hljs.highlightBlock($('#codigo-holder').find('code').get(0));
+				})
+				.fail();
+			}
 		}
 	})
 	.jstree({

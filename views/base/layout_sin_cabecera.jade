@@ -162,7 +162,8 @@ html
 
       var traducciones = JSON.parse('!{JSON.stringify(contenido)}');
 
-      var notificaciones = JSON.parse('!{JSON.stringify(mis_notificaciones)}');
+      var notificaciones;
+      if('!{mis_notificaciones}' != '') JSON.parse('!{JSON.stringify(mis_notificaciones)}');
 
       var sms = {};
       if ('#{message.error}' != '') {
